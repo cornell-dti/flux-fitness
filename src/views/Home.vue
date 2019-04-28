@@ -79,7 +79,24 @@ export default {
   },
   methods: {
     submit(active) {
-      if (!active) this.error = "";
+      this.error = "";
+      var totalNum = Number.parseInt(this.total);
+      var treadmillNum = Number.parseInt(this.treadmill);
+      if (treadmillNum > totalNum || !this.total) {
+        this.error = "Please verify your data.";
+        return;
+      }
+      if (active) {
+        this.confirm =
+          "Please confirm that there are " +
+          (this.treadmill
+            ? this.treadmill + " people using the treadmills and "
+            : "") +
+          this.total +
+          " people in total.";
+      } else {
+        this.confirm = "";
+      }
       document.getElementById("treadmill").readOnly = active;
       document.getElementById("total").readOnly = active;
       document.getElementById("submit").hidden = active;
