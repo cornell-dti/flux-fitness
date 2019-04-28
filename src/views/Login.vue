@@ -1,50 +1,57 @@
 <template>
-  <div class="full">
-    <div class="login middle">
-      <div class="text">
-        <h1>Flux Fitness</h1>
-        <p>
-          A simple webapp by the
-          <a href="https://www.cornelldti.org/" target="_blank">DTI</a> Flux team
-          to track people in gyms.
-        </p>
-        <p>Please log in with the username and password provided by DTI.</p>
-      </div>
-      <form class="login-form">
-        <div class="input">
-          <i class="material-icons">email</i>
-          <input v-model="username" type="text" name="username" required placeholder="Username">
-        </div>
-        <div class="input">
-          <i class="material-icons">vpn_key</i>
-          <input v-model="password" type="password" name="password" required placeholder="Password">
-        </div>
-        <div class="input">
-          <i class="material-icons">location_on</i>
-          <select class="gym-select" v-model="gym" required>
-            <option disabled value hidden>Select a gym</option>
-            <option>Teagle</option>
-            <option>Noyes</option>
-            <option>Helen Newman</option>
-            <option>Appel</option>
-          </select>
-          <i class="material-icons select-arrow">arrow_drop_down</i>
-        </div>
-      </form>
-      <div id="error">{{error}}</div>
-      <div class="button-group">
-        <button class="action-button" v-on:click="handler">LOGIN</button>
-      </div>
+  <app-card>
+    <div class="text">
+      <h1>Flux Fitness</h1>
+      <p>
+        A simple webapp by the
+        <a href="https://www.cornelldti.org/" target="_blank">DTI</a> Flux team
+        to track people in gyms.
+      </p>
+      <p>Please log in with the username and password provided by DTI.</p>
     </div>
-  </div>
+    <form class="login-form">
+      <div class="input">
+        <i class="material-icons">email</i>
+        <input v-model="username" type="text" name="username" required placeholder="Username">
+      </div>
+      <div class="input">
+        <i class="material-icons">vpn_key</i>
+        <input v-model="password" type="password" name="password" required placeholder="Password">
+      </div>
+      <div class="input">
+        <i class="material-icons">location_on</i>
+        <select class="gym-select" v-model="gym" required>
+          <option disabled value hidden>Select a gym</option>
+          <option>Teagle</option>
+          <option>Noyes</option>
+          <option>Helen Newman</option>
+          <option>Appel</option>
+        </select>
+        <i class="material-icons select-arrow">arrow_drop_down</i>
+      </div>
+    </form>
+    <div id="error">{{error}}</div>
+    <action-button-group
+      :require-confirmation="false"
+      v-on:submitted="handler()"
+      action-button-text="LOGIN"
+    />
+  </app-card>
 </template>
 
 <script lang="ts">
 import * as firebase from "firebase";
 import Component from "vue-class-component";
+import AppCard from "@/components/AppCard.vue";
+import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import Vue from "vue";
 
-@Component
+@Component({
+  components: {
+    ActionButtonGroup,
+    AppCard
+  }
+})
 export default class Login extends Vue {
   username = "";
   password = "";
@@ -59,9 +66,9 @@ export default class Login extends Vue {
         .signInWithEmailAndPassword(this.username, this.password)
         .then(() => {
           console.log("success");
+          localStorage.gym = this.gym;
           this.$router.push({
-            name: "home",
-            params: { gym: this.gym }
+            name: "home"
           });
         })
         .catch(error => {

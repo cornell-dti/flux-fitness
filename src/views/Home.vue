@@ -1,53 +1,61 @@
 <template>
-  <div class="full">
-    <div class="home middle">
-      <div class="actions">
-        <button class="button-flat" title="Settings">
-          <i class="material-icons">settings</i>
-        </button>
-        <button class="button-flat" title="Log Out" v-on:click="signOut">
-          <i class="material-icons">exit_to_app</i>
-        </button>
-      </div>
-      <!-- <img alt="Vue logo" src="../assets/logo.png"> -->
-      <h1>{{gym}}</h1>
-      <form id="forms">
-        <p>
-          Please indicate how many people are currently
-          <b>using the treadmills</b>.
-        </p>
-        <div class="input">
-          <i class="material-icons">directions_run</i>
-          <input :disabled="active" v-model="treadmill" type="number" min="0" step="1">
-        </div>
-        <p>
-          Please indicate how many people are currently in the gym
-          <b>in total</b>.
-        </p>
-        <div class="input">
-          <i class="material-icons">people</i>
-          <input :disabled="active" v-model="total" type="number" min="0" step="1">
-        </div>
-      </form>
-
-      <!-- <p>You indicated that {{text}} people are in the gym. Press submit if this is correct.</p> -->
-      <p>{{confirm}}</p>
-      <div id="error">{{error}}</div>
-      <div class="buttons">
-        <button :hidden="active" class="action-button" id="submit" v-on:click="submit(true)">SUBMIT</button>
-        <button :hidden="!active" class="action-button" id="cancel" v-on:click="submit(false)">CANCEL</button>
-        <button :hidden="!active" class="action-button" id="confirm" v-on:click="handler">CONFIRM</button>
-      </div>
+  <app-card>
+    <div class="actions">
+      <button class="button-flat" title="Settings">
+        <i class="material-icons">settings</i>
+      </button>
+      <button class="button-flat" title="Log Out" v-on:click="signOut">
+        <i class="material-icons">exit_to_app</i>
+      </button>
     </div>
-  </div>
+    <!-- <img alt="Vue logo" src="../assets/logo.png"> -->
+    <h1>{{gym}}</h1>
+    <form id="forms">
+      <p>
+        Please indicate how many people are currently
+        <b>using the treadmills</b>.
+      </p>
+      <div class="input">
+        <i class="material-icons">directions_run</i>
+        <input :disabled="active" v-model="treadmill" type="number" min="0" step="1">
+      </div>
+      <p>
+        Please indicate how many people are currently in the gym
+        <b>in total</b>.
+      </p>
+      <div class="input">
+        <i class="material-icons">people</i>
+        <input :disabled="active" v-model="total" type="number" min="0" step="1">
+      </div>
+    </form>
+
+    <!-- <p>You indicated that {{text}} people are in the gym. Press submit if this is correct.</p> -->
+    <p>{{confirm}}</p>
+    <div id="error">{{error}}</div>
+    <action-button-group
+      :active="active"
+      :require-confirmation="true"
+      action-button-text="SUBMIT"
+      v-on:submitted="submit(true)"
+      v-on:cancel="submit(false)"
+      v-on:confirm="handler()"
+    />
+  </app-card>
 </template>
 
 <script lang="ts">
 import * as firebase from "firebase";
 import Component from "vue-class-component";
+import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
+import AppCard from "@/components/AppCard.vue";
 import Vue from "vue";
 
-@Component
+@Component({
+  components: {
+    ActionButtonGroup,
+    AppCard
+  }
+})
 export default class Home extends Vue {
   total = "";
   treadmill = "";
@@ -55,11 +63,6 @@ export default class Home extends Vue {
   confirm = "";
   error = "";
   active: boolean = false;
-
-  created() {
-    this.gym = this.$route.params.gym;
-    console.log("This is the gym that was passed", this.gym);
-  }
 
   // creates persistence across refresh
   mounted() {
@@ -138,13 +141,6 @@ form {
 
 .actions {
   margin-right: 20px;
-  text-align: right;
-}
-
-.buttons {
-  margin-top: 20px;
-  height: 50px;
-  width: 100%;
   text-align: right;
 }
 
