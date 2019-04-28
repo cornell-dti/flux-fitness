@@ -10,7 +10,7 @@
         </p>
         <p>Please log in with the username and password provided by DTI.</p>
       </div>
-      <form>
+      <form class="login-form">
         <div class="input">
           <i class="material-icons">email</i>
           <input v-model="username" type="text" name="username" required placeholder="Username">
@@ -21,7 +21,7 @@
         </div>
         <div class="input">
           <i class="material-icons">location_on</i>
-          <select v-model="gym" required>
+          <select class="gym-select" v-model="gym" required>
             <option disabled value hidden>Select a gym</option>
             <option>Teagle</option>
             <option>Noyes</option>
@@ -31,55 +31,48 @@
           <i class="material-icons select-arrow">arrow_drop_down</i>
         </div>
       </form>
-      <div id="error"></div>
-      <div class="buttons">
-        <button class="button" v-on:click="handler">LOGIN</button>
+      <div id="error">{{error}}</div>
+      <div class="button-group">
+        <button class="action-button" v-on:click="handler">LOGIN</button>
       </div>
     </div>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import * as firebase from "firebase";
+import Component from "vue-class-component";
+import Vue from "vue";
 
-export default {
-  name: "Login",
-  data() {
-    return {
-      username: "",
-      password: "",
-      gym: ""
-    };
-  },
-  methods: {
-    handler() {
-      console.log("processing username and password");
-      firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      if (this.gym != "") {
-        firebase
-          .auth()
-          .signInWithEmailAndPassword(this.username, this.password)
-          .then(() => {
-            console.log("success");
-            this.$router.push({
-              name: "home",
-              component: "Home",
-              params: { gym: this.gym }
-            });
-          })
-          .catch(function(error) {
-            console.log("error");
-            var errorCode = error.code;
-            var errorMessage = error.message;
-            document.getElementById("error").innerHTML =
-              "Please enter a valid login";
+@Component
+export default class Login extends Vue {
+  username = "";
+  password = "";
+  gym = "";
+  error = "";
+  handler() {
+    console.log("processing username and password");
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    if (this.gym != "") {
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(this.username, this.password)
+        .then(() => {
+          console.log("success");
+          this.$router.push({
+            name: "home",
+            params: { gym: this.gym }
           });
-      } else {
-        document.getElementById("error").innerHTML = "Please select a gym";
-      }
+        })
+        .catch(error => {
+          console.log(`Error: ${error.code} with message: ${error.message}`);
+          this.error = "Please enter a valid login";
+        });
+    } else {
+      this.error = "Please select a gym";
     }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>
@@ -87,7 +80,7 @@ h1 {
   font-weight: bold;
 }
 
-form {
+.login-form {
   margin-top: 20px;
   text-align: left;
 }
@@ -96,13 +89,13 @@ form {
   padding-right: 30px;
 }
 
-.buttons {
+.button-group {
   height: 50px;
   width: 100%;
   text-align: right;
 }
 
-.button {
+.action-button {
   margin-right: 20px;
 }
 
@@ -122,23 +115,25 @@ form {
   color: #fa4735;
 }
 
-select,
-select option {
-  color: #000;
-  appearance: none;
-  -webkit-appearance: none;
-  margin-inline-start: 5%;
-  font-family: "Roboto", sans-serif;
-  font-size: 16px;
-  padding: 10px 10px 10px 0px;
-  border: none;
-  border-bottom: 1px solid #000;
-  max-width: 70%;
-}
+.gym-select {
+  &:invalid,
+  option[value=""] {
+    color: #767676;
+  }
 
-select:invalid,
-select option[value=""] {
-  color: #767676;
+  &,
+  option {
+    color: black;
+    appearance: none;
+    -webkit-appearance: none;
+    margin-inline-start: 5%;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+    padding: 10px 10px 10px 0px;
+    border: none;
+    border-bottom: 1px solid black;
+    max-width: 70%;
+  }
 }
 
 [hidden] {

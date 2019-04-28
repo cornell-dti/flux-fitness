@@ -18,7 +18,7 @@
         </p>
         <div class="input">
           <i class="material-icons">directions_run</i>
-          <input id="treadmill" v-model="treadmill" type="number" min="0" step="1">
+          <input :disabled="active" v-model="treadmill" type="number" min="0" step="1">
         </div>
         <p>
           Please indicate how many people are currently in the gym
@@ -26,7 +26,7 @@
         </p>
         <div class="input">
           <i class="material-icons">people</i>
-          <input id="total" v-model="total" type="number" min="0" step="1">
+          <input :disabled="active" v-model="total" type="number" min="0" step="1">
         </div>
       </form>
 
@@ -34,108 +34,93 @@
       <p>{{confirm}}</p>
       <div id="error">{{error}}</div>
       <div class="buttons">
-        <button class="button" id="submit" v-on:click="submit(true)">SUBMIT</button>
-        <button hidden class="button" id="cancel" v-on:click="submit(false)">CANCEL</button>
-        <button hidden class="button" id="confirm" v-on:click="handler">CONFIRM</button>
+        <button :hidden="active" class="action-button" id="submit" v-on:click="submit(true)">SUBMIT</button>
+        <button :hidden="!active" class="action-button" id="cancel" v-on:click="submit(false)">CANCEL</button>
+        <button :hidden="!active" class="action-button" id="confirm" v-on:click="handler">CONFIRM</button>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-// @ is an alias to /src
-import HelloWorld from "@/components/HelloWorld.vue";
+<script lang="ts">
 import * as firebase from "firebase";
-// import "firebase/auth";
+import Component from "vue-class-component";
+import Vue from "vue";
 
-export default {
-  name: "home",
-  data() {
-    return {
-      total: "",
-      treadmill: "",
-      gym: "",
-      confirm: "",
-      error: ""
-    };
-  },
+@Component
+export default class Home extends Vue {
+  total = "";
+  treadmill = "";
+  gym = "";
+  confirm = "";
+  error = "";
+  active: boolean = false;
+
   created() {
     this.gym = this.$route.params.gym;
     console.log("This is the gym that was passed", this.gym);
-  },
-  components: {
-    HelloWorld
-  },
+  }
+
   // creates persistence across refresh
   mounted() {
     if (localStorage.gym) {
       this.gym = localStorage.gym;
     }
-  },
-  watch: {
-    gym(newGym) {
-      localStorage.gym = newGym;
+  }
+
+  submit(active: boolean) {
+    this.error = "";
+    var totalNum = Number.parseInt(this.total);
+    var treadmillNum = Number.parseInt(this.treadmill);
+    if (treadmillNum > totalNum || !this.total) {
+      this.error = "Please verify your data.";
+      return;
     }
-  },
-  methods: {
-    submit(active) {
-      this.error = "";
-      var totalNum = Number.parseInt(this.total);
-      var treadmillNum = Number.parseInt(this.treadmill);
-      if (treadmillNum > totalNum || !this.total) {
-        this.error = "Please verify your data.";
-        return;
-      }
-      if (active) {
-        this.confirm =
-          "Please confirm that there are " +
-          (this.treadmill
-            ? this.treadmill + " people using the treadmills and "
-            : "") +
-          this.total +
-          " people in total.";
-      } else {
-        this.confirm = "";
-      }
-      document.getElementById("treadmill").readOnly = active;
-      document.getElementById("total").readOnly = active;
-      document.getElementById("submit").hidden = active;
-      document.getElementById("cancel").hidden = !active;
-      document.getElementById("confirm").hidden = !active;
-    },
-    handler() {
-      if (this.total) {
-        var db = firebase.firestore();
-        let current_gym = this.gym.toLowerCase();
-        var addDoc = db
-          .collection("gymdata")
-          .doc(current_gym)
-          .collection("counts")
-          .add({
-            count: Number.parseInt(this.total),
-            time: new Date()
-          })
-          .then(ref => {
-            console.log("Added document with ID: ", ref.id);
-          });
-        console.log(this.total);
-      } else {
-        // window.alert("You didn't enter a value!");
-        this.error = "Please enter a value";
-      }
-    },
-    signOut() {
-      localStorage.clear();
-      firebase
-        .auth()
-        .signOut()
-        .then(() => {
-          console.log("signed out");
-          // TODO add a procedure to redirect back to login just in case (this is already handled in router but be safe)
+    if (active) {
+      this.confirm =
+        "Please confirm that there are " +
+        (this.treadmill
+          ? this.treadmill + " people using the treadmills and "
+          : "") +
+        this.total +
+        " people in total.";
+    } else {
+      this.confirm = "";
+    }
+    this.active = active;
+  }
+  handler() {
+    if (this.total) {
+      var db = firebase.firestore();
+      let current_gym = this.gym.toLowerCase();
+      var addDoc = db
+        .collection("gymdata")
+        .doc(current_gym)
+        .collection("counts")
+        .add({
+          count: Number.parseInt(this.total),
+          time: new Date()
+        })
+        .then(ref => {
+          console.log("Added document with ID: ", ref.id);
         });
+      console.log(this.total);
+    } else {
+      // window.alert("You didn't enter a value!");
+      this.error = "Please enter a value";
     }
   }
-};
+  signOut() {
+    localStorage.clear();
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {
+        console.log("signed out");
+        // TODO add a procedure to redirect back to login just in case (this is already handled in router but be safe)
+      });
+  }
+}
 </script>
 
 <style lang="scss">
@@ -163,7 +148,7 @@ form {
   text-align: right;
 }
 
-.button {
+.action-button {
   margin-right: 20px;
 }
 

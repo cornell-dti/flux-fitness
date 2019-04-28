@@ -60,7 +60,7 @@ body {
   }
 }
 
-.button {
+.action-button {
   width: 100px;
   padding: 7px 10px;
   border-width: 0;
@@ -72,7 +72,7 @@ body {
   background-color: white;
 }
 
-.button:hover {
+.action-button:hover {
   background-color: $buttonHover;
 }
 
