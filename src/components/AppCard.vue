@@ -16,7 +16,9 @@ export default class AppCard extends Vue {}
 
 <style lang="scss" scoped>
 .full {
-  position: absolute;
+  position: fixed;
+  overflow: scroll;
+  min-height: 100vh;
   top: 0;
   bottom: 0;
   width: 100%;
