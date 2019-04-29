@@ -162,7 +162,7 @@ form {
 
 .nav-button {
   width: 60px;
-  height: 60px;
+  height: 70px;
   padding: 15px 5px;
   border-width: 0;
   font-family: inherit;
