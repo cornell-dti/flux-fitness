@@ -96,16 +96,6 @@ h1 {
   padding-right: 30px;
 }
 
-.button-group {
-  height: 50px;
-  width: 100%;
-  text-align: right;
-}
-
-.action-button {
-  margin-right: 20px;
-}
-
 .material-icons {
   color: #000;
   font-size: 20px;

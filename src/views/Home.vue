@@ -1,11 +1,13 @@
 <template>
   <app-card>
-    <div class="actions">
-      <button class="button-flat" title="Settings">
+    <div class="nav-group">
+      <button class="nav-button" title="Settings" v-on:click="goSettings">
         <i class="material-icons">settings</i>
+        <div class="hint">Settings</div>
       </button>
-      <button class="button-flat" title="Log Out" v-on:click="signOut">
+      <button class="nav-button" title="Log Out" v-on:click="signOut">
         <i class="material-icons">exit_to_app</i>
+        <div class="hint">Log Out</div>
       </button>
     </div>
     <!-- <img alt="Vue logo" src="../assets/logo.png"> -->
@@ -71,6 +73,12 @@ export default class Home extends Vue {
     }
   }
 
+  goSettings() {
+    this.$router.push({
+      name: "settings"
+    });
+  }
+
   submit(active: boolean) {
     this.error = "";
     var totalNum = Number.parseInt(this.total);
@@ -92,6 +100,7 @@ export default class Home extends Vue {
     }
     this.active = active;
   }
+
   handler() {
     if (this.total) {
       var db = firebase.firestore();
@@ -113,6 +122,7 @@ export default class Home extends Vue {
       this.error = "Please enter a value";
     }
   }
+
   signOut() {
     localStorage.clear();
     firebase
@@ -139,26 +149,18 @@ form {
   color: #fa4735;
 }
 
-.actions {
+.nav-group {
   margin-right: 20px;
   text-align: right;
 }
 
-.action-button {
-  margin-right: 20px;
-}
-
-#cancel {
-  margin-right: 10px;
-}
-
 .material-icons {
-  color: #000;
-  font-size: 20px;
+  color: black;
+  font-size: 12px;
   vertical-align: middle;
 }
 
-.button-flat {
+.nav-button {
   width: 60px;
   height: 60px;
   padding: 15px 5px;
@@ -169,8 +171,17 @@ form {
   background-color: #fff;
 }
 
-.button-flat:hover {
+.hint {
+  margin-top: 5px;
+  display: block;
+}
+
+.nav-button:hover {
   background-color: #ededed;
+
+  // & .hint {
+  //   display: block;
+  // }
 }
 </style>
 

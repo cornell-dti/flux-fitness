@@ -48,6 +48,7 @@ export default class ActionButtonGroup extends Vue {
 }
 
 .action-button {
+  margin-right: 20px;
   width: 100px;
   padding: 7px 10px;
   border-width: 0;
@@ -61,6 +62,10 @@ export default class ActionButtonGroup extends Vue {
 
 .action-button:hover {
   background-color: $buttonHover;
+}
+
+#cancel {
+  margin-right: 10px;
 }
 </style>
 
