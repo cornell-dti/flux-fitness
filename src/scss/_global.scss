@@ -1,0 +1,39 @@
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+.button-boxed {
+  display: inline-block;
+  padding: 7px 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  border-width: 0;
+  font-family: inherit;
+  font-size: 16px;
+  border-radius: 3.5px;
+  background-color: $mainAccent;
+  color: white;
+  text-align: center;
+}
+
+.button-boxed:hover {
+  background-color: $mainAccentFocus;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+input {
+  max-width: 70%;
+  margin-bottom: 15px;
+  font-size: 16px;
+  padding: 10px 10px 10px 5px;
+  border: none;
+  border-bottom: 1px solid black;
+  margin-inline-start: 5%;
+}
+
+.input {
+  white-space: nowrap;
+}
