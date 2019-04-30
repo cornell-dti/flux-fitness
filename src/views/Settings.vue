@@ -6,7 +6,7 @@
       <p>Click "Download" to export data as an Excel spreadsheet.</p>
     </div>
     <!-- TODO: make this into a component -->
-    <button class="button-boxed" v-on:click="download()">
+    <button class="button-boxed" v-on:click="download">
       <i class="material-icons">file_download</i>
       DOWNLOAD
     </button>
@@ -23,6 +23,8 @@ import Component from "vue-class-component";
 import AppCard from "@/components/AppCard.vue";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import Vue from "vue";
+import firebase from 'firebase'; 
+import axios from 'axios'; 
 
 @Component({
   components: {
@@ -39,8 +41,21 @@ export default class Settings extends Vue {
   }
 
   download() {
-    // download or something
-  }
+      const getData = firebase.functions().httpsCallable('getData'); 
+      getData({id: 'teagle'})
+      .then((res) => {
+        console.log('DONE'); 
+        const storage = firebase.storage(); 
+        const gsref = storage.refFromURL(`gs:/${res.data}/teagle.xlsx/`); 
+        gsref.getDownloadURL().then(url => {
+          window.open(url); 
+        }); 
+      })
+      .catch((err) => {
+        console.log(err); 
+      })
+
+    }
 }
 </script>
 
