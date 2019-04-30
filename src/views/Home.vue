@@ -110,6 +110,7 @@ export default class Home extends Vue {
         .doc(current_gym)
         .collection("counts")
         .add({
+          treadmill: Number.parseInt(this.treadmill),
           count: Number.parseInt(this.total),
           time: new Date()
         })
