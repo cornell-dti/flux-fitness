@@ -8,6 +8,7 @@ Vue.use(Router);
 
 import * as firebase from "firebase";
 export default new Router({
+  mode: "history",
   routes: [
     {
       path: "/",
