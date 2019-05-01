@@ -10,15 +10,15 @@
       <p>Please log in with the username and password provided by DTI.</p>
     </div>
     <form class="login-form">
-      <div class="input">
+      <div class="icon-input">
         <i class="material-icons">email</i>
         <input v-model="username" type="text" name="username" required placeholder="Username">
       </div>
-      <div class="input">
+      <div class="icon-input">
         <i class="material-icons">vpn_key</i>
         <input v-model="password" type="password" name="password" required placeholder="Password">
       </div>
-      <div class="input">
+      <div class="icon-input">
         <i class="material-icons">location_on</i>
         <select class="gym-select" v-model="gym" required>
           <option disabled value hidden>Select a gym</option>
@@ -97,7 +97,7 @@ h1 {
 }
 
 .material-icons {
-  color: #000;
+  color: #000000;
   font-size: 20px;
   vertical-align: middle;
 }
@@ -128,6 +128,7 @@ h1 {
     font-size: 16px;
     padding: 10px 10px 10px 0px;
     border: none;
+    border-radius: 0;
     border-bottom: 1px solid black;
     max-width: 70%;
   }
