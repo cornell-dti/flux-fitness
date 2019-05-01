@@ -2,11 +2,11 @@
   <app-card>
     <div class="nav-group">
       <button class="nav-button" title="Settings" v-on:click="goSettings">
-        <i class="material-icons">settings</i>
+        <i class="material-icons nav-icon">settings</i>
         <div class="hint">Settings</div>
       </button>
       <button class="nav-button" title="Log Out" v-on:click="signOut">
-        <i class="material-icons">exit_to_app</i>
+        <i class="material-icons nav-icon">exit_to_app</i>
         <div class="hint">Log Out</div>
       </button>
     </div>
@@ -17,17 +17,32 @@
         Please indicate how many people are currently
         <b>using the treadmills</b>.
       </p>
-      <div class="input">
+      <div class="icon-input">
         <i class="material-icons">directions_run</i>
-        <input :disabled="active" v-model="treadmill" type="number" min="0" step="1">
+        <input
+          :disabled="active"
+          v-model="treadmill"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="People on treadmills"
+        >
       </div>
       <p>
         Please indicate how many people are currently in the gym
         <b>in total</b>.
       </p>
-      <div class="input">
+      <div class="icon-input">
         <i class="material-icons">people</i>
-        <input :disabled="active" v-model="total" type="number" min="0" step="1">
+        <input
+          :disabled="active"
+          v-model="total"
+          type="number"
+          min="0"
+          step="1"
+          required
+          placeholder="Total people"
+        >
       </div>
     </form>
 
@@ -150,15 +165,15 @@ form {
   color: #fa4735;
 }
 
+.material-icons {
+  color: black;
+  font-size: 24px;
+  vertical-align: middle;
+}
+
 .nav-group {
   margin-right: 20px;
   text-align: right;
-}
-
-.material-icons {
-  color: black;
-  font-size: 12px;
-  vertical-align: middle;
 }
 
 .nav-button {
@@ -173,16 +188,13 @@ form {
 }
 
 .hint {
+  font-size: 12px;
   margin-top: 5px;
   display: block;
 }
 
 .nav-button:hover {
   background-color: #ededed;
-
-  // & .hint {
-  //   display: block;
-  // }
 }
 </style>
 
