@@ -115,7 +115,19 @@ export default class Home extends Vue {
           time: new Date()
         })
         .then(ref => {
-          console.log("Added document with ID: ", ref.id);
+          console.log("Succesfully added document!");
+          this.confirm = this.total = this.treadmill = ""; 
+          this.active = false; 
+          this.$notify({
+            group: 'foo',
+            type: 'success',
+            duration: 2500,
+            title: 'Success',
+            text: 'The data you entered went through!'
+          });
+        })
+        .catch(err => {
+          this.error = "There was an error in submitting";
         });
       console.log(this.total);
     } else {
