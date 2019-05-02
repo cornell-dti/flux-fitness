@@ -12,8 +12,11 @@ admin.initializeApp({
 const db = admin.firestore();
 const gyms = ['teagle', 'helen_newman', 'noyes', 'appel'];
 
-exports.getURL = functions.https.onCall((data: any) => {
-    const id = data.id
+exports.getURL = functions.https.onCall((data: { id: string; }) => {
+    if (!data.id) {
+        throw new functions.https.HttpsError('invalid-argument', 'ID missing!'); 
+    }
+    const id = data.id; 
     return getData(id); 
 });
 
