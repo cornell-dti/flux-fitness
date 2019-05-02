@@ -41,10 +41,14 @@ export default class Settings extends Vue {
 
   download() {
       const getURL = firebase.functions().httpsCallable('getURL'); 
-      getURL({id: 'teagle'})
+      let gymId = localStorage.gym.toLowerCase(); 
+      if (gymId === 'helen newman') {
+        gymId = 'helen_newman'; 
+      }
+      getURL({id: gymId})
       .then((res) => {
         const storage = firebase.storage(); 
-        const gsref = storage.refFromURL(`gs:/${res.data}/teagle.xlsx/`); 
+        const gsref = storage.refFromURL(`gs:/${res.data}/${gymId}.xlsx/`); 
         gsref.getDownloadURL().then(url => {
           window.open(url); 
         }); 
