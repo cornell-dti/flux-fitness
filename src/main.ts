@@ -1,5 +1,6 @@
 import Vue from "vue";
 import App from "./App.vue";
+import Notifications from "vue-notification";
 import router from "./router";
 import * as firebase from "firebase";
 var firestuff = firebase.initializeApp({
@@ -15,6 +16,8 @@ var db = firebase.database();
 import "./main.scss";
 
 Vue.config.productionTip = false;
+
+Vue.use(Notifications);
 
 Vue.mixin({
   methods: {

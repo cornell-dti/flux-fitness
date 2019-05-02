@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <router-view/>
+    <notifications group="default_group" position="bottom right"/>
   </div>
 </template>
 
@@ -12,3 +13,4 @@
   color: #2c3e50;
 }
 </style>
+
