@@ -3,7 +3,6 @@ import App from "./App.vue";
 import Notifications from "vue-notification";
 import router from "./router";
 import * as firebase from "firebase";
-Vue.use(Notifications);
 var firestuff = firebase.initializeApp({
   apiKey: "AIzaSyD4bbvkRs0ywgjB7WzVh8PSvKZfPfzOum4",
   authDomain: "testing-gym-data.firebaseapp.com",
@@ -17,6 +16,8 @@ var db = firebase.database();
 import "./main.scss";
 
 Vue.config.productionTip = false;
+
+Vue.use(Notifications);
 
 Vue.mixin({
   methods: {
