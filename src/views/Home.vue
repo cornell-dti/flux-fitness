@@ -1,16 +1,15 @@
 <template>
   <app-card>
     <div class="nav-group">
-      <button class="nav-button" title="Settings" v-on:click="goSettings">
-        <i class="material-icons nav-icon">settings</i>
-        <div class="hint">Settings</div>
+      <button class="nav-button" title="Export" v-on:click="goExport">
+        <i class="material-icons nav-icon">cloud_download</i>
+        <div class="hint">Export</div>
       </button>
       <button class="nav-button" title="Log Out" v-on:click="signOut">
         <i class="material-icons nav-icon">exit_to_app</i>
         <div class="hint">Log Out</div>
       </button>
     </div>
-    <!-- <img alt="Vue logo" src="../assets/logo.png"> -->
     <h1>{{gym}}</h1>
     <form id="forms">
       <p>
@@ -88,9 +87,9 @@ export default class Home extends Vue {
     }
   }
 
-  goSettings() {
+  goExport() {
     this.$router.push({
-      name: "settings"
+      name: "export"
     });
   }
 
@@ -165,7 +164,7 @@ export default class Home extends Vue {
       .signOut()
       .then(() => {
         console.log("signed out");
-        // TODO add a procedure to redirect back to login just in case (this is already handled in router but be safe)
+        this.$router.push({ name: "login" });
       });
   }
 }

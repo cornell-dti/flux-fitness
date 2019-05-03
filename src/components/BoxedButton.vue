@@ -27,7 +27,7 @@ export default class BoxedButton extends Vue {
 
 .boxed-button {
   display: inline-block;
-  padding: 7px 10px;
+  padding: 7px 16px 7px 10px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   border-width: 0;
   font-family: inherit;
