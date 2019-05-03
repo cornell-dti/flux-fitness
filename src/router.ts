@@ -17,7 +17,6 @@ export default new Router({
       beforeEnter(to, from, next) {
         firebase.auth().onAuthStateChanged(user => {
           if (user) {
-            console.log("user is indeed signed in"); //get rid of this
             next();
           } else {
             next("/login");
@@ -35,6 +34,13 @@ export default new Router({
       name: "settings",
       component: Settings,
       beforeEnter(to, from, next) {
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            next();
+          } else {
+            next("/login");
+          }
+        });
         if (from.name == "home") {
           next();
         } else {

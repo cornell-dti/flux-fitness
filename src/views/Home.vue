@@ -132,6 +132,10 @@ export default class Home extends Vue {
         .then(ref => {
           console.log("Added document with ID: ", ref.id);
         });
+      this.total = "";
+      this.treadmill = "";
+      this.confirm = "";
+      this.active = false;
       console.log(this.total);
     } else {
       // window.alert("You didn't enter a value!");
