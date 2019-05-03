@@ -2,7 +2,7 @@
   <app-card>
     <div class="text">
       <h1>Export</h1>
-      <p>Modify settings and export data.</p>
+      <p>Export data.</p>
     </div>
     <div class="date-spoiler">
       <button v-on:click="toggleDateSelect()">Select Dates</button>
