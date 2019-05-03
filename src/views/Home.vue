@@ -147,6 +147,10 @@ export default class Home extends Vue {
           console.log("There was an error in adding the document.")
           this.error = "There was an error in submitting";
         });
+      this.total = "";
+      this.treadmill = "";
+      this.confirm = "";
+      this.active = false;
       console.log(this.total);
     } else {
       // window.alert("You didn't enter a value!");
