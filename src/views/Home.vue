@@ -178,7 +178,7 @@ form {
 }
 
 #error {
-  text-align: center;
+  text-align: left;
   margin-bottom: 10px;
   color: #fa4735;
 }

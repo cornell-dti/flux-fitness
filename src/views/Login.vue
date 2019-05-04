@@ -73,10 +73,10 @@ export default class Login extends Vue {
         })
         .catch(error => {
           console.log(`Error: ${error.code} with message: ${error.message}`);
-          this.error = "Please enter a valid login";
+          this.error = "Please enter a valid login.";
         });
     } else {
-      this.error = "Please select a gym";
+      this.error = "Please select a gym.";
     }
   }
 }
@@ -107,7 +107,7 @@ h1 {
 }
 
 #error {
-  text-align: center;
+  text-align: left;
   margin-top: 20px;
   color: #fa4735;
 }

@@ -4,9 +4,6 @@
       <h1>Export</h1>
       <p>Export data.</p>
     </div>
-    <div class="date-spoiler">
-      <button v-on:click="toggleDateSelect()">Select Dates</button>
-    </div>
     <form :hidden="select_date" class="date-form">
       <div class="date-select">
         <i class="material-icons">date_range</i>
@@ -19,6 +16,7 @@
       <p>Click "Download" to export data as an Excel spreadsheet.</p>
     </div>
     <boxed-button :disabled="downloading" v-on:click="download"/>
+    <div id="error"> {{error}} </div> 
     <p :hidden="!downloading">Download is in progress...</p>
     <action-button-group
       :require-confirmation="true"
@@ -47,9 +45,9 @@ import axios from "axios";
 export default class Settings extends Vue {
   active = false;
   downloading = false;
-  select_date = true;
   start_date = "";
   end_date = "";
+  error = ""; 
 
   handler() {
     this.$router.push({
@@ -57,21 +55,21 @@ export default class Settings extends Vue {
     });
   }
 
-  toggleDateSelect() {
-    this.select_date = !this.select_date;
-  }
-
   download() {
+    this.error = ""; 
+    if (this.start_date === "" || this.end_date === "") {
+      this.error = "Please enter valid dates."; 
+      return; 
+    }
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
     let gymId = localStorage.gym.toLowerCase();
     if (gymId === "helen newman") {
       gymId = "helen_newman";
     }
-    getURL({ id: gymId })
+    getURL({ id: gymId, startDate: this.start_date, endDate: this.end_date })
       .then(res => {
         this.downloading = false;
-        console.log("DONE");
         const storage = firebase.storage();
         const gsref = storage.refFromURL(`gs:/${res.data}/${gymId}.xlsx/`);
         gsref.getDownloadURL().then(url => {
@@ -79,7 +77,6 @@ export default class Settings extends Vue {
         });
       })
       .catch(err => {
-        console.log(err);
         this.downloading = false;
       });
   }
@@ -95,6 +92,13 @@ export default class Settings extends Vue {
 
 .date-select {
   white-space: nowrap;
+}
+
+#error {
+  padding-top: 15px; 
+  text-align: left;
+  margin-bottom: 10px;
+  color: #fa4735;
 }
 
 .date-input {
