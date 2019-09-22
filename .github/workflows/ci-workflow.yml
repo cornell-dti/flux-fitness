@@ -11,9 +11,9 @@ jobs:
       - name: NPM Install
         run: npm install
       - name: Run Linter
-        run: npm lint
+        run: npm run lint
       - name: Build
-        run: npm build
+        run: npm run build
   build-functions:
     runs-on: ubuntu-latest
     steps:
@@ -23,6 +23,6 @@ jobs:
       - name: NPM Install
         run: cd functions && npm install
       - name: Run Linter
-        run: cd functions && npm lint
+        run: cd functions && npm run lint
       - name: Build
-        run: cd functions && npm build
+        run: cd functions && npm run build
