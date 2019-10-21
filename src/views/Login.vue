@@ -11,23 +11,37 @@
     </div>
     <form class="login-form">
       <div class="icon-input">
-        <i class="material-icons">email</i>
-        <input v-model="username" type="text" name="username" required placeholder="Username">
+        <label class="material-icons" for="username">email</label>
+        <input
+          v-model="username"
+          type="text"
+          id="username"
+          name="username"
+          required
+          placeholder="Username"
+        />
       </div>
       <div class="icon-input">
-        <i class="material-icons">vpn_key</i>
-        <input v-model="password" type="password" name="password" required placeholder="Password">
+        <label class="material-icons" for="password">vpn_key</label>
+        <input
+          v-model="password"
+          type="password"
+          id="password"
+          name="password"
+          required
+          placeholder="Password"
+        />
       </div>
       <div class="icon-input">
-        <i class="material-icons">location_on</i>
-        <select class="gym-select" v-model="gym" required>
+        <label class="material-icons" for="gym-select">location_on</label>
+        <select v-model="gym" id="gym-select" required>
           <option disabled value hidden>Select a gym</option>
           <option>Teagle</option>
           <option>Noyes</option>
           <option>Helen Newman</option>
           <option>Appel</option>
         </select>
-        <i class="material-icons select-arrow">arrow_drop_down</i>
+        <span class="material-icons select-arrow">arrow_drop_down</span>
       </div>
     </form>
     <div id="error">{{error}}</div>
@@ -112,7 +126,7 @@ h1 {
   color: #fa4735;
 }
 
-.gym-select {
+#gym-select {
   &:invalid,
   option[value=""] {
     color: #767676;
@@ -126,7 +140,7 @@ h1 {
     margin-inline-start: 5%;
     font-family: "Roboto", sans-serif;
     font-size: 16px;
-    padding: 10px 10px 10px 0px;
+    padding: 10px 10px 10px 5px;
     border: none;
     border-radius: 0;
     border-bottom: 1px solid black;
