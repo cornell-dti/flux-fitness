@@ -4,7 +4,7 @@
       <h1>Export</h1>
       <p>Export data.</p>
     </div>
-    <form :hidden="select_date" class="date-form">
+    <form class="date-form">
       <div class="date-select">
         <i class="material-icons">date_range</i>
         <input class="date-input" v-model="start_date" type="date">
