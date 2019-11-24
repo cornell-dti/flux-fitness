@@ -17,6 +17,7 @@ exports.getURL = functions.https.onCall((data: { id: string, startDate: string, 
     }
     const startDate = new Date(data.startDate);
     const endDate = new Date(data.endDate);
+    endDate.setDate(endDate.getDate() + 1);
     const id = data.id;
     return getData(id, startDate, endDate);
 });

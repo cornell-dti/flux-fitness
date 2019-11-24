@@ -4,7 +4,7 @@ import Notifications from "vue-notification";
 import router from "./router";
 import * as firebase from "firebase";
 
-var firestuff = firebase.initializeApp({
+let firestuff = firebase.initializeApp({
   apiKey: "AIzaSyDeJl2Hp-cUQq2VPsEaRhLOz7TrVjeZHtQ",
   authDomain: "campus-density.firebaseapp.com",
   databaseURL: "https://campus-density.firebaseio.com",
@@ -13,7 +13,7 @@ var firestuff = firebase.initializeApp({
   messagingSenderId: "833550952996"
 });
 
-var db = firebase.database();
+let db = firebase.database();
 
 import "./main.scss";
 
