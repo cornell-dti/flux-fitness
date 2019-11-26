@@ -14,34 +14,34 @@
     <form id="forms">
       <p>
         Please indicate how many people are currently
-        <b>using the treadmills</b>.
+        <strong>using cardio machines</strong>.
       </p>
       <div class="icon-input">
         <i class="material-icons">directions_run</i>
         <input
           :disabled="active"
-          v-model="treadmill"
+          v-model="cardio"
           type="number"
           min="0"
           step="1"
-          placeholder="People on treadmills"
-        >
+          placeholder="using cardio machines"
+        />
       </div>
       <p>
-        Please indicate how many people are currently in the gym
-        <b>in total</b>.
+        Please indicate how many people are currently
+        <strong>using weights</strong>.
       </p>
       <div class="icon-input">
         <i class="material-icons">people</i>
         <input
           :disabled="active"
-          v-model="total"
+          v-model="weights"
           type="number"
           min="0"
           step="1"
           required
-          placeholder="Total people"
-        >
+          placeholder="using weights"
+        />
       </div>
     </form>
 
@@ -73,8 +73,8 @@ import Vue from "vue";
   }
 })
 export default class Home extends Vue {
-  total = "";
-  treadmill = "";
+  weights = "";
+  cardio = "";
   gym = "";
   confirm = "";
   error = "";
@@ -95,20 +95,20 @@ export default class Home extends Vue {
 
   submit(active: boolean) {
     this.error = "";
-    var totalNum = Number.parseInt(this.total);
-    var treadmillNum = Number.parseInt(this.treadmill);
-    if (treadmillNum > totalNum || !this.total) {
+    var weightsNum = Number.parseInt(this.weights);
+    var cardioNum = Number.parseInt(this.cardio);
+    if (cardioNum > weightsNum || !this.weights) {
       this.error = "Please verify your data.";
       return;
     }
     if (active) {
       this.confirm =
         "Please confirm that there are " +
-        (this.treadmill
-          ? this.treadmill + " people using the treadmills and "
+        (this.cardio
+          ? this.cardio + " people using cardio machines and "
           : "") +
-        this.total +
-        " people in total.";
+        this.weights +
+        " people using weights.";
     } else {
       this.confirm = "";
     }
@@ -116,7 +116,7 @@ export default class Home extends Vue {
   }
 
   handler() {
-    if (this.total) {
+    if (this.weights) {
       var db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
       var addDoc = db
@@ -124,15 +124,15 @@ export default class Home extends Vue {
         .doc(current_gym)
         .collection("counts")
         .add({
-          treadmill: Number.parseInt(this.treadmill),
-          count: Number.parseInt(this.total),
+          cardio: Number.parseInt(this.cardio),
+          weights: Number.parseInt(this.weights),
           time: new Date()
         })
         .then(ref => {
           console.log("Successfully added document!");
           this.confirm = "";
-          this.total = "";
-          this.treadmill = "";
+          this.weights = "";
+          this.cardio = "";
           this.active = false;
           this.$notify({
             group: "default_group",
@@ -146,11 +146,11 @@ export default class Home extends Vue {
           console.log("There was an error in adding the document.");
           this.error = "There was an error in submitting";
         });
-      this.total = "";
-      this.treadmill = "";
+      this.weights = "";
+      this.cardio = "";
       this.confirm = "";
       this.active = false;
-      console.log(this.total);
+      console.log(this.weights);
     } else {
       // window.alert("You didn't enter a value!");
       this.error = "Please enter a value";

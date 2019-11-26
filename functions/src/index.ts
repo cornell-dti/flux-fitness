@@ -27,8 +27,8 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     console.log(endDate);
     const gymCounts = db.collection('gymdata').doc(gymName).collection('counts').where('time', '>=', startDate).where('time', '<=', endDate);
     const allGymDocs = await gymCounts.get();
-    const sheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString(), doc.get('treadmill'), doc.get('count')]);
-    sheet.unshift(['Time', 'Treadmill Count', 'Total Count']);
+    const sheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString(), doc.get('cardio'), doc.get('weights')]);
+    sheet.unshift(['Time', 'Cardio Count', 'Weights Count']);
     const wb = XLSX.utils.book_new();
     wb.SheetNames.push(gymName);
     const ws = XLSX.utils.aoa_to_sheet(sheet);
