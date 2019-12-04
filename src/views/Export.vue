@@ -4,19 +4,19 @@
       <h1>Export</h1>
       <p>Export data.</p>
     </div>
-    <form :hidden="select_date" class="date-form">
+    <form class="date-form">
       <div class="date-select">
         <i class="material-icons">date_range</i>
-        <input class="date-input" v-model="start_date" type="date">
+        <input class="date-input" v-model="start_date" type="date" />
         &mdash;
-        <input class="date-input" v-model="end_date" type="date">
+        <input class="date-input" v-model="end_date" type="date" />
       </div>
     </form>
     <div class="text">
       <p>Click "Download" to export data as an Excel spreadsheet.</p>
     </div>
-    <boxed-button :disabled="downloading" v-on:click="download"/>
-    <div id="error"> {{error}} </div> 
+    <boxed-button :disabled="downloading" v-on:click="download" />
+    <div id="error">{{error}}</div>
     <p :hidden="!downloading">Download is in progress...</p>
     <action-button-group
       :require-confirmation="true"
@@ -47,7 +47,7 @@ export default class Settings extends Vue {
   downloading = false;
   start_date = "";
   end_date = "";
-  error = ""; 
+  error = "";
 
   handler() {
     this.$router.push({
@@ -56,10 +56,10 @@ export default class Settings extends Vue {
   }
 
   download() {
-    this.error = ""; 
+    this.error = "";
     if (this.start_date === "" || this.end_date === "") {
-      this.error = "Please enter valid dates."; 
-      return; 
+      this.error = "Please enter valid dates.";
+      return;
     }
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
@@ -95,7 +95,7 @@ export default class Settings extends Vue {
 }
 
 #error {
-  padding-top: 15px; 
+  padding-top: 15px;
   text-align: left;
   margin-bottom: 10px;
   color: #fa4735;

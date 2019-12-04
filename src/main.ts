@@ -3,15 +3,17 @@ import App from "./App.vue";
 import Notifications from "vue-notification";
 import router from "./router";
 import * as firebase from "firebase";
-var firestuff = firebase.initializeApp({
-  apiKey: "AIzaSyD4bbvkRs0ywgjB7WzVh8PSvKZfPfzOum4",
-  authDomain: "testing-gym-data.firebaseapp.com",
-  databaseURL: "https://testing-gym-data.firebaseio.com",
-  projectId: "testing-gym-data",
-  storageBucket: "testing-gym-data.appspot.com",
-  messagingSenderId: "704595972825"
+
+let firestuff = firebase.initializeApp({
+  apiKey: "AIzaSyDeJl2Hp-cUQq2VPsEaRhLOz7TrVjeZHtQ",
+  authDomain: "campus-density.firebaseapp.com",
+  databaseURL: "https://campus-density.firebaseio.com",
+  projectId: "campus-density",
+  storageBucket: "campus-density.appspot.com",
+  messagingSenderId: "833550952996"
 });
-var db = firebase.database();
+
+let db = firebase.database();
 
 import "./main.scss";
 
