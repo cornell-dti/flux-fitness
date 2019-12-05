@@ -23,21 +23,27 @@ exports.getURL = functions.https.onCall((data: { id: string, startDate: string, 
 });
 
 async function getData(gymName: string, startDate: Date, endDate: Date) {
-    console.log(startDate);
-    console.log(endDate);
     const gymCounts = db.collection('gymdata').doc(gymName).collection('counts').where('time', '>=', startDate).where('time', '<=', endDate);
     const allGymDocs = await gymCounts.get();
-    const sheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString(), doc.get('cardio'), doc.get('weights')]);
-    sheet.unshift(['Time', 'Cardio Count', 'Weights Count']);
     const wb = XLSX.utils.book_new();
-    wb.SheetNames.push(gymName);
-    const ws = XLSX.utils.aoa_to_sheet(sheet);
-    wb.Sheets[gymName] = ws;
+
+    const cardioSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString(), doc.get('cardio')]);
+    cardioSheet.unshift(['Time', 'Count']);
+    wb.SheetNames.push("Cardio");
+    const cardioWS = XLSX.utils.aoa_to_sheet(cardioSheet);
+    wb.Sheets["Cardio"] = cardioWS;
+
+    const weightsSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString(), doc.get('weights')]);
+    weightsSheet.unshift(['Time', 'Count']);
+    wb.SheetNames.push("Weights");
+    const weightsWS = XLSX.utils.aoa_to_sheet(weightsSheet);
+    wb.Sheets["Weights"] = weightsWS;
+
     const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
     const storage = admin.storage();
-
     const bucket = storage.bucket('campus-density-gym');
-    const file = bucket.file(`${gymName}.xlsx`);
+    const fileName = `${gymName}_${startDate.toISOString().split("T")[0]}_${endDate.toISOString().split("T")[0]}.xlsx`
+    const file = bucket.file(fileName);
     await file.save(buffer);
-    return "/campus-density-gym";
+    return `/campus-density-gym/${fileName}`;
 };

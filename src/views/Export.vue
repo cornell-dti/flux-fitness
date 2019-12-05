@@ -67,11 +67,13 @@ export default class Settings extends Vue {
     if (gymId === "helen newman") {
       gymId = "helen_newman";
     }
-    getURL({ id: gymId, startDate: this.start_date, endDate: this.end_date })
+    const startDate = this.start_date;
+    const endDate = this.end_date;
+    getURL({ id: gymId, startDate, endDate })
       .then(res => {
         this.downloading = false;
         const storage = firebase.storage();
-        const gsref = storage.refFromURL(`gs:/${res.data}/${gymId}.xlsx/`);
+        const gsref = storage.refFromURL(`gs:/${res.data}`);
         gsref.getDownloadURL().then(url => {
           window.open(url);
         });
