@@ -110,7 +110,8 @@ export default class Home extends Vue {
       const roundedTime = time.toLocaleString("en-US", {
         hour: "numeric",
         minute: "numeric",
-        hour12: true
+        hour12: true,
+        timeZone: "America/New_York"
       });
       this.time = time;
       this.confirm =

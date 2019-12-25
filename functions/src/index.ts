@@ -30,7 +30,8 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const cardioSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString("en-US", {
         hour: "numeric",
         minute: "numeric",
-        hour12: true
+        hour12: true,
+        timeZone: "America/New_York"
     }), doc.get('cardio')]);
     cardioSheet.unshift(['Time', 'Count']);
     wb.SheetNames.push("Cardio");
@@ -40,7 +41,8 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const weightsSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString("en-US", {
         hour: "numeric",
         minute: "numeric",
-        hour12: true
+        hour12: true,
+        timeZone: "America/New_York"
     }), doc.get('weights')]);
     weightsSheet.unshift(['Time', 'Count']);
     wb.SheetNames.push("Weights");
