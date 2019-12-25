@@ -57,7 +57,9 @@ export default class Settings extends Vue {
 
   download() {
     this.error = "";
-    if (this.start_date === "" || this.end_date === "") {
+    const startDate = this.start_date;
+    const endDate = this.end_date;
+    if (startDate === "" || endDate === "") {
       this.error = "Please enter valid dates.";
       return;
     }
@@ -67,8 +69,6 @@ export default class Settings extends Vue {
     if (gymId === "helen newman") {
       gymId = "helen_newman";
     }
-    const startDate = this.start_date;
-    const endDate = this.end_date;
     getURL({ id: gymId, startDate, endDate })
       .then(res => {
         this.downloading = false;
