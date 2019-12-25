@@ -27,13 +27,21 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const allGymDocs = await gymCounts.get();
     const wb = XLSX.utils.book_new();
 
-    const cardioSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString(), doc.get('cardio')]);
+    const cardioSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true
+    }), doc.get('cardio')]);
     cardioSheet.unshift(['Time', 'Count']);
     wb.SheetNames.push("Cardio");
     const cardioWS = XLSX.utils.aoa_to_sheet(cardioSheet);
     wb.Sheets["Cardio"] = cardioWS;
 
-    const weightsSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString(), doc.get('weights')]);
+    const weightsSheet = allGymDocs.docs.map((doc: any) => [new Date(doc.get('time').seconds * 1000).toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true
+    }), doc.get('weights')]);
     weightsSheet.unshift(['Time', 'Count']);
     wb.SheetNames.push("Weights");
     const weightsWS = XLSX.utils.aoa_to_sheet(weightsSheet);
@@ -42,6 +50,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
     const storage = admin.storage();
     const bucket = storage.bucket('campus-density-gym');
+    endDate.setDate(endDate.getDate() - 1);
     const fileName = `${gymName}_${startDate.toISOString().split("T")[0]}_${endDate.toISOString().split("T")[0]}.xlsx`
     const file = bucket.file(fileName);
     await file.save(buffer);

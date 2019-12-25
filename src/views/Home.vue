@@ -73,6 +73,7 @@ import Vue from "vue";
   }
 })
 export default class Home extends Vue {
+  time = new Date();
   weights = "";
   cardio = "";
   gym = "";
@@ -95,20 +96,34 @@ export default class Home extends Vue {
 
   submit(active: boolean) {
     this.error = "";
-    var weightsNum = Number.parseInt(this.weights);
-    var cardioNum = Number.parseInt(this.cardio);
-    if (cardioNum > weightsNum || !this.weights) {
+    let weightsNum = Number.parseInt(this.weights);
+    let cardioNum = Number.parseInt(this.cardio);
+    if (!this.weights || !this.cardio) {
       this.error = "Please verify your data.";
       return;
     }
     if (active) {
+      const time = new Date();
+      time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
+      time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
+      time.setMinutes(Math.round(time.getMinutes() / 15) * 15);
+      const roundedTime = time.toLocaleString("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true
+      });
+      this.time = time;
       this.confirm =
-        "Please confirm that there are " +
-        (this.cardio
-          ? this.cardio + " people using cardio machines and "
-          : "") +
+        this.gym +
+        " at " +
+        roundedTime +
+        ": there's " +
+        this.cardio +
+        (this.cardio === "1" ? " person" : " people") +
+        " using cardio machines and " +
         this.weights +
-        " people using weights.";
+        (this.weights === "1" ? " person" : " people") +
+        " using weights.";
     } else {
       this.confirm = "";
     }
@@ -116,7 +131,7 @@ export default class Home extends Vue {
   }
 
   handler() {
-    if (this.weights) {
+    if (this.weights && this.cardio) {
       var db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
       var addDoc = db
@@ -126,7 +141,7 @@ export default class Home extends Vue {
         .add({
           cardio: Number.parseInt(this.cardio),
           weights: Number.parseInt(this.weights),
-          time: new Date()
+          time: this.time
         })
         .then(ref => {
           console.log("Successfully added document!");
@@ -150,7 +165,6 @@ export default class Home extends Vue {
       this.cardio = "";
       this.confirm = "";
       this.active = false;
-      console.log(this.weights);
     } else {
       // window.alert("You didn't enter a value!");
       this.error = "Please enter a value";
