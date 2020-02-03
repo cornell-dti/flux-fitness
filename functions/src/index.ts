@@ -29,6 +29,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const allGymDocs = await gymCounts.get();
     const docs = allGymDocs.docs;
     const wb = XLSX.utils.book_new();
+
     // dates
     const dates = []; // list of Date objects from startDate to endDate
     for (const i = new Date(startDate.getTime()); i < endDate; i.setDate(i.getDate() + 1)) {
@@ -41,17 +42,15 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     }));
 
     // times
-    /** DEBUG
     let [beginHour, beginMin] = [0, 0];
-    let [endHour, endMin] = [0, 0];
+    let [endHour, endMin] = [-1, -1];
     const separateDates = []; // 2d list of data, separated by date
     for (const d of dates) {
-        const refDate = new Date(d.getFullYear(), d.getMonth(), d.getDate()); // UTC
-        const refTime = refDate.getTime();
         const fullDateData = docs.filter((doc: any) => {
-            const recordedDate = doc.get('time').toDate();
+            const recordedDate = doc.get('time').toDate(); // UTC
             recordedDate.setHours(0, 0, 0, 0);
-            refTime === recordedDate.getTime();
+            const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000); // local time
+            d.getTime() === adjustedDate.getTime();
         })
         if (fullDateData.length !== 0) { // record earliest and latest times
             const earliestTime = fullDateData[0].get('time').toDate();
@@ -68,14 +67,16 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
         separateDates.push(fullDateData);
     }
     const times = []; // list of times (in intervals of 15min) from the earliest to latest in a given day
-    for (let [h, m] = [beginHour, beginMin]; h <= endHour && m <= endMin; () => { m += 15; if (m >= 60) { h++; m = 0; } }) {
+    for (let [h, m] = [beginHour, beginMin]; h < endHour || h == endHour && m <= endMin;) {
         times.push([h, m]);
+        m += 15;
+        if (m >= 60) {
+            m = 0;
+            h++;
+        }
     }
-    */
-    const times = [[20, 15], [20, 30], [20, 45], [21, 0]];
-    const separateDates = [docs, docs]
 
-    // cardio
+    // populate data
     const cardioSheet = [];
     const weightsSheet = [];
     for (const [h, m] of times) {
@@ -95,7 +96,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
                 const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000); // local time
                 const recordedHour = adjustedDate.getHours();
                 const recordedMin = adjustedDate.getMinutes();
-                [h, m] === [recordedHour, recordedMin];
+                [h, m] == [recordedHour, recordedMin];
             })
             if (timeData.length !== 0) {
                 const doc = timeData[0]
@@ -111,10 +112,12 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
         weightsSheet.push(weightsRow);
     }
 
+    // write to spreadsheet
     cardioSheet.unshift([''].concat(dateHeader));
     wb.SheetNames.push("Cardio");
     const cardioWS = XLSX.utils.aoa_to_sheet(cardioSheet);
     wb.Sheets["Cardio"] = cardioWS;
+
     weightsSheet.unshift([''].concat(dateHeader));
     wb.SheetNames.push("Weights");
     const weightsWS = XLSX.utils.aoa_to_sheet(weightsSheet);
