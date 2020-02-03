@@ -45,8 +45,16 @@ import axios from "axios";
 export default class Settings extends Vue {
   active = false;
   downloading = false;
-  start_date = "";
-  end_date = "";
+  start_date = new Date(
+    new Date().getTime() -
+      60 * 60 * 24 * 7 * 1000 -
+      new Date().getTimezoneOffset() * 60000
+  )
+    .toISOString()
+    .substring(0, 10);
+  end_date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+    .toISOString()
+    .substring(0, 10);
   error = "";
 
   handler() {
@@ -57,9 +65,14 @@ export default class Settings extends Vue {
 
   download() {
     this.error = "";
-    const startDate = this.start_date;
-    const endDate = this.end_date;
-    if (startDate === "" || endDate === "") {
+    const startDate = new Date(
+      new Date(this.start_date).getTime() +
+        new Date().getTimezoneOffset() * 60000
+    ).getTime();
+    const endDate = new Date(
+      new Date(this.end_date).getTime() + new Date().getTimezoneOffset() * 60000
+    ).getTime();
+    if (this.start_date === "" || this.end_date === "") {
       this.error = "Please enter valid dates.";
       return;
     }
