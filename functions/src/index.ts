@@ -46,13 +46,14 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     let [endHour, endMin] = [-1, -1];
     const separateDates = []; // 2d list of data, separated by date
     for (const d of dates) {
-        const fullDateData = docs.filter((doc: any) => {
-            const recordedDate = doc.get('time').toDate(); // UTC
+        console.log(d);
+        const fullDateData = docs.find((doc: any) => {
+            const recordedDate = new Date(doc.get('time').seconds); // UTC
             recordedDate.setHours(0, 0, 0, 0);
             const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000); // local time
             d.getTime() === adjustedDate.getTime();
         })
-        if (fullDateData.length !== 0) { // record earliest and latest times
+        if (fullDateData) { // record earliest and latest times
             const earliestTime = fullDateData[0].get('time').toDate();
             const earliestHour = earliestTime.getHours();
             const earliestMin = earliestTime.getMinutes();
@@ -63,11 +64,15 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
             const latestMin = latestTime.getMinutes();
             [endHour, endMin] = latestHour > endHour ? [endHour, endMin] :
                 latestMin > endMin ? [latestHour, endMin] : [latestHour, latestMin];
+            separateDates.push(fullDateData);
         }
-        separateDates.push(fullDateData);
+        else {
+            console.log("else branch");
+            separateDates.push([]);
+        }
     }
     const times = []; // list of times (in intervals of 15min) from the earliest to latest in a given day
-    for (let [h, m] = [beginHour, beginMin]; h < endHour || h == endHour && m <= endMin;) {
+    for (let [h, m] = [beginHour, beginMin]; h < endHour || h === endHour && m <= endMin;) {
         times.push([h, m]);
         m += 15;
         if (m >= 60) {
@@ -96,7 +101,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
                 const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000); // local time
                 const recordedHour = adjustedDate.getHours();
                 const recordedMin = adjustedDate.getMinutes();
-                [h, m] == [recordedHour, recordedMin];
+                [h, m] === [recordedHour, recordedMin];
             })
             if (timeData.length !== 0) {
                 const doc = timeData[0]
