@@ -77,62 +77,44 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
 
     // cardio
     const cardioSheet = [];
+    const weightsSheet = [];
     for (const [h, m] of times) {
-        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - new Date().getTimezoneOffset()) * 60000);
-        const row = [hmDate.toLocaleString("en-US", {
+        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - new Date().getTimezoneOffset()) * 60000); // local time
+        const cardioRow = [hmDate.toLocaleString("en-US", {
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true
+        })]; const weightsRow = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
             hour12: true
         })];
         for (const dateData of separateDates) {
             const timeData = dateData.filter((doc: any) => {
-                const recordedDate = doc.get('time').toDate();
-                const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000);
+                const recordedDate = doc.get('time').toDate(); // UTC
+                const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000); // local time
                 const recordedHour = adjustedDate.getHours();
                 const recordedMin = adjustedDate.getMinutes();
                 [h, m] === [recordedHour, recordedMin];
             })
             if (timeData.length !== 0) {
-                row.push(timeData[0].get('cardio'));
+                const doc = timeData[0]
+                cardioRow.push(doc.get('cardio'));
+                weightsRow.push(doc.get('weights'));
             }
             else {
-                row.push('');
+                cardioRow.push('');
+                weightsRow.push('');
             }
         }
-        cardioSheet.push(row);
+        cardioSheet.push(cardioRow);
+        weightsSheet.push(weightsRow);
     }
+
     cardioSheet.unshift([''].concat(dateHeader));
     wb.SheetNames.push("Cardio");
     const cardioWS = XLSX.utils.aoa_to_sheet(cardioSheet);
     wb.Sheets["Cardio"] = cardioWS;
-
-    // weights
-    const weightsSheet = [];
-    for (const [h, m] of times) {
-        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - new Date().getTimezoneOffset()) * 60000);
-        hmDate.setHours(h, m);
-        const row = [hmDate.toLocaleString("en-US", {
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true
-        })];
-        for (const dateData of separateDates) {
-            const timeData = dateData.filter((doc: any) => {
-                const recordedDate = doc.get('time').toDate();
-                const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000);
-                const recordedHour = adjustedDate.getHours();
-                const recordedMin = adjustedDate.getMinutes();
-                [h, m] === [recordedHour, recordedMin];
-            })
-            if (timeData.length !== 0) {
-                row.push(timeData[0].get('weights'));
-            }
-            else {
-                row.push('');
-            }
-        }
-        weightsSheet.push(row);
-    }
     weightsSheet.unshift([''].concat(dateHeader));
     wb.SheetNames.push("Weights");
     const weightsWS = XLSX.utils.aoa_to_sheet(weightsSheet);
