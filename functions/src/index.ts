@@ -22,41 +22,45 @@ exports.getURL = functions.https.onCall((data: { id: string, startDate: string, 
 });
 
 async function getData(gymName: string, startDate: Date, endDate: Date) {
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
+    startDate.setHours(0, 0, 0, 0); // UTC
+    endDate.setHours(0, 0, 0, 0); // UTC
     endDate.setDate(endDate.getDate() + 1);
     const gymCounts = db.collection('gymdata').doc(gymName).collection('counts').where('time', '>=', startDate).where('time', '<', endDate);
     const allGymDocs = await gymCounts.get();
     const docs = allGymDocs.docs;
     const wb = XLSX.utils.book_new();
+    // dates
     const dates = []; // list of Date objects from startDate to endDate
     for (const i = startDate; i < endDate; i.setDate(i.getDate() + 1)) {
-        dates.push(i);
+        dates.push(i); // UTC
     }
-    const dateHeader = dates.map(d => d.toLocaleString("en-US", {
+    const dateHeader = dates.map(d => d.toLocaleString("en-US", { // string to local timezone
         weekday: 'short',
         month: '2-digit',
         day: '2-digit',
         timeZone: "America/New_York"
     }));
-    let [beginHour, beginMin] = [0, 0]
+
+    // times
+    /** DEBUG
+    let [beginHour, beginMin] = [0, 0];
     let [endHour, endMin] = [0, 0];
-    const separateDates = []; // list of lists of data, separated by date
+    const separateDates = []; // 2d list of data, separated by date
     for (const d of dates) {
-        const refDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        const refDate = new Date(d.getFullYear(), d.getMonth(), d.getDate()); // UTC
         const refTime = refDate.getTime();
         const fullDateData = docs.filter((doc: any) => {
             const recordedDate = doc.get('time').toDate();
             recordedDate.setHours(0, 0, 0, 0);
             refTime == recordedDate.getTime();
         })
-        if (fullDateData.length != 0) {
-            const earliestTime = new Date(fullDateData[0].get('time').toDate());
+        if (fullDateData.length !== 0) { // record earliest and latest times
+            const earliestTime = fullDateData[0].get('time').toDate();
             const earliestHour = earliestTime.getHours();
             const earliestMin = earliestTime.getMinutes();
             [beginHour, beginMin] = earliestHour > beginHour ? [beginHour, beginMin] :
                 earliestMin > beginMin ? [earliestHour, beginMin] : [earliestHour, earliestMin];
-            const latestTime = new Date(fullDateData[fullDateData.length - 1].get('time').toDate());
+            const latestTime = fullDateData[fullDateData.length - 1].get('time').toDate();
             const latestHour = latestTime.getHours();
             const latestMin = latestTime.getMinutes();
             [endHour, endMin] = latestHour > endHour ? [endHour, endMin] :
@@ -64,16 +68,18 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
         }
         separateDates.push(fullDateData);
     }
-
     const times = []; // list of times (in intervals of 15min) from the earliest to latest in a given day
     for (let [h, m] = [beginHour, beginMin]; h <= endHour && m <= endMin; () => { m += 15; if (m >= 60) { h++; m = 0; } }) {
         times.push([h, m]);
     }
+    */
+    const times = [[8, 15], [8, 30], [8, 45], [9, 0]];
+    const separateDates = [docs, docs]
 
+    // cardio
     const cardioSheet = [];
     for (const [h, m] of times) {
-        const hmDate = new Date();
-        hmDate.setHours(h, m);
+        const hmDate = new Date(dates[0].getTime() + h * 1000 + m * 60000 - new Date().getTimezoneOffset() * 60000);
         const row = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
@@ -87,7 +93,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
                 const recordedMin = recordedDate.getMinutes();
                 [h, m] == [recordedHour, recordedMin];
             })
-            if (timeData != []) {
+            if (timeData.length !== 0) {
                 row.push(timeData[0].get('cardio'));
             }
             else {
@@ -101,6 +107,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const cardioWS = XLSX.utils.aoa_to_sheet(cardioSheet);
     wb.Sheets["Cardio"] = cardioWS;
 
+    // weights
     const weightsSheet = [];
     for (const [h, m] of times) {
         const hmDate = new Date();
@@ -118,7 +125,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
                 const recordedMin = recordedDate.getMinutes();
                 [h, m] == [recordedHour, recordedMin];
             })
-            if (timeData != []) {
+            if (timeData.length !== 0) {
                 row.push(timeData[0].get('weights'));
             }
             else {
