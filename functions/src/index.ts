@@ -11,17 +11,17 @@ admin.initializeApp({
 const db = admin.firestore();
 const gyms = ['teagle', 'helen_newman', 'noyes', 'appel'];
 
-exports.getURL = functions.https.onCall((data: { id: string, startDate: string, endDate: string }) => {
+exports.getURL = functions.https.onCall((data: { id: string, startDate: string, endDate: string, offset: number }) => {
     if (!data.id || !data.startDate || !data.endDate) {
         throw new functions.https.HttpsError('invalid-argument', 'ID missing!');
     }
     const startDate = new Date(data.startDate);
     const endDate = new Date(data.endDate);
     const id = data.id;
-    return getData(id, startDate, endDate);
+    return getData(id, startDate, endDate, data.offset);
 });
 
-async function getData(gymName: string, startDate: Date, endDate: Date) {
+async function getData(gymName: string, startDate: Date, endDate: Date, offset: number) {
     startDate.setHours(0, 0, 0, 0); // UTC
     endDate.setHours(0, 0, 0, 0); // UTC
     endDate.setDate(endDate.getDate() + 1);
@@ -33,7 +33,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     // dates
     const dates = []; // list of Date objects from startDate to endDate
     for (const i = new Date(startDate.getTime()); i < endDate; i.setDate(i.getDate() + 1)) {
-        dates.push(new Date(i.getTime() - new Date().getTimezoneOffset() * 60000)); // local time
+        dates.push(new Date(i.getTime() - offset * 60000)); // local time
     }
     const dateHeader = dates.map(d => d.toLocaleString("en-US", { // string to local timezone
         weekday: 'short',
@@ -46,13 +46,16 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     let [endHour, endMin] = [-1, -1];
     const separateDates = []; // 2d list of data, separated by date
     for (const d of dates) {
-        console.log(d);
         const fullDateData = docs.find((doc: any) => {
-            const recordedDate = new Date(doc.get('time').seconds); // UTC
-            recordedDate.setHours(0, 0, 0, 0);
-            const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000); // local time
-            d.getTime() === adjustedDate.getTime();
+            const recordedDate = new Date(doc.get('time').toDate().getTime() - offset * 60000); // local time
+            console.log(recordedDate);
+            recordedDate.setHours(0, 0, 0, 0); // UTC
+            console.log(recordedDate);
+            const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
+            console.log(adjustedDate);
+            return d.getTime() === adjustedDate.getTime();
         })
+        console.log(fullDateData);
         if (fullDateData) { // record earliest and latest times
             const earliestTime = fullDateData[0].get('time').toDate();
             const earliestHour = earliestTime.getHours();
@@ -85,7 +88,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const cardioSheet = [];
     const weightsSheet = [];
     for (const [h, m] of times) {
-        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - new Date().getTimezoneOffset()) * 60000); // local time
+        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - offset * 60000)); // local time
         const cardioRow = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
@@ -98,7 +101,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
         for (const dateData of separateDates) {
             const timeData = dateData.filter((doc: any) => {
                 const recordedDate = doc.get('time').toDate(); // UTC
-                const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000); // local time
+                const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
                 const recordedHour = adjustedDate.getHours();
                 const recordedMin = adjustedDate.getMinutes();
                 [h, m] === [recordedHour, recordedMin];
