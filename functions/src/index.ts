@@ -31,14 +31,13 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const wb = XLSX.utils.book_new();
     // dates
     const dates = []; // list of Date objects from startDate to endDate
-    for (const i = startDate; i < endDate; i.setDate(i.getDate() + 1)) {
-        dates.push(i); // UTC
+    for (const i = new Date(startDate.getTime()); i < endDate; i.setDate(i.getDate() + 1)) {
+        dates.push(new Date(i.getTime() - new Date().getTimezoneOffset() * 60000)); // local time
     }
     const dateHeader = dates.map(d => d.toLocaleString("en-US", { // string to local timezone
         weekday: 'short',
         month: '2-digit',
-        day: '2-digit',
-        timeZone: "America/New_York"
+        day: '2-digit'
     }));
 
     // times
@@ -52,7 +51,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
         const fullDateData = docs.filter((doc: any) => {
             const recordedDate = doc.get('time').toDate();
             recordedDate.setHours(0, 0, 0, 0);
-            refTime == recordedDate.getTime();
+            refTime === recordedDate.getTime();
         })
         if (fullDateData.length !== 0) { // record earliest and latest times
             const earliestTime = fullDateData[0].get('time').toDate();
@@ -73,25 +72,25 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
         times.push([h, m]);
     }
     */
-    const times = [[8, 15], [8, 30], [8, 45], [9, 0]];
+    const times = [[20, 15], [20, 30], [20, 45], [21, 0]];
     const separateDates = [docs, docs]
 
     // cardio
     const cardioSheet = [];
     for (const [h, m] of times) {
-        const hmDate = new Date(dates[0].getTime() + h * 1000 + m * 60000 - new Date().getTimezoneOffset() * 60000);
+        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - new Date().getTimezoneOffset()) * 60000);
         const row = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
-            hour12: true,
-            timeZone: "America/New_York"
+            hour12: true
         })];
         for (const dateData of separateDates) {
             const timeData = dateData.filter((doc: any) => {
                 const recordedDate = doc.get('time').toDate();
-                const recordedHour = recordedDate.getHours();
-                const recordedMin = recordedDate.getMinutes();
-                [h, m] == [recordedHour, recordedMin];
+                const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000);
+                const recordedHour = adjustedDate.getHours();
+                const recordedMin = adjustedDate.getMinutes();
+                [h, m] === [recordedHour, recordedMin];
             })
             if (timeData.length !== 0) {
                 row.push(timeData[0].get('cardio'));
@@ -110,20 +109,20 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     // weights
     const weightsSheet = [];
     for (const [h, m] of times) {
-        const hmDate = new Date();
+        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - new Date().getTimezoneOffset()) * 60000);
         hmDate.setHours(h, m);
         const row = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
-            hour12: true,
-            timeZone: "America/New_York"
+            hour12: true
         })];
         for (const dateData of separateDates) {
             const timeData = dateData.filter((doc: any) => {
                 const recordedDate = doc.get('time').toDate();
-                const recordedHour = recordedDate.getHours();
-                const recordedMin = recordedDate.getMinutes();
-                [h, m] == [recordedHour, recordedMin];
+                const adjustedDate = new Date(recordedDate.getTime() - new Date().getTimezoneOffset() * 60000);
+                const recordedHour = adjustedDate.getHours();
+                const recordedMin = adjustedDate.getMinutes();
+                [h, m] === [recordedHour, recordedMin];
             })
             if (timeData.length !== 0) {
                 row.push(timeData[0].get('weights'));
