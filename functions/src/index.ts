@@ -46,17 +46,13 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     let [endHour, endMin] = [-1, -1];
     const separateDates = []; // 2d list of data, separated by date
     for (const d of dates) {
-        const fullDateData = docs.find((doc: any) => {
+        const fullDateData = docs.filter((doc: any) => {
             const recordedDate = new Date(doc.get('time').toDate().getTime() - offset * 60000); // local time
-            console.log(recordedDate);
             recordedDate.setHours(0, 0, 0, 0); // UTC
-            console.log(recordedDate);
             const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
-            console.log(adjustedDate);
             return d.getTime() === adjustedDate.getTime();
         })
-        console.log(fullDateData);
-        if (fullDateData) { // record earliest and latest times
+        if (fullDateData.length !== 0) { // record earliest and latest times
             const earliestTime = fullDateData[0].get('time').toDate();
             const earliestHour = earliestTime.getHours();
             const earliestMin = earliestTime.getMinutes();
@@ -70,7 +66,6 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             separateDates.push(fullDateData);
         }
         else {
-            console.log("else branch");
             separateDates.push([]);
         }
     }
