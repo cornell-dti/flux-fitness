@@ -76,13 +76,14 @@ export default class Settings extends Vue {
       this.error = "Please enter valid dates.";
       return;
     }
+    const offset = new Date().getTimezoneOffset();
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
     let gymId = localStorage.gym.toLowerCase();
     if (gymId === "helen newman") {
       gymId = "helen_newman";
     }
-    getURL({ id: gymId, startDate, endDate })
+    getURL({ id: gymId, startDate, endDate, offset })
       .then(res => {
         this.downloading = false;
         const storage = firebase.storage();
