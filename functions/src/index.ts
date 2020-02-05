@@ -42,48 +42,48 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     }));
 
     // times
-    let [beginHour, beginMin] = [0, 0];
-    let [endHour, endMin] = [-1, -1];
+    /*
+    let begin = 24 * 60;
+    let end = 0;
     const separateDates = []; // 2d list of data, separated by date
     for (const d of dates) {
         const fullDateData = docs.filter((doc: any) => {
-            const recordedDate = new Date(doc.get('time').toDate().getTime() - offset * 60000); // local time
+            const recordedDate = new Date(doc.get('time').toDate().getTime()); // UTC
             recordedDate.setHours(0, 0, 0, 0); // UTC
             const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
             return d.getTime() === adjustedDate.getTime();
         })
         if (fullDateData.length !== 0) { // record earliest and latest times
-            const earliestTime = fullDateData[0].get('time').toDate();
-            const earliestHour = earliestTime.getHours();
-            const earliestMin = earliestTime.getMinutes();
-            [beginHour, beginMin] = earliestHour > beginHour ? [beginHour, beginMin] :
-                earliestMin > beginMin ? [earliestHour, beginMin] : [earliestHour, earliestMin];
-            const latestTime = fullDateData[fullDateData.length - 1].get('time').toDate();
-            const latestHour = latestTime.getHours();
-            const latestMin = latestTime.getMinutes();
-            [endHour, endMin] = latestHour > endHour ? [endHour, endMin] :
-                latestMin > endMin ? [latestHour, endMin] : [latestHour, latestMin];
+            const earliestTime = (fullDateData[0].get('time').toDate().getTime() - d.getTime()) / 60000 + offset;
+            if (earliestTime < begin) {
+                begin = earliestTime;
+            }
+            const latestTime = (fullDateData[fullDateData.length - 1].get('time').toDate().getTime() - d.getTime()) / 60000 + offset;
+            if (latestTime > end) {
+                end = latestTime;
+            }
             separateDates.push(fullDateData);
         }
         else {
             separateDates.push([]);
         }
+    } */
+    let begin = 7 * 60;
+    let end = 23.5 * 60;
+    const separateDates = [];
+    for (const _ of dates) {
+        separateDates.push(docs);
     }
     const times = []; // list of times (in intervals of 15min) from the earliest to latest in a given day
-    for (let [h, m] = [beginHour, beginMin]; h < endHour || h === endHour && m <= endMin;) {
-        times.push([h, m]);
-        m += 15;
-        if (m >= 60) {
-            m = 0;
-            h++;
-        }
+    for (let time = begin; time <= end; time += 15) {
+        times.push(time);
     }
 
     // populate data
     const cardioSheet = [];
     const weightsSheet = [];
-    for (const [h, m] of times) {
-        const hmDate = new Date(dates[0].getTime() + (h * 60 + m - offset * 60000)); // local time
+    for (const time of times) {
+        const hmDate = new Date(dates[0].getTime() + (time + offset) * 60000); // local time
         const cardioRow = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
@@ -99,7 +99,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
                 const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
                 const recordedHour = adjustedDate.getHours();
                 const recordedMin = adjustedDate.getMinutes();
-                [h, m] === [recordedHour, recordedMin];
+                time === recordedHour * 60 + recordedMin;
             })
             if (timeData.length !== 0) {
                 const doc = timeData[0]
