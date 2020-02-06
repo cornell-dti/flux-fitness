@@ -55,17 +55,16 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             return d.getTime() === adjustedDate.getTime();
         })
         if (fullDateData.length !== 0) { // record earliest and latest times
-            const earliestTime = fullDateData[0].get('time').toDate(); // UTC
-            const adjustedEarliest = new Date(earliestTime.getTime() - offset * 60000); // local time
-            const earliestTimeOfDay = adjustedEarliest.getHours() * 60 + adjustedEarliest.getMinutes();
-            if (earliestTimeOfDay < begin) {
-                begin = earliestTimeOfDay;
-            }
-            const latestTime = fullDateData[fullDateData.length - 1].get('time').toDate(); // UTC
-            const adjustedLatest = new Date(latestTime.getTime() - offset * 60000); // local time
-            const latestTimeOfDay = adjustedLatest.getHours() * 60 + adjustedLatest.getMinutes();
-            if (latestTimeOfDay > end) {
-                end = latestTimeOfDay;
+            for (const timeData of fullDateData) {
+                const time = timeData.get('time').toDate(); // UTC
+                const adjustedTime = new Date(time.getTime() - offset * 60000); // local time
+                const timeInMinutes = adjustedTime.getHours() * 60 + adjustedTime.getMinutes();
+                if (timeInMinutes < begin) {
+                    begin = timeInMinutes;
+                }
+                else if (timeInMinutes > end) {
+                    end = timeInMinutes;
+                }
             }
             separateDates.push(fullDateData);
         }
@@ -73,14 +72,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             separateDates.push([]);
         }
     }
-    /*
-    let begin = 7 * 60;
-    let end = 23.5 * 60;
-    const separateDates = [];
-    for (const _ of dates) {
-        separateDates.push(docs);
-    }
-    */
+
     // list of times (in intervals of 15min) from the earliest to latest for the entire time frame
     const times = [];
     for (let time = begin; time <= end; time += 15) {
