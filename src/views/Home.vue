@@ -19,7 +19,6 @@
       <div class="icon-input">
         <i class="material-icons">directions_run</i>
         <input
-          :disabled="active"
           v-model="cardio"
           type="number"
           min="0"
@@ -34,7 +33,6 @@
       <div class="icon-input">
         <i class="material-icons">people</i>
         <input
-          :disabled="active"
           v-model="weights"
           type="number"
           min="0"
@@ -45,16 +43,10 @@
       </div>
     </form>
 
-    <!-- <p>You indicated that {{text}} people are in the gym. Press submit if this is correct.</p> -->
-    <p>{{confirm}}</p>
     <div id="error">{{error}}</div>
     <action-button-group
-      :active="active"
-      :require-confirmation="true"
       action-button-text="SUBMIT"
-      v-on:submitted="submit(true)"
-      v-on:cancel="submit(false)"
-      v-on:confirm="handler()"
+      v-on:submitted="submit()"
     />
   </app-card>
 </template>
@@ -65,6 +57,9 @@ import Component from "vue-class-component";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import AppCard from "@/components/AppCard.vue";
 import Vue from "vue";
+import VueSimpleAlert from "vue-simple-alert";
+
+Vue.use(VueSimpleAlert);
 
 @Component({
   components: {
@@ -78,8 +73,7 @@ export default class Home extends Vue {
   gym = "";
   confirm = "";
   error = "";
-  active: boolean = false;
-
+  
   // creates persistence across refresh
   mounted() {
     if (localStorage.gym) {
@@ -93,7 +87,7 @@ export default class Home extends Vue {
     });
   }
 
-  submit(active: boolean) {
+  submit() {
     this.error = "";
     var weightsNum = Number.parseInt(this.weights);
     var cardioNum = Number.parseInt(this.cardio);
@@ -101,18 +95,20 @@ export default class Home extends Vue {
       this.error = "Please verify your data.";
       return;
     }
-    if (active) {
-      this.confirm =
+    this.confirm =
         "Please confirm that there are " +
         (this.cardio
           ? this.cardio + " people using cardio machines and "
           : "") +
         this.weights +
         " people using weights.";
-    } else {
-      this.confirm = "";
-    }
-    this.active = active;
+      this.$confirm(this.confirm, "Confirm").then(() => {
+        console.log("Data input confirmed!");
+        this.handler();
+      })
+      .catch(() => {
+        console.log("Data input not confirmed.");
+      });
   }
 
   handler() {
@@ -133,7 +129,6 @@ export default class Home extends Vue {
           this.confirm = "";
           this.weights = "";
           this.cardio = "";
-          this.active = false;
           this.$notify({
             group: "default_group",
             type: "success",
@@ -149,7 +144,6 @@ export default class Home extends Vue {
       this.weights = "";
       this.cardio = "";
       this.confirm = "";
-      this.active = false;
       console.log(this.weights);
     } else {
       // window.alert("You didn't enter a value!");
