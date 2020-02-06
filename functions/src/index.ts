@@ -25,6 +25,8 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     startDate.setHours(0, 0, 0, 0); // UTC
     endDate.setHours(0, 0, 0, 0); // UTC
     endDate.setDate(endDate.getDate() + 1);
+
+    // retrieve data
     const gymCounts = db.collection('gymdata').doc(gymName).collection('counts').where('time', '>=', startDate).where('time', '<', endDate);
     const allGymDocs = await gymCounts.get();
     const docs = allGymDocs.docs;
@@ -53,13 +55,17 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             return d.getTime() === adjustedDate.getTime();
         })
         if (fullDateData.length !== 0) { // record earliest and latest times
-            const earliestTime = (fullDateData[0].get('time').toDate().getTime() - d.getTime()) / 60000 + offset;
-            if (earliestTime < begin) {
-                begin = earliestTime;
+            const earliestTime = fullDateData[0].get('time').toDate(); // UTC
+            const adjustedEarliest = new Date(earliestTime.getTime() - offset * 60000); // local time
+            const earliestTimeOfDay = adjustedEarliest.getHours() * 60 + adjustedEarliest.getMinutes();
+            if (earliestTimeOfDay < begin) {
+                begin = earliestTimeOfDay;
             }
-            const latestTime = (fullDateData[fullDateData.length - 1].get('time').toDate().getTime() - d.getTime()) / 60000 + offset;
-            if (latestTime > end) {
-                end = latestTime;
+            const latestTime = fullDateData[fullDateData.length - 1].get('time').toDate(); // UTC
+            const adjustedLatest = new Date(latestTime.getTime() - offset * 60000); // local time
+            const latestTimeOfDay = adjustedLatest.getHours() * 60 + adjustedLatest.getMinutes();
+            if (latestTimeOfDay > end) {
+                end = latestTimeOfDay;
             }
             separateDates.push(fullDateData);
         }
@@ -75,7 +81,8 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
         separateDates.push(docs);
     }
     */
-    const times = []; // list of times (in intervals of 15min) from the earliest to latest in a given day
+    // list of times (in intervals of 15min) from the earliest to latest for the entire time frame
+    const times = [];
     for (let time = begin; time <= end; time += 15) {
         times.push(time);
     }
@@ -98,12 +105,11 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             const timeData = dateData.filter((doc: any) => {
                 const recordedDate = doc.get('time').toDate(); // UTC
                 const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
-                const recordedHour = adjustedDate.getHours();
-                const recordedMin = adjustedDate.getMinutes();
-                return time === recordedHour * 60 + recordedMin;
+                return time === adjustedDate.getHours() * 60 + adjustedDate.getMinutes();
             })
-            if (timeData.length !== 0) {
-                const doc = timeData[0];
+            const len = timeData.length;
+            if (len !== 0) {
+                const doc = timeData[len - 1]; // latest data entry
                 cardioRow.push(doc.get('cardio'));
                 weightsRow.push(doc.get('weights'));
             }
