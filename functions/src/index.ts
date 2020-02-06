@@ -42,7 +42,6 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     }));
 
     // times
-    /*
     let begin = 24 * 60;
     let end = 0;
     const separateDates = []; // 2d list of data, separated by date
@@ -67,13 +66,15 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
         else {
             separateDates.push([]);
         }
-    } */
+    }
+    /*
     let begin = 7 * 60;
     let end = 23.5 * 60;
     const separateDates = [];
     for (const _ of dates) {
         separateDates.push(docs);
     }
+    */
     const times = []; // list of times (in intervals of 15min) from the earliest to latest in a given day
     for (let time = begin; time <= end; time += 15) {
         times.push(time);
@@ -99,10 +100,10 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
                 const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
                 const recordedHour = adjustedDate.getHours();
                 const recordedMin = adjustedDate.getMinutes();
-                time === recordedHour * 60 + recordedMin;
+                return time === recordedHour * 60 + recordedMin;
             })
             if (timeData.length !== 0) {
-                const doc = timeData[0]
+                const doc = timeData[0];
                 cardioRow.push(doc.get('cardio'));
                 weightsRow.push(doc.get('weights'));
             }
