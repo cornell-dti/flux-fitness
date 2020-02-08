@@ -72,26 +72,24 @@ export default class Login extends Vue {
   gym = "";
   error = "";
   handler() {
-    console.log("processing username and password");
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    if (this.gym != "") {
-      firebase
-        .auth()
-        .signInWithEmailAndPassword(this.username, this.password)
-        .then(() => {
-          console.log("success");
-          localStorage.gym = this.gym;
-          this.$router.push({
-            name: "home"
-          });
-        })
-        .catch(error => {
-          console.log(`Error: ${error.code} with message: ${error.message}`);
-          this.error = "Please enter a valid login.";
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(this.username, this.password)
+      .then(() => {
+        if (this.gym === "") {
+          this.error = "Please select a gym.";
+          return;
+        }
+        localStorage.gym = this.gym;
+        this.$router.push({
+          name: "home"
         });
-    } else {
-      this.error = "Please select a gym.";
-    }
+      })
+      .catch(error => {
+        this.error = "Your username or password is incorrect.";
+        return;
+      });
   }
 }
 </script>
@@ -117,7 +115,7 @@ h1 {
 }
 
 .select-arrow {
-  margin-left: -15px;
+  margin-left: -20px;
 }
 
 #error {

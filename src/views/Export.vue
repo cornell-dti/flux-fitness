@@ -7,9 +7,9 @@
     <form class="date-form">
       <div class="date-select">
         <i class="material-icons">date_range</i>
-        <input class="date-input" v-model="start_date" type="date" required="required" />
+        <input class="date-input" v-model="start_date" type="date" required />
         &mdash;
-        <input class="date-input" v-model="end_date" type="date" required="required" />
+        <input class="date-input" v-model="end_date" type="date" required />
       </div>
     </form>
     <div class="text">
@@ -118,6 +118,7 @@ export default class Settings extends Vue {
 
 .date-input {
   border: solid 1px black;
+  border-radius: 5px;
   margin-left: 0px;
   max-width: 30%;
 }
@@ -125,7 +126,9 @@ export default class Settings extends Vue {
 .date-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   display: none;
+  margin: 0px;
 }
+
 .date-input::-webkit-calendar-picker-indicator {
   opacity: 100;
   margin-left: -15px;
