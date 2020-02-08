@@ -6,13 +6,6 @@
       id="submit"
       v-on:click="$emit('submitted')"
     >{{ actionButtonText }}</button>
-    <button :hidden="!active" class="action-button" id="cancel" v-on:click="$emit('cancel')">CANCEL</button>
-    <button
-      :hidden="!active"
-      class="action-button confirm"
-      id="confirm"
-      v-on:click="$emit('confirm')"
-    >CONFIRM</button>
   </div>
 </template>
 
@@ -61,10 +54,6 @@ export default class ActionButtonGroup extends Vue {
 }
 .action-button:hover {
   background-color: $buttonHover;
-}
-
-.confirm {
-  color: $confirmAccent;
 }
 
 #cancel {
