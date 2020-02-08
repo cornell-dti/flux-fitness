@@ -7,9 +7,9 @@
     <form class="date-form">
       <div class="date-select">
         <i class="material-icons">date_range</i>
-        <input class="date-input" v-model="start_date" type="date" />
+        <input class="date-input" v-model="start_date" type="date" required="required" />
         &mdash;
-        <input class="date-input" v-model="end_date" type="date" />
+        <input class="date-input" v-model="end_date" type="date" required="required" />
       </div>
     </form>
     <div class="text">
@@ -72,7 +72,10 @@ export default class Settings extends Vue {
     const endDate = new Date(
       new Date(this.end_date).getTime() + new Date().getTimezoneOffset() * 60000
     ).getTime();
-    if (this.start_date === "" || this.end_date === "") {
+    if (this.start_date > this.end_date) {
+      this.error = "Please enter a valid date range.";
+      return;
+    } else if (this.start_date === "" || this.end_date === "") {
       this.error = "Please enter valid dates.";
       return;
     }
@@ -106,10 +109,6 @@ export default class Settings extends Vue {
   padding-right: 30px;
 }
 
-.date-select {
-  white-space: nowrap;
-}
-
 #error {
   padding-top: 15px;
   text-align: left;
@@ -118,14 +117,25 @@ export default class Settings extends Vue {
 }
 
 .date-input {
-  width: 120px;
-  padding-right: 0;
+  border: solid 1px black;
+  margin-left: 0px;
+  max-width: 30%;
+}
+
+.date-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+.date-input::-webkit-calendar-picker-indicator {
+  opacity: 100;
+  margin-left: -15px;
 }
 
 .material-icons {
   color: black;
   vertical-align: middle;
   font-size: 20px;
+  margin-right: 16px;
 }
 
 .button-boxed {
