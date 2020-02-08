@@ -101,7 +101,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             })
             const len = timeData.length;
             if (len !== 0) {
-                const doc = timeData[len - 1]; // latest data entry
+                const doc = timeData[0]; // latest data entry
                 cardioRow.push(doc.get('cardio'));
                 weightsRow.push(doc.get('weights'));
             }
