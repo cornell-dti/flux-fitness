@@ -18,13 +18,7 @@
       </p>
       <div class="icon-input">
         <i class="material-icons">directions_run</i>
-        <input
-          v-model="cardio"
-          type="number"
-          min="0"
-          step="1"
-          placeholder="using cardio machines"
-        />
+        <input v-model="cardio" type="number" min="0" step="1" placeholder="using cardio machines" />
       </div>
       <p>
         Please indicate how many people are currently
@@ -44,10 +38,7 @@
     </form>
 
     <div id="error">{{error}}</div>
-    <action-button-group
-      action-button-text="SUBMIT"
-      v-on:submitted="submit()"
-    />
+    <action-button-group action-button-text="SUBMIT" v-on:submitted="submit()" />
   </app-card>
 </template>
 
@@ -68,12 +59,13 @@ Vue.use(VueSimpleAlert);
   }
 })
 export default class Home extends Vue {
+  time = new Date();
   weights = "";
   cardio = "";
   gym = "";
   confirm = "";
   error = "";
-  
+
   // creates persistence across refresh
   mounted() {
     if (localStorage.gym) {
@@ -89,20 +81,30 @@ export default class Home extends Vue {
 
   submit() {
     this.error = "";
-    var weightsNum = Number.parseInt(this.weights);
-    var cardioNum = Number.parseInt(this.cardio);
-    if (cardioNum > weightsNum || !this.weights) {
+    let weightsNum = Number.parseInt(this.weights);
+    let cardioNum = Number.parseInt(this.cardio);
+    let notInt =
+      weightsNum !== Number.parseFloat(this.weights) ||
+      cardioNum !== Number.parseFloat(this.cardio);
+    if (!this.weights || !this.cardio) {
       this.error = "Please verify your data.";
       return;
     }
+    if (weightsNum < 0 || cardioNum < 0) {
+      this.error = "Cannot have negative numbers.";
+      return;
+    }
+    if (notInt) {
+      this.error = "Numbers must be integers.";
+      return;
+    }
     this.confirm =
-        "Please confirm that there are " +
-        (this.cardio
-          ? this.cardio + " people using cardio machines and "
-          : "") +
-        this.weights +
-        " people using weights.";
-      this.$confirm(this.confirm, "Confirm").then(() => {
+      "Please confirm that there are " +
+      (this.cardio ? this.cardio + " people using cardio machines and " : "") +
+      this.weights +
+      " people using weights.";
+    this.$confirm(this.confirm, "Confirm")
+      .then(() => {
         console.log("Data input confirmed!");
         this.handler();
       })
@@ -112,7 +114,7 @@ export default class Home extends Vue {
   }
 
   handler() {
-    if (this.weights) {
+    if (this.weights && this.cardio) {
       var db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
       var addDoc = db
@@ -122,7 +124,7 @@ export default class Home extends Vue {
         .add({
           cardio: Number.parseInt(this.cardio),
           weights: Number.parseInt(this.weights),
-          time: new Date()
+          time: this.time
         })
         .then(ref => {
           console.log("Successfully added document!");

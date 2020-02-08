@@ -45,8 +45,16 @@ import axios from "axios";
 export default class Settings extends Vue {
   active = false;
   downloading = false;
-  start_date = "";
-  end_date = "";
+  start_date = new Date(
+    new Date().getTime() -
+      60 * 60 * 24 * 7 * 1000 -
+      new Date().getTimezoneOffset() * 60000
+  )
+    .toISOString()
+    .substring(0, 10);
+  end_date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+    .toISOString()
+    .substring(0, 10);
   error = "";
 
   handler() {
@@ -57,21 +65,29 @@ export default class Settings extends Vue {
 
   download() {
     this.error = "";
+    const startDate = new Date(
+      new Date(this.start_date).getTime() +
+        new Date().getTimezoneOffset() * 60000
+    ).getTime();
+    const endDate = new Date(
+      new Date(this.end_date).getTime() + new Date().getTimezoneOffset() * 60000
+    ).getTime();
     if (this.start_date === "" || this.end_date === "") {
       this.error = "Please enter valid dates.";
       return;
     }
+    const offset = new Date().getTimezoneOffset();
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
     let gymId = localStorage.gym.toLowerCase();
     if (gymId === "helen newman") {
       gymId = "helen_newman";
     }
-    getURL({ id: gymId, startDate: this.start_date, endDate: this.end_date })
+    getURL({ id: gymId, startDate, endDate, offset })
       .then(res => {
         this.downloading = false;
         const storage = firebase.storage();
-        const gsref = storage.refFromURL(`gs:/${res.data}/${gymId}.xlsx/`);
+        const gsref = storage.refFromURL(`gs:/${res.data}`);
         gsref.getDownloadURL().then(url => {
           window.open(url);
         });
