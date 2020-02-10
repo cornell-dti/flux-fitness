@@ -37,7 +37,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     for (const i = new Date(startDate.getTime()); i < endDate; i.setDate(i.getDate() + 1)) {
         dates.push(new Date(i.getTime() - offset * 60000)); // local time
     }
-    const dateHeader = dates.map(d => d.toLocaleString("en-US", { // string to local timezone
+    const dateHeader = dates.map(d => d.toLocaleString("en-US", { // local time string
         weekday: 'short',
         month: '2-digit',
         day: '2-digit'
@@ -101,7 +101,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             })
             const len = timeData.length;
             if (len !== 0) {
-                const doc = timeData[len - 1]; // latest data entry
+                const doc = timeData[0]; // latest data entry
                 cardioRow.push(doc.get('cardio'));
                 weightsRow.push(doc.get('weights'));
             }

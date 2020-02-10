@@ -9,6 +9,7 @@
         <i class="material-icons nav-icon">exit_to_app</i>
         <div class="hint">Log Out</div>
       </button>
+          <a id="questions" href="https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"> Have questions? </a> 
     </div>
     <h1>{{gym}}</h1>
     <form id="forms">
@@ -18,7 +19,14 @@
       </p>
       <div class="icon-input">
         <i class="material-icons">directions_run</i>
-        <input v-model="cardio" type="number" min="0" step="1" placeholder="using cardio machines" />
+        <input
+          v-model="cardio"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="using cardio machines"
+          class="data-input"
+        />
       </div>
       <p>
         Please indicate how many people are currently
@@ -33,6 +41,7 @@
           step="1"
           required
           placeholder="using weights"
+          class="data-input"
         />
       </div>
     </form>
@@ -63,6 +72,24 @@ export default class Home extends Vue {
   weights = "";
   cardio = "";
   gym = "";
+  limits : any = {
+          'Teagle': {
+            cardio: 42,
+            other: 86
+          },
+          'Noyes': {
+            cardio: 32,
+            other: 40
+          },
+          'Helen Newman': {
+            cardio: 35,
+            other: 51
+          },
+          'Appel': {
+            cardio: 20,
+            other: 40
+          }
+        };
   confirm = "";
   error = "";
 
@@ -91,21 +118,46 @@ export default class Home extends Vue {
       return;
     }
     if (weightsNum < 0 || cardioNum < 0) {
-      this.error = "Cannot have negative numbers.";
+      this.error = "Numbers must be nonnegative.";
       return;
     }
     if (notInt) {
       this.error = "Numbers must be integers.";
       return;
     }
+    let gymLimits = this.limits[this.gym];
+    if (cardioNum > gymLimits.cardio) {
+      this.error = `${this.gym} does not have space for ${cardioNum} cardio.`
+      return;
+    }
+    if (weightsNum > gymLimits.other) {
+      this.error = `${this.gym} does not have space for ${weightsNum} weights.`
+      return;
+    }
+    const time = new Date();
+    time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
+    time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
+    time.setMinutes(Math.round(time.getMinutes() / 15) * 15);
+    const roundedTime = time.toLocaleString("en-US", {
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true,
+      timeZone: "America/New_York"
+    });
+    this.time = time;
     this.confirm =
-      "Please confirm that there are " +
-      (this.cardio ? this.cardio + " people using cardio machines and " : "") +
+      this.gym +
+      " at " +
+      roundedTime +
+      ": there's " +
+      this.cardio +
+      (this.cardio === "1" ? " person" : " people") +
+      " using cardio machines and " +
       this.weights +
-      " people using weights.";
+      (this.weights === "1" ? " person" : " people") +
+      " using weights.";
     this.$confirm(this.confirm, "Confirm")
       .then(() => {
-        console.log("Data input confirmed!");
         this.handler();
       })
       .catch(() => {
@@ -141,15 +193,16 @@ export default class Home extends Vue {
         })
         .catch(err => {
           console.log("There was an error in adding the document.");
-          this.error = "There was an error in submitting";
+          this.error = "There was an error in adding the document.";
+          return;
         });
       this.weights = "";
       this.cardio = "";
       this.confirm = "";
       console.log(this.weights);
     } else {
-      // window.alert("You didn't enter a value!");
       this.error = "Please enter a value";
+      return;
     }
   }
 
@@ -159,7 +212,7 @@ export default class Home extends Vue {
       .auth()
       .signOut()
       .then(() => {
-        console.log("signed out");
+        console.log("Logged out.");
         this.$router.push({ name: "login" });
       });
   }
@@ -185,9 +238,20 @@ form {
   vertical-align: middle;
 }
 
+.data-input {
+  margin-left: 10px;
+}
+
+#questions {
+  margin-left: 145px;
+  margin-top: 30px; 
+  text-decoration: none;
+}
+
 .nav-group {
-  margin-right: 20px;
-  text-align: right;
+  margin-left: -10px;
+  margin-right: 0px;
+  text-align: left;
 }
 
 .nav-button {
