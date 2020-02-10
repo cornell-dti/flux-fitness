@@ -37,7 +37,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     for (const i = new Date(startDate.getTime()); i < endDate; i.setDate(i.getDate() + 1)) {
         dates.push(new Date(i.getTime() - offset * 60000)); // local time
     }
-    const dateHeader = dates.map(d => d.toLocaleString("en-US", { // string to local timezone
+    const dateHeader = dates.map(d => d.toLocaleString("en-US", { // local time string
         weekday: 'short',
         month: '2-digit',
         day: '2-digit'
