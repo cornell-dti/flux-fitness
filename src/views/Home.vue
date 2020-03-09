@@ -9,7 +9,10 @@
         <i class="material-icons nav-icon">exit_to_app</i>
         <div class="hint">Log Out</div>
       </button>
-          <a id="questions" href="https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"> Have questions? </a> 
+      <a
+        id="questions"
+        href="https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"
+      >Have questions?</a>
     </div>
     <h1>{{gym}}</h1>
     <form id="forms">
@@ -72,24 +75,24 @@ export default class Home extends Vue {
   weights = "";
   cardio = "";
   gym = "";
-  limits : any = {
-          'Teagle': {
-            cardio: 42,
-            other: 86
-          },
-          'Noyes': {
-            cardio: 32,
-            other: 40
-          },
-          'Helen Newman': {
-            cardio: 35,
-            other: 51
-          },
-          'Appel': {
-            cardio: 20,
-            other: 40
-          }
-        };
+  limits: any = {
+    Teagle: {
+      cardio: 42,
+      other: 86
+    },
+    Noyes: {
+      cardio: 32,
+      other: 40
+    },
+    "Helen Newman": {
+      cardio: 35,
+      other: 51
+    },
+    Appel: {
+      cardio: 20,
+      other: 40
+    }
+  };
   confirm = "";
   error = "";
 
@@ -127,18 +130,15 @@ export default class Home extends Vue {
     }
     let gymLimits = this.limits[this.gym];
     if (cardioNum > gymLimits.cardio) {
-      this.error = `${this.gym} does not have space for ${cardioNum} cardio.`
+      this.error = `${this.gym} does not have space for ${cardioNum} cardio.`;
       return;
     }
     if (weightsNum > gymLimits.other) {
-      this.error = `${this.gym} does not have space for ${weightsNum} weights.`
+      this.error = `${this.gym} does not have space for ${weightsNum} weights.`;
       return;
     }
     const time = new Date();
-    time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
-    time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
-    time.setMinutes(Math.round(time.getMinutes() / 15) * 15);
-    const roundedTime = time.toLocaleString("en-US", {
+    const timeString = time.toLocaleString("en-US", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
@@ -148,7 +148,7 @@ export default class Home extends Vue {
     this.confirm =
       this.gym +
       " at " +
-      roundedTime +
+      timeString +
       ": there's " +
       this.cardio +
       (this.cardio === "1" ? " person" : " people") +
@@ -244,7 +244,7 @@ form {
 
 #questions {
   margin-left: 145px;
-  margin-top: 30px; 
+  margin-top: 30px;
   text-decoration: none;
 }
 
