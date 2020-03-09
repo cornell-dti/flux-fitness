@@ -11,7 +11,7 @@
     "axios": "^0.18.1",
     "blob": "0.0.5",
     "core-js": "^2.6.5",
-    "firebase": "^7.8.0",
+    "firebase": "^7.10.0",
     "vue": "^2.6.6",
     "vue-class-component": "^7.0.2",
     "vue-notification": "^1.3.16",
