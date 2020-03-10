@@ -12,19 +12,24 @@ const db = admin.firestore();
 const gyms = ['teagle', 'helen_newman', 'noyes', 'appel'];
 const round30 = true;
 
-exports.getURL = functions.https.onCall((data: { id: string, startDate: string, endDate: string }) => {
-    if (!data.id || !data.startDate || !data.endDate) {
+exports.getURL = functions.https.onCall((data: { id: string, startDate: string, endDate: string, offset: number }) => {
+    if (!data.id || !data.startDate || !data.endDate || !data.offset) {
         throw new functions.https.HttpsError('invalid-argument', 'ID missing!');
     }
     const id = data.id;
-    const startDate = new Date(new Date(data.startDate).getTime() + new Date(data.startDate).getTimezoneOffset() * 60000);
-    const endDate = new Date(new Date(data.endDate).getTime() + new Date(data.endDate).getTimezoneOffset() * 60000);
-    return getData(id, startDate, endDate);
+    const startDate = new Date(new Date(data.startDate));
+    const endDate = new Date(new Date(data.endDate));
+    const offset = data.offset;
+    return getData(id, startDate, endDate, offset);
 });
 
-async function getData(gymName: string, startDate: Date, endDate: Date) {
+async function getData(gymName: string, startDate: Date, endDate: Date, offset: number) {
+    console.log(startDate);
+    console.log(endDate);
     startDate.setHours(0, 0, 0, 0); // UTC
     endDate.setHours(0, 0, 0, 0); // UTC
+    console.log(startDate);
+    console.log(endDate);
     endDate.setDate(endDate.getDate() + 1);
 
     // retrieve data
@@ -36,7 +41,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     // dates
     const dates = []; // list of Date objects from startDate to endDate
     for (const i = new Date(startDate.getTime()); i < endDate; i.setDate(i.getDate() + 1)) {
-        dates.push(new Date(i.getTime() - i.getTimezoneOffset() * 60000)); // local time
+        dates.push(new Date(i.getTime() - offset * 60000)); // local time
     }
     const dateHeader = dates.map(d => d.toLocaleString("en-US", { // local time string
         weekday: 'short',
@@ -52,14 +57,14 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
         const fullDateData = docs.filter((doc: any) => {
             const recordedDate = new Date(doc.get('time').toDate().getTime()); // UTC
             recordedDate.setHours(0, 0, 0, 0); // UTC
-            const adjustedDate = new Date(recordedDate.getTime() - recordedDate.getTimezoneOffset() * 60000); // local time
+            const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
             return d.getTime() === adjustedDate.getTime();
         })
         if (fullDateData.length !== 0) { // record earliest and latest times
             for (const timeData of fullDateData) {
                 let time = timeData.get('time').toDate();
                 time = await (round30 ? roundTime30(time) : roundTime(time)); // UTC
-                const adjustedTime = new Date(time.getTime() - time.getTimezoneOffset() * 60000); // local time
+                const adjustedTime = new Date(time.getTime() - offset * 60000); // local time
                 const timeInMinutes = adjustedTime.getHours() * 60 + adjustedTime.getMinutes();
                 if (timeInMinutes < begin) {
                     begin = timeInMinutes;
@@ -85,7 +90,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
     const cardioSheet = [];
     const weightsSheet = [];
     for (const time of times) {
-        const hmDate = new Date(dates[0].getTime() + (time + dates[0].getTimezoneOffset()) * 60000); // local time
+        const hmDate = new Date(dates[0].getTime() + (time + offset) * 60000); // local time
         const cardioRow = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
@@ -99,7 +104,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date) {
             const timeData = await dateData.filter((doc: any) => {
                 let recordedDate = doc.get('time').toDate(); // UTC
                 recordedDate = round30 ? roundTime30(recordedDate) : roundTime(recordedDate); // UTC
-                const adjustedDate = new Date(recordedDate.getTime() - recordedDate.getTimezoneOffset() * 60000); // local time
+                const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
                 return time === adjustedDate.getHours() * 60 + adjustedDate.getMinutes();
             })
             if (timeData.length !== 0) {

@@ -46,10 +46,14 @@ export default class Settings extends Vue {
   active = false;
   downloading = false;
   offset = new Date().getTimezoneOffset();
-  start_date = new Date(new Date().getTime() - 60 * 60 * 24 * 7 * 1000)
+  end_date = new Date(new Date().getTime() - this.offset * 60000)
     .toISOString()
     .substring(0, 10);
-  end_date = new Date(new Date().getTime()).toISOString().substring(0, 10);
+  start_date = new Date(
+    new Date(this.end_date).getTime() - 60 * 60 * 24 * 7 * 1000
+  )
+    .toISOString()
+    .substring(0, 10);
   error = "";
 
   handler() {
