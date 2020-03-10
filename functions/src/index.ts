@@ -24,12 +24,6 @@ exports.getURL = functions.https.onCall((data: { id: string, startDate: string, 
 });
 
 async function getData(gymName: string, startDate: Date, endDate: Date, offset: number) {
-    console.log(startDate);
-    console.log(endDate);
-    startDate.setHours(0, 0, 0, 0); // UTC
-    endDate.setHours(0, 0, 0, 0); // UTC
-    console.log(startDate);
-    console.log(endDate);
     endDate.setDate(endDate.getDate() + 1);
 
     // retrieve data
@@ -40,14 +34,17 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
 
     // dates
     const dates = []; // list of Date objects from startDate to endDate
-    for (const i = new Date(startDate.getTime()); i < endDate; i.setDate(i.getDate() + 1)) {
-        dates.push(new Date(i.getTime() - offset * 60000)); // local time
+    for (const i = new Date(startDate); i < endDate; i.setTime(i.getTime() + 24 * 60 * 60 * 1000)) {
+        dates.push(new Date(i)); // UTC
     }
-    const dateHeader = dates.map(d => d.toLocaleString("en-US", { // local time string
-        weekday: 'short',
-        month: '2-digit',
-        day: '2-digit'
-    }));
+    const dateHeader = dates.map(d => {
+        return d.toLocaleString("en-US", { // UTC date string
+            weekday: 'short',
+            month: '2-digit',
+            day: '2-digit',
+            timeZone: 'UTC'
+        });
+    });
 
     // times
     let begin = 24 * 60;
@@ -56,20 +53,20 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     for (const d of dates) {
         const fullDateData = docs.filter((doc: any) => {
             const recordedDate = new Date(doc.get('time').toDate().getTime()); // UTC
-            recordedDate.setHours(0, 0, 0, 0); // UTC
-            const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
-            return d.getTime() === adjustedDate.getTime();
+            const referenceDate = new Date(d)
+            recordedDate.setHours(0, 0, 0, 0);
+            referenceDate.setHours(24, 0, 0, 0);
+            return referenceDate.getTime() === recordedDate.getTime();
         })
         if (fullDateData.length !== 0) { // record earliest and latest times
             for (const timeData of fullDateData) {
                 let time = timeData.get('time').toDate();
-                time = await (round30 ? roundTime30(time) : roundTime(time)); // UTC
-                const adjustedTime = new Date(time.getTime() - offset * 60000); // local time
-                const timeInMinutes = adjustedTime.getHours() * 60 + adjustedTime.getMinutes();
-                if (timeInMinutes < begin) {
+                time = round30 ? roundTime30(time) : roundTime(time); // UTC
+                const timeInMinutes = time.getHours() * 60 + time.getMinutes();
+                if (timeInMinutes + offset < begin) {
                     begin = timeInMinutes;
                 }
-                else if (timeInMinutes > end) {
+                else if (timeInMinutes + offset > end) {
                     end = timeInMinutes;
                 }
             }
@@ -90,25 +87,27 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     const cardioSheet = [];
     const weightsSheet = [];
     for (const time of times) {
-        const hmDate = new Date(dates[0].getTime() + (time + offset) * 60000); // local time
+        const hmDate = new Date(dates[0].getTime() + time * 60000);
         const cardioRow = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
-            hour12: true
+            hour12: true,
+            timeZone: 'UTC'
         })]; const weightsRow = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
-            hour12: true
+            hour12: true,
+            timeZone: 'UTC'
         })];
         for (const dateData of separateDates) {
-            const timeData = await dateData.filter((doc: any) => {
-                let recordedDate = doc.get('time').toDate(); // UTC
-                recordedDate = round30 ? roundTime30(recordedDate) : roundTime(recordedDate); // UTC
-                const adjustedDate = new Date(recordedDate.getTime() - offset * 60000); // local time
-                return time === adjustedDate.getHours() * 60 + adjustedDate.getMinutes();
+            const timeData = dateData.filter((doc: any) => {
+                const recordedTime = doc.get('time').toDate(); // UTC
+                const roundedTime = round30 ? roundTime30(recordedTime) : roundTime(recordedTime); // UTC
+                const timeInMinutes = roundedTime.getHours() * 60 + roundedTime.getMinutes();
+                return time === timeInMinutes;
             })
             if (timeData.length !== 0) {
-                const doc = timeData[0]; // latest data entry
+                const doc = timeData[timeData.length - 1]; // latest data entry
                 cardioRow.push(doc.get('cardio'));
                 weightsRow.push(doc.get('weights'));
             }
@@ -142,7 +141,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     return `/campus-density-gym/${fileName}`;
 };
 
-async function roundTime(date: Date) {
+function roundTime(date: Date) {
     const time = date;
     time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
     time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
@@ -150,7 +149,7 @@ async function roundTime(date: Date) {
     return time;
 }
 
-async function roundTime30(date: Date) {
+function roundTime30(date: Date) {
     const time = date;
     time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
     time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
