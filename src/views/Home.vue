@@ -159,13 +159,9 @@ export default class Home extends Vue {
       this.weights +
       (this.weights === "1" ? " person" : " people") +
       " using weights.";
-    this.$confirm(this.confirm, "Confirm")
-      .then(() => {
-        this.handler();
-      })
-      .catch(() => {
-        console.log("Data input not confirmed.");
-      });
+    this.$confirm(this.confirm, "Confirm").then(() => {
+      this.handler();
+    });
   }
 
   handler() {
@@ -181,7 +177,6 @@ export default class Home extends Vue {
           time: this.time
         })
         .then(() => {
-          console.log("Successfully added document!");
           this.confirm = "";
           this.weights = "";
           this.cardio = "";
@@ -194,14 +189,12 @@ export default class Home extends Vue {
           });
         })
         .catch(() => {
-          console.log("There was an error in adding the document.");
           this.error = "There was an error in adding the document.";
           return;
         });
       this.weights = "";
       this.cardio = "";
       this.confirm = "";
-      console.log(this.weights);
     } else {
       this.error = "Please enter a value";
       return;
@@ -214,7 +207,7 @@ export default class Home extends Vue {
       .auth()
       .signOut()
       .then(() => {
-        console.log("Logged out.");
+        // logged out
         this.$router.push({ name: "login" });
       });
   }
