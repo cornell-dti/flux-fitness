@@ -9,7 +9,10 @@
         <i class="material-icons nav-icon">exit_to_app</i>
         <div class="hint">Log Out</div>
       </button>
-          <a id="questions" href="https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"> Have questions? </a> 
+      <a
+        id="questions"
+        href="https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"
+      >Have questions?</a>
     </div>
     <h1>{{gym}}</h1>
     <form id="forms">
@@ -72,24 +75,24 @@ export default class Home extends Vue {
   weights = "";
   cardio = "";
   gym = "";
-  limits : any = {
-          'Teagle': {
-            cardio: 42,
-            other: 86
-          },
-          'Noyes': {
-            cardio: 32,
-            other: 40
-          },
-          'Helen Newman': {
-            cardio: 35,
-            other: 51
-          },
-          'Appel': {
-            cardio: 20,
-            other: 40
-          }
-        };
+  limits: any = {
+    Teagle: {
+      cardio: 42,
+      other: 86
+    },
+    Noyes: {
+      cardio: 32,
+      other: 40
+    },
+    "Helen Newman": {
+      cardio: 35,
+      other: 51
+    },
+    Appel: {
+      cardio: 20,
+      other: 40
+    }
+  };
   confirm = "";
   error = "";
 
@@ -127,11 +130,11 @@ export default class Home extends Vue {
     }
     let gymLimits = this.limits[this.gym];
     if (cardioNum > gymLimits.cardio) {
-      this.error = `${this.gym} does not have space for ${cardioNum} cardio.`
+      this.error = `${this.gym} does not have space for ${cardioNum} cardio.`;
       return;
     }
     if (weightsNum > gymLimits.other) {
-      this.error = `${this.gym} does not have space for ${weightsNum} weights.`
+      this.error = `${this.gym} does not have space for ${weightsNum} weights.`;
       return;
     }
     const time = new Date();
@@ -156,21 +159,16 @@ export default class Home extends Vue {
       this.weights +
       (this.weights === "1" ? " person" : " people") +
       " using weights.";
-    this.$confirm(this.confirm, "Confirm")
-      .then(() => {
-        this.handler();
-      })
-      .catch(() => {
-        console.log("Data input not confirmed.");
-      });
+    this.$confirm(this.confirm, "Confirm").then(() => {
+      this.handler();
+    });
   }
 
   handler() {
     if (this.weights && this.cardio) {
       var db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
-      var addDoc = db
-        .collection("gymdata")
+      db.collection("gymdata")
         .doc(current_gym)
         .collection("counts")
         .add({
@@ -178,8 +176,7 @@ export default class Home extends Vue {
           weights: Number.parseInt(this.weights),
           time: this.time
         })
-        .then(ref => {
-          console.log("Successfully added document!");
+        .then(() => {
           this.confirm = "";
           this.weights = "";
           this.cardio = "";
@@ -191,15 +188,13 @@ export default class Home extends Vue {
             text: "The data you entered went through!"
           });
         })
-        .catch(err => {
-          console.log("There was an error in adding the document.");
+        .catch(() => {
           this.error = "There was an error in adding the document.";
           return;
         });
       this.weights = "";
       this.cardio = "";
       this.confirm = "";
-      console.log(this.weights);
     } else {
       this.error = "Please enter a value";
       return;
@@ -212,7 +207,7 @@ export default class Home extends Vue {
       .auth()
       .signOut()
       .then(() => {
-        console.log("Logged out.");
+        // logged out
         this.$router.push({ name: "login" });
       });
   }
@@ -244,7 +239,7 @@ form {
 
 #questions {
   margin-left: 145px;
-  margin-top: 30px; 
+  margin-top: 30px;
   text-decoration: none;
 }
 
