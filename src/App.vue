@@ -1,16 +1,9 @@
 <template>
-  <div id="app">
-    <router-view/>
-    <notifications group="default_group" position="bottom right"/>
-  </div>
+  <v-app>
+    <v-content>
+      <v-container class="pa-0 fill-height" fluid>
+        <router-view />
+      </v-container>
+    </v-content>
+  </v-app>
 </template>
-
-<style lang="scss">
-#app {
-  font-family: "Roboto", "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: black;
-}
-</style>
-
