@@ -1,8 +1,8 @@
 <template>
   <div class="full">
-    <div class="middle">
-      <slot/>
-    </div>
+    <v-container class="middle">
+      <slot />
+    </v-container>
   </div>
 </template>
 
