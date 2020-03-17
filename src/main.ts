@@ -3,8 +3,10 @@ import App from "./App.vue";
 import Notifications from "vue-notification";
 import router from "./router";
 import * as firebase from "firebase";
+import vuetify from "./plugins/vuetify";
+import "./main.scss";
 
-let firestuff = firebase.initializeApp({
+firebase.initializeApp({
   apiKey: "AIzaSyDeJl2Hp-cUQq2VPsEaRhLOz7TrVjeZHtQ",
   authDomain: "campus-density.firebaseapp.com",
   databaseURL: "https://campus-density.firebaseio.com",
@@ -12,10 +14,6 @@ let firestuff = firebase.initializeApp({
   storageBucket: "campus-density.appspot.com",
   messagingSenderId: "833550952996"
 });
-
-let db = firebase.database();
-
-import "./main.scss";
 
 Vue.config.productionTip = false;
 
@@ -31,5 +29,6 @@ Vue.mixin({
 
 new Vue({
   router,
+  vuetify,
   render: h => h(App)
 }).$mount("#app");
