@@ -1,44 +1,39 @@
 <template>
-  <app-card>
-    <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
-    <h1 class="mt-2">{{ gym }}</h1>
-    <form id="forms">
-      <p>
-        Please indicate how many people are currently
-        <strong>using cardio machines</strong>.
-      </p>
-      <div class="icon-input">
-        <i class="material-icons">directions_run</i>
-        <input
-          v-model="cardio"
-          type="number"
-          min="0"
-          step="1"
-          placeholder="using cardio machines"
-          class="data-input"
-        />
-      </div>
-      <p>
-        Please indicate how many people are currently
-        <strong>using weights</strong>.
-      </p>
-      <div class="icon-input">
-        <i class="material-icons">people</i>
-        <input
-          v-model="weights"
-          type="number"
-          min="0"
-          step="1"
-          required
-          placeholder="using weights"
-          class="data-input"
-        />
-      </div>
-    </form>
-
-    <div id="error">{{ error }}</div>
-    <action-button-group action-button-text="SUBMIT" v-on:submitted="submit()" />
-  </app-card>
+  <v-container>
+    <v-row>
+      <v-col xs="12" sm="8" lg="6" xl="4" class="px-8 py-3 mx-auto">
+        <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
+        <h1 class="mt-5 mb-2">{{ gym }}</h1>
+        <v-form lazy-validation>
+          <v-row>
+            <v-col cols="3" class="mt-4">
+              <h2>Weights</h2>
+            </v-col>
+            <v-col>
+              <v-text-field v-model="powerRacks" label="Power Racks" required :rules="rules" />
+              <v-text-field v-model="benchPress" label="Bench Press" required :rules="rules" />
+              <v-text-field v-model="dumbbells" label="Dumbbells" required :rules="rules" />
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="3" class="mt-4">
+              <h2>Cardio</h2>
+            </v-col>
+            <v-col>
+              <v-text-field v-model="treadmills" label="Treadmills" required :rules="rules" />
+              <v-text-field v-model="ellipticals" label="Ellipticals" required :rules="rules" />
+              <v-text-field v-model="bikes" label="Bikes" required :rules="rules" />
+              <v-text-field v-model="amts" label="AMTs" required :rules="rules" />
+            </v-col>
+          </v-row>
+        </v-form>
+        <div id="error">{{ error }}</div>
+        <v-row class="justify-end">
+          <v-btn color="blue" outlined @click="submit()">Submit</v-btn>
+        </v-row>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -61,6 +56,21 @@ Vue.use(VueSimpleAlert);
   }
 })
 export default class Home extends Vue {
+  powerRacks = "";
+  benchPress = "";
+  dumbbells = "";
+
+  treadmills = "";
+  ellipticals = "";
+  bikes = "";
+  amts = "";
+
+  rules = [
+    (v: any) => !!v || "This field is required",
+    (v: any) =>
+      (v && v.length <= 5 && /^[1-9][0-9]*$/.test(v)) || "Please input a number"
+  ];
+
   time = new Date();
   weights = "";
   cardio = "";
@@ -209,60 +219,3 @@ export default class Home extends Vue {
   }
 }
 </script>
-
-<style lang="scss">
-form {
-  margin-top: 20px;
-  margin-right: 30px;
-  text-align: left;
-}
-
-#error {
-  text-align: left;
-  margin-bottom: 10px;
-  color: #fa4735;
-}
-
-.material-icons {
-  color: black;
-  font-size: 24px;
-  vertical-align: middle;
-}
-
-.data-input {
-  margin-left: 10px;
-}
-
-#questions {
-  margin-left: 145px;
-  margin-top: 30px;
-  text-decoration: none;
-}
-
-.nav-group {
-  margin-left: -10px;
-  margin-right: 0px;
-  text-align: left;
-}
-
-.nav-button {
-  width: 60px;
-  height: 70px;
-  padding: 15px 5px;
-  border-width: 0;
-  font-family: inherit;
-  font-size: 12px;
-  border-radius: 3.5px;
-  background-color: #fff;
-}
-
-.hint {
-  font-size: 12px;
-  margin-top: 5px;
-  display: block;
-}
-
-.nav-button:hover {
-  background-color: #ededed;
-}
-</style>
