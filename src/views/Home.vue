@@ -96,10 +96,11 @@
 import Vue from "vue";
 import * as firebase from "firebase/app";
 import "firebase/firestore";
+import "firebase/auth";
 import Component from "vue-class-component";
+import VueSimpleAlert from "vue-simple-alert";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import AppCard from "@/components/AppCard.vue";
-import VueSimpleAlert from "vue-simple-alert";
 import TopActions from "@/components/TopActions.vue";
 import GymLimits from "@/data/GymLimits";
 
@@ -134,8 +135,23 @@ export default class Home extends Vue {
   ];
 
   time = new Date();
-  weights = "";
-  cardio = "";
+
+  get weights(): string {
+    const prNum = Number.parseInt(this.powerRacks);
+    const bpNum = Number.parseInt(this.benchPress);
+    const dbNum = Number.parseInt(this.dumbbells);
+    if (isNaN(prNum) || isNaN(bpNum) || isNaN(dbNum)) return "";
+    return (prNum + bpNum + dbNum).toString();
+  }
+
+  get cardio(): string {
+    const tmNum = Number.parseInt(this.treadmills);
+    const elNum = Number.parseInt(this.ellipticals);
+    const bkNum = Number.parseInt(this.bikes);
+    const amNum = Number.parseInt(this.amts);
+    if (isNaN(tmNum) || isNaN(elNum) || isNaN(bkNum) || isNaN(amNum)) return "";
+    return (tmNum + elNum + bkNum + amNum).toString();
+  }
   gym = "";
 
   limits = GymLimits;
@@ -174,7 +190,7 @@ export default class Home extends Vue {
   }
 
   /**
-   * Attempts to submit data to Firebase
+   * Validates data and opens confirmation dialog
    */
   submit() {
     this.error = "";
@@ -231,6 +247,9 @@ export default class Home extends Vue {
     });
   }
 
+  /**
+   * Submits data to Firebase
+   */
   handler() {
     if (this.weights && this.cardio) {
       var db = firebase.firestore();
@@ -245,8 +264,6 @@ export default class Home extends Vue {
         })
         .then(() => {
           this.confirm = "";
-          this.weights = "";
-          this.cardio = "";
           this.$notify({
             group: "default_group",
             type: "success",
@@ -259,8 +276,6 @@ export default class Home extends Vue {
           this.error = "There was an error in adding the document.";
           return;
         });
-      this.weights = "";
-      this.cardio = "";
       this.confirm = "";
     } else {
       this.error = "Please enter a value";
@@ -268,13 +283,15 @@ export default class Home extends Vue {
     }
   }
 
+  /**
+   * Signs user out and routes back to login screen
+   */
   signOut() {
     localStorage.clear();
     firebase
       .auth()
       .signOut()
       .then(() => {
-        // logged out
         this.$router.push({ name: "login" });
       });
   }
