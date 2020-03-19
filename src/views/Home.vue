@@ -4,7 +4,7 @@
       <v-col xs="12" sm="8" lg="6" xl="4" class="px-8 py-3 mx-auto">
         <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
         <h1 class="mt-5 mb-2">{{ gym }}</h1>
-        <v-form lazy-validation>
+        <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
             <v-col cols="3" class="mt-3">
               <h2>Weights</h2>
@@ -17,7 +17,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
-                clearable
+                :clearable="clearable"
               />
               <v-text-field
                 v-model="benchPress"
@@ -26,7 +26,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
-                clearable
+                :clearable="clearable"
               />
               <v-text-field
                 v-model="dumbbells"
@@ -35,7 +35,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
-                clearable
+                :clearable="clearable"
               />
             </v-col>
           </v-row>
@@ -51,7 +51,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
-                clearable
+                :clearable="clearable"
               />
               <v-text-field
                 v-model="ellipticals"
@@ -60,7 +60,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
-                clearable
+                :clearable="clearable"
               />
               <v-text-field
                 v-model="bikes"
@@ -69,7 +69,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
-                clearable
+                :clearable="clearable"
               />
               <v-text-field
                 v-model="amts"
@@ -78,18 +78,31 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
-                clearable
+                :clearable="clearable"
               />
             </v-col>
           </v-row>
+
+          <v-col>
+            <v-row class="justify-end mt-2 red--text">{{ error }}</v-row>
+            <v-row class="justify-end pt-2">
+              <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
+              <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
+            </v-row>
+          </v-col>
         </v-form>
-        <v-col>
-          <v-row class="justify-end mt-2">{{ error }}</v-row>
-          <v-row class="justify-end pt-2">
-            <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined @click="submit()">Submit</v-btn>
-          </v-row>
-        </v-col>
+
+        <v-dialog v-model="dialog" max-width="300">
+          <v-card>
+            <v-card-title>Confirm Submission</v-card-title>
+            <v-card-text>{{ confirm }}</v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn outlined color="red" @click="dialog = false">Cancel</v-btn>
+              <v-btn text color="green" @click="dialog = false">Confirm</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-col>
     </v-row>
   </v-container>
@@ -126,9 +139,9 @@ export default class Home extends Vue {
   bikes = "";
   amts = "";
 
-  inputCharLimit = 3;
-
-  rules = [
+  valid = true;
+  readonly inputCharLimit = 3;
+  readonly rules = [
     (v: any) => !!v || "This field is required",
     (v: any) =>
       (v && v.length <= this.inputCharLimit) ||
@@ -136,6 +149,9 @@ export default class Home extends Vue {
     (v: any) => (v && /^([0-9]*)$/.test(v)) || "Please input a number",
     (v: any) => (v && /^(0|[1-9][0-9]*)$/.test(v)) || "No leading zeros"
   ];
+
+  dialog = false;
+  readonly clearable = false;
 
   time = new Date();
 
@@ -155,9 +171,14 @@ export default class Home extends Vue {
     if (isNaN(tmNum) || isNaN(elNum) || isNaN(bkNum) || isNaN(amNum)) return "";
     return (tmNum + elNum + bkNum + amNum).toString();
   }
+
+  get form(): any {
+    return this.$refs.form as any;
+  }
+
   gym = "";
 
-  limits = GymLimits;
+  readonly limits = GymLimits;
   confirm = "";
   error = "";
 
@@ -196,39 +217,24 @@ export default class Home extends Vue {
    * Clears user inputs
    */
   clearInputs() {
-    this.powerRacks = "";
-    this.benchPress = "";
-    this.dumbbells = "";
-    this.treadmills = "";
-    this.ellipticals = "";
-    this.bikes = "";
-    this.amts = "";
     this.error = "";
+    this.form.reset();
   }
 
   /**
    * Validates data and opens confirmation dialog
    */
-  submit() {
+  validate() {
+    this.form.validate();
     this.error = "";
-    let weightsNum = Number.parseInt(this.weights);
-    let cardioNum = Number.parseInt(this.cardio);
-    let notInt =
-      weightsNum !== Number.parseFloat(this.weights) ||
-      cardioNum !== Number.parseFloat(this.cardio);
     if (!this.weights || !this.cardio) {
       this.error = "Please verify your data.";
       return;
     }
-    if (weightsNum < 0 || cardioNum < 0) {
-      this.error = "Numbers must be nonnegative.";
-      return;
-    }
-    if (notInt) {
-      this.error = "Numbers must be integers.";
-      return;
-    }
-    let gymLimits = this.limits[this.gym];
+    const weightsNum = Number.parseInt(this.weights);
+    const cardioNum = Number.parseInt(this.cardio);
+
+    const gymLimits = this.limits[this.gym];
     if (cardioNum > gymLimits.cardio) {
       this.error = `${this.gym} does not have space for ${cardioNum} cardio.`;
       return;
@@ -237,6 +243,7 @@ export default class Home extends Vue {
       this.error = `${this.gym} does not have space for ${weightsNum} weights.`;
       return;
     }
+
     const time = new Date();
     time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
     time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
@@ -248,28 +255,22 @@ export default class Home extends Vue {
       timeZone: "America/New_York"
     });
     this.time = time;
-    this.confirm =
-      this.gym +
-      " at " +
-      roundedTime +
-      ": there's " +
-      this.cardio +
-      (this.cardio === "1" ? " person" : " people") +
-      " using cardio machines and " +
-      this.weights +
-      (this.weights === "1" ? " person" : " people") +
-      " using weights.";
-    this.$confirm(this.confirm, "Confirm").then(() => {
-      this.handler();
-    });
+
+    this.confirm = `${this.gym} at ${roundedTime}: there's ${this.cardio} ${
+      this.cardio === "1" ? " person" : " people"
+    } using cardio machines and ${this.weights} ${
+      this.weights === "1" ? " person" : " people"
+    } using weights.`;
+
+    this.dialog = true;
   }
 
   /**
    * Submits data to Firebase
    */
-  handler() {
+  submit() {
     if (this.weights && this.cardio) {
-      var db = firebase.firestore();
+      const db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
       db.collection("gymdata")
         .doc(current_gym)
@@ -281,6 +282,7 @@ export default class Home extends Vue {
         })
         .then(() => {
           this.confirm = "";
+          // TODO: change this to not use Vue notify
           this.$notify({
             group: "default_group",
             type: "success",
