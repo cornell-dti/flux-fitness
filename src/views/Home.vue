@@ -6,7 +6,7 @@
         <h1 class="mt-5 mb-2">{{ gym }}</h1>
         <v-form lazy-validation>
           <v-row>
-            <v-col cols="3" class="mt-4">
+            <v-col cols="3" class="mt-3">
               <h2>Weights</h2>
             </v-col>
             <v-col>
@@ -17,6 +17,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
+                clearable
               />
               <v-text-field
                 v-model="benchPress"
@@ -25,6 +26,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
+                clearable
               />
               <v-text-field
                 v-model="dumbbells"
@@ -33,11 +35,12 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
+                clearable
               />
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="3" class="mt-4">
+            <v-col cols="3" class="mt-3">
               <h2>Cardio</h2>
             </v-col>
             <v-col>
@@ -48,6 +51,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
+                clearable
               />
               <v-text-field
                 v-model="ellipticals"
@@ -56,6 +60,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
+                clearable
               />
               <v-text-field
                 v-model="bikes"
@@ -64,6 +69,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
+                clearable
               />
               <v-text-field
                 v-model="amts"
@@ -72,6 +78,7 @@
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :counter="inputCharLimit"
+                clearable
               />
             </v-col>
           </v-row>
@@ -94,6 +101,7 @@ import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import AppCard from "@/components/AppCard.vue";
 import VueSimpleAlert from "vue-simple-alert";
 import TopActions from "@/components/TopActions.vue";
+import GymLimits from "@/data/GymLimits";
 
 Vue.use(VueSimpleAlert);
 
@@ -119,53 +127,55 @@ export default class Home extends Vue {
   rules = [
     (v: any) => !!v || "This field is required",
     (v: any) =>
-      (v && v.length <= 5 && /^[1-9][0-9]*$/.test(v)) || "Please input a number"
+      (v && v.length <= this.inputCharLimit) ||
+      "Input is over the character limit",
+    (v: any) => (v && /^([0-9]*)$/.test(v)) || "Please input a number",
+    (v: any) => (v && /^(0|[1-9][0-9]*)$/.test(v)) || "No leading zeros"
   ];
 
   time = new Date();
   weights = "";
   cardio = "";
   gym = "";
-  limits: any = {
-    Teagle: {
-      cardio: 42,
-      other: 86
-    },
-    Noyes: {
-      cardio: 32,
-      other: 40
-    },
-    "Helen Newman": {
-      cardio: 35,
-      other: 51
-    },
-    Appel: {
-      cardio: 20,
-      other: 40
-    }
-  };
+
+  limits = GymLimits;
   confirm = "";
   error = "";
 
-  // creates persistence across refresh
+  /**
+   * Called when component is mounted (see Vue lifecycle hooks).
+   * This allows for persistence of selected gym across refresh using local
+   * storage and navigates to login if none is found.
+   */
   mounted() {
     if (localStorage.gym) {
       this.gym = localStorage.gym;
+    } else {
+      this.$router.push({ name: "login" });
     }
   }
 
+  /**
+   * Navigates to the export page
+   */
   goExport() {
     this.$router.push({
       name: "export"
     });
   }
 
+  /**
+   * Navigates to help navigation (external link to Google Docs)
+   */
   goHelp() {
     window.open(
       "https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"
     );
   }
 
+  /**
+   * Attempts to submit data to Firebase
+   */
   submit() {
     this.error = "";
     let weightsNum = Number.parseInt(this.weights);
