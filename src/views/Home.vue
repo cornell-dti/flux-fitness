@@ -114,13 +114,10 @@ import * as firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 import Component from "vue-class-component";
-import VueSimpleAlert from "vue-simple-alert";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import AppCard from "@/components/AppCard.vue";
 import TopActions from "@/components/TopActions.vue";
 import GymLimits from "@/data/GymLimits";
-
-Vue.use(VueSimpleAlert);
 
 @Component({
   components: {
