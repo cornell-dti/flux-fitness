@@ -10,9 +10,30 @@
               <h2>Weights</h2>
             </v-col>
             <v-col>
-              <v-text-field v-model="powerRacks" label="Power Racks" required :rules="rules" />
-              <v-text-field v-model="benchPress" label="Bench Press" required :rules="rules" />
-              <v-text-field v-model="dumbbells" label="Dumbbells" required :rules="rules" />
+              <v-text-field
+                v-model="powerRacks"
+                label="Power Racks"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :counter="inputCharLimit"
+              />
+              <v-text-field
+                v-model="benchPress"
+                label="Bench Press"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :counter="inputCharLimit"
+              />
+              <v-text-field
+                v-model="dumbbells"
+                label="Dumbbells"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :counter="inputCharLimit"
+              />
             </v-col>
           </v-row>
           <v-row>
@@ -20,10 +41,38 @@
               <h2>Cardio</h2>
             </v-col>
             <v-col>
-              <v-text-field v-model="treadmills" label="Treadmills" required :rules="rules" />
-              <v-text-field v-model="ellipticals" label="Ellipticals" required :rules="rules" />
-              <v-text-field v-model="bikes" label="Bikes" required :rules="rules" />
-              <v-text-field v-model="amts" label="AMTs" required :rules="rules" />
+              <v-text-field
+                v-model="treadmills"
+                label="Treadmills"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :counter="inputCharLimit"
+              />
+              <v-text-field
+                v-model="ellipticals"
+                label="Ellipticals"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :counter="inputCharLimit"
+              />
+              <v-text-field
+                v-model="bikes"
+                label="Bikes"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :counter="inputCharLimit"
+              />
+              <v-text-field
+                v-model="amts"
+                label="AMTs"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :counter="inputCharLimit"
+              />
             </v-col>
           </v-row>
         </v-form>
@@ -64,6 +113,8 @@ export default class Home extends Vue {
   ellipticals = "";
   bikes = "";
   amts = "";
+
+  inputCharLimit = 3;
 
   rules = [
     (v: any) => !!v || "This field is required",
