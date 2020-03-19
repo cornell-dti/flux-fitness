@@ -32,7 +32,8 @@ import AppCard from "@/components/AppCard.vue";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import BoxedButton from "@/components/BoxedButton.vue";
 import Vue from "vue";
-import firebase from "firebase";
+import * as firebase from "firebase/app";
+import "firebase/functions";
 
 @Component({
   components: {
