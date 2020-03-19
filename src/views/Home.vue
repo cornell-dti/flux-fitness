@@ -83,10 +83,13 @@
             </v-col>
           </v-row>
         </v-form>
-        <div id="error">{{ error }}</div>
-        <v-row class="justify-end">
-          <v-btn color="blue" outlined @click="submit()">Submit</v-btn>
-        </v-row>
+        <v-col>
+          <v-row class="justify-end mt-2">{{ error }}</v-row>
+          <v-row class="justify-end pt-2">
+            <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
+            <v-btn color="blue" outlined @click="submit()">Submit</v-btn>
+          </v-row>
+        </v-col>
       </v-col>
     </v-row>
   </v-container>
@@ -187,6 +190,20 @@ export default class Home extends Vue {
     window.open(
       "https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"
     );
+  }
+
+  /**
+   * Clears user inputs
+   */
+  clearInputs() {
+    this.powerRacks = "";
+    this.benchPress = "";
+    this.dumbbells = "";
+    this.treadmills = "";
+    this.ellipticals = "";
+    this.bikes = "";
+    this.amts = "";
+    this.error = "";
   }
 
   /**
