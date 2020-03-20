@@ -1,20 +1,7 @@
 <template>
   <app-card>
-    <div class="nav-group">
-      <button class="nav-button" title="Export" v-on:click="goExport">
-        <i class="material-icons nav-icon">cloud_download</i>
-        <div class="hint">Export</div>
-      </button>
-      <button class="nav-button" title="Log Out" v-on:click="signOut">
-        <i class="material-icons nav-icon">exit_to_app</i>
-        <div class="hint">Log Out</div>
-      </button>
-      <a
-        id="questions"
-        href="https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"
-      >Have questions?</a>
-    </div>
-    <h1>{{gym}}</h1>
+    <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
+    <h1 class="mt-2">{{ gym }}</h1>
     <form id="forms">
       <p>
         Please indicate how many people are currently
@@ -49,25 +36,28 @@
       </div>
     </form>
 
-    <div id="error">{{error}}</div>
+    <div id="error">{{ error }}</div>
     <action-button-group action-button-text="SUBMIT" v-on:submitted="submit()" />
   </app-card>
 </template>
 
 <script lang="ts">
-import * as firebase from "firebase";
+import Vue from "vue";
+import * as firebase from "firebase/app";
+import "firebase/firestore";
 import Component from "vue-class-component";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import AppCard from "@/components/AppCard.vue";
-import Vue from "vue";
 import VueSimpleAlert from "vue-simple-alert";
+import TopActions from "@/components/TopActions.vue";
 
 Vue.use(VueSimpleAlert);
 
 @Component({
   components: {
     ActionButtonGroup,
-    AppCard
+    AppCard,
+    TopActions
   }
 })
 export default class Home extends Vue {
@@ -107,6 +97,12 @@ export default class Home extends Vue {
     this.$router.push({
       name: "export"
     });
+  }
+
+  goHelp() {
+    window.open(
+      "https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"
+    );
   }
 
   submit() {
@@ -156,21 +152,16 @@ export default class Home extends Vue {
       this.weights +
       (this.weights === "1" ? " person" : " people") +
       " using weights.";
-    this.$confirm(this.confirm, "Confirm")
-      .then(() => {
-        this.handler();
-      })
-      .catch(() => {
-        console.log("Data input not confirmed.");
-      });
+    this.$confirm(this.confirm, "Confirm").then(() => {
+      this.handler();
+    });
   }
 
   handler() {
     if (this.weights && this.cardio) {
       var db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
-      var addDoc = db
-        .collection("gymdata")
+      db.collection("gymdata")
         .doc(current_gym)
         .collection("counts")
         .add({
@@ -178,8 +169,7 @@ export default class Home extends Vue {
           weights: Number.parseInt(this.weights),
           time: this.time
         })
-        .then(ref => {
-          console.log("Successfully added document!");
+        .then(() => {
           this.confirm = "";
           this.weights = "";
           this.cardio = "";
@@ -191,15 +181,13 @@ export default class Home extends Vue {
             text: "The data you entered went through!"
           });
         })
-        .catch(err => {
-          console.log("There was an error in adding the document.");
+        .catch(() => {
           this.error = "There was an error in adding the document.";
           return;
         });
       this.weights = "";
       this.cardio = "";
       this.confirm = "";
-      console.log(this.weights);
     } else {
       this.error = "Please enter a value";
       return;
@@ -212,7 +200,7 @@ export default class Home extends Vue {
       .auth()
       .signOut()
       .then(() => {
-        console.log("Logged out.");
+        // logged out
         this.$router.push({ name: "login" });
       });
   }
@@ -275,4 +263,3 @@ form {
   background-color: #ededed;
 }
 </style>
-

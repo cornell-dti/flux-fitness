@@ -86,7 +86,7 @@ export default class Login extends Vue {
           name: "home"
         });
       })
-      .catch(error => {
+      .catch(() => {
         this.error = "Your username or password is incorrect.";
         return;
       });

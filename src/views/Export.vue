@@ -33,7 +33,6 @@ import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import BoxedButton from "@/components/BoxedButton.vue";
 import Vue from "vue";
 import firebase from "firebase";
-import axios from "axios";
 
 @Component({
   components: {
@@ -91,7 +90,7 @@ export default class Settings extends Vue {
           window.open(url);
         });
       })
-      .catch(err => {
+      .catch(() => {
         this.downloading = false;
       });
   }
