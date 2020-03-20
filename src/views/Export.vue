@@ -73,7 +73,8 @@ export default class Settings extends Vue {
     }
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
-    firebase.functions().useFunctionsEmulator("http://localhost:5000");
+    // Uncomment if running `npm run shell` for backend functions:
+    // firebase.functions().useFunctionsEmulator("http://localhost:5000");
     let gymId = localStorage.gym.toLowerCase();
     if (gymId === "helen newman") {
       gymId = "helen_newman";
