@@ -17,8 +17,8 @@ exports.getURL = functions.https.onCall((data: { id: string, startDate: string, 
         throw new functions.https.HttpsError('invalid-argument', 'ID missing!');
     }
     const id = data.id;
-    const startDate = new Date(new Date(data.startDate));
-    const endDate = new Date(new Date(data.endDate));
+    const startDate = new Date(data.startDate);
+    const endDate = new Date(data.endDate);
     const offset = data.offset;
     return getData(id, startDate, endDate, offset);
 });
@@ -37,14 +37,12 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     for (const i = new Date(startDate); i < endDate; i.setTime(i.getTime() + 24 * 60 * 60 * 1000)) {
         dates.push(new Date(i)); // UTC
     }
-    const dateHeader = dates.map(d => {
-        return d.toLocaleString("en-US", { // UTC date string
-            weekday: 'short',
-            month: '2-digit',
-            day: '2-digit',
-            timeZone: 'UTC'
-        });
-    });
+    const dateHeader = dates.map(d => d.toLocaleString("en-US", { // local time string
+        weekday: 'short',
+        month: '2-digit',
+        day: '2-digit',
+        timeZone: 'UTC'
+    }));
 
     // times
     let begin = 24 * 60;
@@ -93,7 +91,8 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             minute: "numeric",
             hour12: true,
             timeZone: 'UTC'
-        })]; const weightsRow = [hmDate.toLocaleString("en-US", {
+        })];
+        const weightsRow = [hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
             hour12: true,
