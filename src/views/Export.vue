@@ -44,14 +44,13 @@ import firebase from "firebase";
 export default class Settings extends Vue {
   active = false;
   downloading = false;
-  start_date = new Date(
-    new Date().getTime() -
-      60 * 60 * 24 * 7 * 1000 -
-      new Date().getTimezoneOffset() * 60000
-  )
+  offset = new Date().getTimezoneOffset();
+  end_date = new Date(new Date().getTime() - this.offset * 60000)
     .toISOString()
     .substring(0, 10);
-  end_date = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+  start_date = new Date(
+    new Date(this.end_date).getTime() - 60 * 60 * 24 * 7 * 1000
+  )
     .toISOString()
     .substring(0, 10);
   error = "";
@@ -64,13 +63,6 @@ export default class Settings extends Vue {
 
   download() {
     this.error = "";
-    const startDate = new Date(
-      new Date(this.start_date).getTime() +
-        new Date().getTimezoneOffset() * 60000
-    ).getTime();
-    const endDate = new Date(
-      new Date(this.end_date).getTime() + new Date().getTimezoneOffset() * 60000
-    ).getTime();
     if (this.start_date > this.end_date) {
       this.error = "Please enter a valid date range.";
       return;
@@ -78,13 +70,17 @@ export default class Settings extends Vue {
       this.error = "Please enter valid dates.";
       return;
     }
-    const offset = new Date().getTimezoneOffset();
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
+    // Uncomment if running `npm run shell` for backend functions:
+    // firebase.functions().useFunctionsEmulator("http://localhost:5000");
     let gymId = localStorage.gym.toLowerCase();
     if (gymId === "helen newman") {
       gymId = "helen_newman";
     }
+    const startDate = this.start_date;
+    const endDate = this.end_date;
+    const offset = this.offset;
     getURL({ id: gymId, startDate, endDate, offset })
       .then(res => {
         this.downloading = false;
