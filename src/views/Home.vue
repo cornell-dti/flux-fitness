@@ -1,14 +1,14 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-spacer />
-      <v-col cols="5">
-        <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
+  <v-container class="fill-height" fluid>
+    <v-row class="justify-sm-end">
+      <v-col cols="12" sm="8" md="5">
+        <v-row class="justify-center justify-sm-end">
+          <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
+        </v-row>
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
-        <!-- <v-col xs="12" sm="8" lg="6" xl="4" class="px-8 py-3 mx-auto"> -->
+      <v-col cols="10" sm="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
         <h1 class="mt-5 mb-2">{{ gym }}</h1>
         <h3>Date</h3>
         <h3>Time picker</h3>
