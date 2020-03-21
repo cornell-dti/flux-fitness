@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <div>
     <v-btn
       v-for="act in actions"
       :key="act.desc"
@@ -12,7 +12,7 @@
       <v-icon left>{{ act.icon }}</v-icon>
       {{ act.desc }}
     </v-btn>
-  </v-row>
+  </div>
 </template>
 
 <script lang="ts">
