@@ -1,22 +1,33 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row>
-      <v-col xs="12" sm="8" lg="6" xl="4" class="px-8 py-3 mx-auto">
+      <v-spacer />
+      <v-col cols="5">
         <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
+        <!-- <v-col xs="12" sm="8" lg="6" xl="4" class="px-8 py-3 mx-auto"> -->
         <h1 class="mt-5 mb-2">{{ gym }}</h1>
+        <h3>Date</h3>
+        <h3>Time picker</h3>
+        <p class="pt-3">
+          Please enter the number of people using the following equipment.
+        </p>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
-            <v-col cols="3" class="mt-3">
+            <v-col cols="12" sm="6">
               <h2>Weights</h2>
+              <p v-if="!!weights"><b>Total:</b> {{ weights }}</p>
             </v-col>
-            <v-col>
+            <v-col class="pt-0">
               <v-text-field
                 v-model="powerRacks"
                 label="Power Racks"
                 required
                 :rules="rules"
                 :maxlength="inputCharLimit"
-                :counter="inputCharLimit"
                 :clearable="clearable"
               />
               <v-text-field
@@ -25,7 +36,6 @@
                 required
                 :rules="rules"
                 :maxlength="inputCharLimit"
-                :counter="inputCharLimit"
                 :clearable="clearable"
               />
               <v-text-field
@@ -34,23 +44,39 @@
                 required
                 :rules="rules"
                 :maxlength="inputCharLimit"
-                :counter="inputCharLimit"
                 :clearable="clearable"
               />
+              <v-text-field
+                v-model="other"
+                label="Other"
+                required
+                :rules="rules"
+                :maxlength="inputCharLimit"
+                :clearable="clearable"
+              >
+                <v-tooltip v-model="otherHelp" slot="append-outer" bottom>
+                  <template v-slot:activator="{}">
+                    <v-btn icon small @click="otherHelp = !otherHelp">
+                      <v-icon>help</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Tooltip</span>
+                </v-tooltip>
+              </v-text-field>
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="3" class="mt-3">
+            <v-col cols="12" sm="6">
               <h2>Cardio</h2>
+              <p v-if="!!cardio"><b>Total:</b> {{ cardio }}</p>
             </v-col>
-            <v-col>
+            <v-col class="pt-0">
               <v-text-field
                 v-model="treadmills"
                 label="Treadmills"
                 required
                 :rules="rules"
                 :maxlength="inputCharLimit"
-                :counter="inputCharLimit"
                 :clearable="clearable"
               />
               <v-text-field
@@ -59,7 +85,6 @@
                 required
                 :rules="rules"
                 :maxlength="inputCharLimit"
-                :counter="inputCharLimit"
                 :clearable="clearable"
               />
               <v-text-field
@@ -68,7 +93,6 @@
                 required
                 :rules="rules"
                 :maxlength="inputCharLimit"
-                :counter="inputCharLimit"
                 :clearable="clearable"
               />
               <v-text-field
@@ -77,9 +101,14 @@
                 required
                 :rules="rules"
                 :maxlength="inputCharLimit"
-                :counter="inputCharLimit"
                 :clearable="clearable"
               />
+            </v-col>
+          </v-row>
+
+          <v-row v-if="!!gymTotal">
+            <v-col>
+              <h2 class="gym-total"><b>Gym Total: </b>{{ gymTotal }}</h2>
             </v-col>
           </v-row>
 
@@ -87,18 +116,24 @@
             <v-row class="justify-end mt-2 red--text">{{ error }}</v-row>
             <v-row class="justify-end pt-2">
               <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-              <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
+              <v-btn
+                color="blue"
+                outlined
+                :disabled="!valid"
+                @click="validate()"
+                >Submit</v-btn
+              >
             </v-row>
           </v-col>
         </v-form>
 
-        <v-dialog v-model="dialog" max-width="300">
+        <v-dialog v-model="dialog" max-width="350">
           <v-card>
             <v-card-title>Confirm Submission</v-card-title>
             <v-card-text>{{ confirm }}</v-card-text>
             <v-card-actions>
               <v-spacer />
-              <v-btn outlined color="red" @click="dialog = false">Cancel</v-btn>
+              <v-btn text @click="dialog = false">Edit</v-btn>
               <v-btn text color="green" @click="dialog = false">Confirm</v-btn>
             </v-card-actions>
           </v-card>
@@ -130,6 +165,7 @@ export default class Home extends Vue {
   powerRacks = "";
   benchPress = "";
   dumbbells = "";
+  other = "";
 
   treadmills = "";
   ellipticals = "";
@@ -146,18 +182,26 @@ export default class Home extends Vue {
     (v: any) => (v && /^([0-9]*)$/.test(v)) || "Please input a number",
     (v: any) => (v && /^(0|[1-9][0-9]*)$/.test(v)) || "No leading zeros"
   ];
-
-  dialog = false;
   readonly clearable = false;
 
+  otherHelp = false;
+
   time = new Date();
+
+  gym = "";
+  readonly limits = GymLimits;
+
+  dialog = false;
+  confirm = "";
+  error = "";
 
   get weights(): string {
     const prNum = Number.parseInt(this.powerRacks);
     const bpNum = Number.parseInt(this.benchPress);
     const dbNum = Number.parseInt(this.dumbbells);
-    if (isNaN(prNum) || isNaN(bpNum) || isNaN(dbNum)) return "";
-    return (prNum + bpNum + dbNum).toString();
+    const otNum = Number.parseInt(this.other);
+    if (isNaN(prNum) || isNaN(bpNum) || isNaN(dbNum) || isNaN(otNum)) return "";
+    return (prNum + bpNum + dbNum + otNum).toString();
   }
 
   get cardio(): string {
@@ -169,15 +213,16 @@ export default class Home extends Vue {
     return (tmNum + elNum + bkNum + amNum).toString();
   }
 
+  get gymTotal(): string {
+    const weightsNum = Number.parseInt(this.weights);
+    const cardioNum = Number.parseInt(this.cardio);
+    if (isNaN(weightsNum) || isNaN(cardioNum)) return "";
+    return (weightsNum + cardioNum).toString();
+  }
+
   get form(): any {
     return this.$refs.form as any;
   }
-
-  gym = "";
-
-  readonly limits = GymLimits;
-  confirm = "";
-  error = "";
 
   /**
    * Called when component is mounted (see Vue lifecycle hooks).
@@ -241,6 +286,7 @@ export default class Home extends Vue {
       return;
     }
 
+    // TODO: if we have time input, just show the time that they have selected (or current time)
     const time = new Date();
     time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
     time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
@@ -313,3 +359,9 @@ export default class Home extends Vue {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.gym-total {
+  font-weight: normal;
+}
+</style>
