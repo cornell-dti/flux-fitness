@@ -3,7 +3,7 @@
     <v-btn
       v-for="act in actions"
       :key="act.desc"
-      class="mr-1"
+      class="ml-1"
       rounded
       text
       @click="$emit(act.emit)"
