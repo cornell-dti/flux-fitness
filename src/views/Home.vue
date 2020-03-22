@@ -10,8 +10,8 @@
     <v-row>
       <v-col cols="10" sm="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
         <h1 class="mt-5 mb-2">{{ gym }}</h1>
-        <h3>Date</h3>
-        <h3>Time picker</h3>
+        <h3>{{ time.toDateString() }}</h3>
+        <v-text-field v-model="timeSelect" type="time" />
         <p class="pt-3">
           Please enter the number of people using the following equipment.
         </p>
@@ -60,7 +60,10 @@
                       <v-icon>help</v-icon>
                     </v-btn>
                   </template>
-                  <span>Tooltip</span>
+                  <span>
+                    "Other" includes mats and other weight machines not included
+                    above
+                  </span>
                 </v-tooltip>
               </v-text-field>
             </v-col>
