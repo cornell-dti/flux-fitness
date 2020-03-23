@@ -9,13 +9,45 @@
     </v-row>
     <v-row>
       <v-col cols="10" sm="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
-        <h1 class="mt-5 mb-2">{{ gym }}</h1>
-        <h3>{{ time.toDateString() }}</h3>
+        <h1 class="mb-2">{{ gym }}</h1>
+        <span class="d-inline-flex align-center">
+          <v-icon color="black" left>today</v-icon>
+          <h4 class="font-weight-regular pl-1">
+            {{ time.toDateString() }}
+          </h4>
+        </span>
         <v-text-field
+          class="pt-0 mt-0"
           v-model="timeSelect"
           type="time"
           @input="stopInterval()"
-        />
+        >
+          <div class="h-36px d-flex align-center" slot="prepend">
+            <v-icon color="black">
+              schedule
+            </v-icon>
+          </div>
+          <v-tooltip slot="append" bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn icon :disabled="!timeEditted" @click="startInterval()">
+                <v-icon v-on="on">restore</v-icon>
+              </v-btn>
+            </template>
+            <span>
+              Reset time to the current time
+            </span>
+          </v-tooltip>
+          <v-tooltip v-model="timeHelp" slot="append-outer" bottom small>
+            <template v-slot:activator="{}">
+              <v-btn icon @click="timeHelp = !timeHelp">
+                <v-icon>help</v-icon>
+              </v-btn>
+            </template>
+            <span>
+              The time that will be submitted with the gym counts
+            </span>
+          </v-tooltip>
+        </v-text-field>
         <p class="pt-3">
           Please enter the number of people using the following equipment.
         </p>
@@ -197,6 +229,7 @@ export default class Home extends Vue {
   timeSelect = this.time.toTimeString().substring(0, 8);
   timeInterval: any = null;
   timeEditted = false;
+  timeHelp = false;
 
   gym = "";
   readonly limits = GymLimits;
@@ -236,8 +269,11 @@ export default class Home extends Vue {
 
   /**
    * Called when component is mounted (see Vue lifecycle hooks).
+   *
    * This allows for persistence of selected gym across refresh using local
    * storage and navigates to login if none is found.
+   *
+   * Also, starts the time interval
    */
   mounted() {
     if (localStorage.gym) {
@@ -252,6 +288,7 @@ export default class Home extends Vue {
    * Starts time interval that refreshes the time at a given interval
    */
   startInterval(interval: number) {
+    this.timeEditted = false;
     this.timeInterval = setInterval(() => {
       this.timeSelect = new Date().toTimeString().substring(0, 8);
     }, interval);
@@ -261,6 +298,7 @@ export default class Home extends Vue {
    * Stops time interval
    */
   stopInterval() {
+    this.timeEditted = true;
     clearInterval(this.timeInterval);
   }
 
@@ -390,5 +428,9 @@ export default class Home extends Vue {
 <style lang="scss" scoped>
 .gym-total {
   font-weight: normal;
+}
+
+.h-36px {
+  height: 36px;
 }
 </style>
