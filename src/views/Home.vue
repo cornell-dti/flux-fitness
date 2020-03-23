@@ -11,7 +11,11 @@
       <v-col cols="10" sm="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
         <h1 class="mt-5 mb-2">{{ gym }}</h1>
         <h3>{{ time.toDateString() }}</h3>
-        <v-text-field v-model="timeSelect" type="time" />
+        <v-text-field
+          v-model="timeSelect"
+          type="time"
+          @input="stopInterval()"
+        />
         <p class="pt-3">
           Please enter the number of people using the following equipment.
         </p>
@@ -190,6 +194,9 @@ export default class Home extends Vue {
   otherHelp = false;
 
   time = new Date();
+  timeSelect = this.time.toTimeString().substring(0, 8);
+  timeInterval: any = null;
+  timeEditted = false;
 
   gym = "";
   readonly limits = GymLimits;
@@ -235,9 +242,26 @@ export default class Home extends Vue {
   mounted() {
     if (localStorage.gym) {
       this.gym = localStorage.gym;
+      this.startInterval(1000);
     } else {
       this.$router.push({ name: "login" });
     }
+  }
+
+  /**
+   * Starts time interval that refreshes the time at a given interval
+   */
+  startInterval(interval: number) {
+    this.timeInterval = setInterval(() => {
+      this.timeSelect = new Date().toTimeString().substring(0, 8);
+    }, interval);
+  }
+
+  /**
+   * Stops time interval
+   */
+  stopInterval() {
+    clearInterval(this.timeInterval);
   }
 
   /**
