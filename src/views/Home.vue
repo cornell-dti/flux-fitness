@@ -7,10 +7,12 @@
         </v-row>
       </v-col>
     </v-row>
+
     <v-row>
       <v-col cols="10" sm="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
         <h1 class="mb-2">{{ gym }}</h1>
-        <span class="d-inline-flex align-center">
+
+        <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
           <h4 class="font-weight-regular pl-1">
             {{ time.toDateString() }}
@@ -48,9 +50,11 @@
             </span>
           </v-tooltip>
         </v-text-field>
+
         <p class="pt-3">
           Please enter the number of people using the following equipment.
         </p>
+
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
             <v-col cols="12" sm="6">
@@ -104,6 +108,7 @@
               </v-text-field>
             </v-col>
           </v-row>
+
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Cardio</h2>
@@ -160,8 +165,9 @@
                 outlined
                 :disabled="!valid"
                 @click="validate()"
-                >Submit</v-btn
               >
+                Submit
+              </v-btn>
             </v-row>
           </v-col>
         </v-form>
