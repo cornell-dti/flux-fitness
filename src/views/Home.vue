@@ -62,35 +62,12 @@
               <p v-if="!!weights"><b>Total:</b> {{ weights }}</p>
             </v-col>
             <v-col class="pt-0">
-              <v-text-field
+              <count-text-field
                 v-for="field in weightFields"
                 v-model="field.count"
                 :key="field.key"
-                :label="field.label"
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
-              >
-                <v-tooltip
-                  v-if="!!field.help"
-                  v-model="field.help.show"
-                  slot="append-outer"
-                  bottom
-                >
-                  <template v-slot:activator="{}">
-                    <v-btn
-                      icon
-                      small
-                      @click="field.help.show = !field.help.show"
-                    >
-                      <v-icon>help</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>
-                    {{ field.help.info }}
-                  </span>
-                </v-tooltip>
-              </v-text-field>
+                :field="field"
+              />
             </v-col>
           </v-row>
 
@@ -100,14 +77,11 @@
               <p v-if="!!cardio"><b>Total:</b> {{ cardio }}</p>
             </v-col>
             <v-col class="pt-0">
-              <v-text-field
+              <count-text-field
                 v-for="field in cardioFields"
                 v-model="field.count"
                 :key="field.key"
-                :label="field.label"
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
+                :field="field"
               />
             </v-col>
           </v-row>
@@ -148,12 +122,14 @@ import "firebase/auth";
 import Component from "vue-class-component";
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
+import CountTextField from "@/components/Home/CountTextField.vue";
 import GymLimits from "@/data/GymLimits";
 
 @Component({
   components: {
     TopActions,
-    ConfirmDialog
+    ConfirmDialog,
+    CountTextField
   }
 })
 export default class Home extends Vue {
@@ -192,16 +168,6 @@ export default class Home extends Vue {
   };
 
   valid = true;
-  readonly inputCharLimit = 3;
-  readonly rules = [
-    (v: any) => !!v || "This field is required",
-    (v: any) =>
-      (v && v.length <= this.inputCharLimit) ||
-      "Input is over the character limit",
-    (v: any) => (v && /^([0-9]*)$/.test(v)) || "Please input a number",
-    (v: any) => (v && /^(0|[1-9][0-9]*)$/.test(v)) || "No leading zeros"
-  ];
-  readonly clearable = false;
 
   time = new Date();
   timeSelect = this.time.toTimeString().substring(0, 8);
