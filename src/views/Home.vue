@@ -182,6 +182,7 @@ export default class Home extends Vue {
     [key: string]: {
       label: string;
       count: string;
+      help?: { info: string; show: boolean };
     };
   } = {
     treadmills: { label: "Treadmills", count: "" },
@@ -201,8 +202,6 @@ export default class Home extends Vue {
     (v: any) => (v && /^(0|[1-9][0-9]*)$/.test(v)) || "No leading zeros"
   ];
   readonly clearable = false;
-
-  otherHelp = false;
 
   time = new Date();
   timeSelect = this.time.toTimeString().substring(0, 8);

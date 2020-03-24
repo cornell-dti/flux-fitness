@@ -32,5 +32,3 @@ export default class ConfirmDialog extends Vue {
   // TODO: create methods for submit
 }
 </script>
-
-<style></style>
