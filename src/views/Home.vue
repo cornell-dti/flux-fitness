@@ -9,7 +9,7 @@
     </v-row>
 
     <v-row>
-      <v-col cols="10" sm="6" lg="4" xl="3" class="px-8 py-3 mx-auto">
+      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-3 mx-auto">
         <h1 class="mb-2">{{ gym }}</h1>
 
         <span class="d-inline-flex align-center mt-3">
