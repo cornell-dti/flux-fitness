@@ -63,46 +63,31 @@
             </v-col>
             <v-col class="pt-0">
               <v-text-field
-                v-model="powerRacks"
-                label="Power Racks"
-                required
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
-              />
-              <v-text-field
-                v-model="benchPress"
-                label="Bench Press"
-                required
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
-              />
-              <v-text-field
-                v-model="dumbbells"
-                label="Dumbbells"
-                required
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
-              />
-              <v-text-field
-                v-model="other"
-                label="Other"
-                required
+                v-for="field in weightFields"
+                v-model="field.count"
+                :key="field.key"
+                :label="field.label"
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :clearable="clearable"
               >
-                <v-tooltip v-model="otherHelp" slot="append-outer" bottom>
+                <v-tooltip
+                  v-if="!!field.help"
+                  v-model="field.help.show"
+                  slot="append-outer"
+                  bottom
+                >
                   <template v-slot:activator="{}">
-                    <v-btn icon small @click="otherHelp = !otherHelp">
+                    <v-btn
+                      icon
+                      small
+                      @click="field.help.show = !field.help.show"
+                    >
                       <v-icon>help</v-icon>
                     </v-btn>
                   </template>
                   <span>
-                    "Other" includes mats and other weight machines not included
-                    above
+                    {{ field.help.info }}
                   </span>
                 </v-tooltip>
               </v-text-field>
@@ -116,33 +101,10 @@
             </v-col>
             <v-col class="pt-0">
               <v-text-field
-                v-model="treadmills"
-                label="Treadmills"
-                required
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
-              />
-              <v-text-field
-                v-model="ellipticals"
-                label="Ellipticals"
-                required
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
-              />
-              <v-text-field
-                v-model="bikes"
-                label="Bikes"
-                required
-                :rules="rules"
-                :maxlength="inputCharLimit"
-                :clearable="clearable"
-              />
-              <v-text-field
-                v-model="amts"
-                label="AMTs"
-                required
+                v-for="field in cardioFields"
+                v-model="field.count"
+                :key="field.key"
+                :label="field.label"
                 :rules="rules"
                 :maxlength="inputCharLimit"
                 :clearable="clearable"
@@ -195,15 +157,38 @@ import GymLimits from "@/data/GymLimits";
   }
 })
 export default class Home extends Vue {
-  powerRacks = "";
-  benchPress = "";
-  dumbbells = "";
-  other = "";
+  weightFields: {
+    [key: string]: {
+      label: string;
+      count: string;
+      help?: { info: string; show: boolean };
+    };
+  } = {
+    powerRacks: { label: "Power Racks", count: "" },
+    benchPress: { label: "Bench Press", count: "" },
+    dumbbells: { label: "Dumbbells", count: "" },
+    other: {
+      label: "Other",
+      count: "",
+      help: {
+        info: `"Other" includes mats and other weight machines not included
+                    above`,
+        show: false
+      }
+    }
+  };
 
-  treadmills = "";
-  ellipticals = "";
-  bikes = "";
-  amts = "";
+  cardioFields: {
+    [key: string]: {
+      label: string;
+      count: string;
+    };
+  } = {
+    treadmills: { label: "Treadmills", count: "" },
+    ellipticals: { label: "Ellipticals", count: "" },
+    bikes: { label: "Bikes", count: "" },
+    amts: { label: "AMTs", count: "" }
+  };
 
   valid = true;
   readonly inputCharLimit = 3;
@@ -233,19 +218,21 @@ export default class Home extends Vue {
   error = "";
 
   get weights(): string {
-    const prNum = Number.parseInt(this.powerRacks);
-    const bpNum = Number.parseInt(this.benchPress);
-    const dbNum = Number.parseInt(this.dumbbells);
-    const otNum = Number.parseInt(this.other);
+    const wf = this.weightFields;
+    const prNum = Number.parseInt(wf["powerRacks"].count);
+    const bpNum = Number.parseInt(wf["benchPress"].count);
+    const dbNum = Number.parseInt(wf["dumbbells"].count);
+    const otNum = Number.parseInt(wf["other"].count);
     if (isNaN(prNum) || isNaN(bpNum) || isNaN(dbNum) || isNaN(otNum)) return "";
     return (prNum + bpNum + dbNum + otNum).toString();
   }
 
   get cardio(): string {
-    const tmNum = Number.parseInt(this.treadmills);
-    const elNum = Number.parseInt(this.ellipticals);
-    const bkNum = Number.parseInt(this.bikes);
-    const amNum = Number.parseInt(this.amts);
+    const cf = this.cardioFields;
+    const tmNum = Number.parseInt(cf["treadmills"].count);
+    const elNum = Number.parseInt(cf["ellipticals"].count);
+    const bkNum = Number.parseInt(cf["bikes"].count);
+    const amNum = Number.parseInt(cf["amts"].count);
     if (isNaN(tmNum) || isNaN(elNum) || isNaN(bkNum) || isNaN(amNum)) return "";
     return (tmNum + elNum + bkNum + amNum).toString();
   }
