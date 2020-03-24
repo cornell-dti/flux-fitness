@@ -172,17 +172,7 @@
           </v-col>
         </v-form>
 
-        <v-dialog v-model="dialog" max-width="350">
-          <v-card>
-            <v-card-title>Confirm Submission</v-card-title>
-            <v-card-text>{{ confirm }}</v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn text @click="dialog = false">Edit</v-btn>
-              <v-btn text color="green" @click="dialog = false">Confirm</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+        <confirm-dialog v-model="dialog" :confirm="confirm" />
       </v-col>
     </v-row>
   </v-container>
@@ -197,13 +187,15 @@ import Component from "vue-class-component";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 import AppCard from "@/components/AppCard.vue";
 import TopActions from "@/components/TopActions.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import GymLimits from "@/data/GymLimits";
 
 @Component({
   components: {
     ActionButtonGroup,
     AppCard,
-    TopActions
+    TopActions,
+    ConfirmDialog
   }
 })
 export default class Home extends Vue {
@@ -266,6 +258,7 @@ export default class Home extends Vue {
     const weightsNum = Number.parseInt(this.weights);
     const cardioNum = Number.parseInt(this.cardio);
     if (isNaN(weightsNum) || isNaN(cardioNum)) return "";
+    this.error = "";
     return (weightsNum + cardioNum).toString();
   }
 
