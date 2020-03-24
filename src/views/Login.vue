@@ -54,7 +54,8 @@
 </template>
 
 <script lang="ts">
-import * as firebase from "firebase";
+import * as firebase from "firebase/app";
+import "firebase/auth";
 import Component from "vue-class-component";
 import AppCard from "@/components/AppCard.vue";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";

@@ -1,4 +1,6 @@
 import Vue from "vue";
+import * as firebase from "firebase/app";
+import "firebase/auth";
 import Router from "vue-router";
 import Home from "./views/Home.vue";
 import Login from "./views/Login.vue";
@@ -6,7 +8,6 @@ import Export from "./views/Export.vue";
 
 Vue.use(Router);
 
-import * as firebase from "firebase";
 export default new Router({
   mode: "history",
   routes: [
