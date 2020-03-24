@@ -27,7 +27,16 @@ export default new Router({
     {
       path: "/login",
       name: "login",
-      component: Login
+      component: Login,
+      beforeEnter(to, from, next) {
+        firebase.auth().onAuthStateChanged(user => {
+          if (user) {
+            next("/");
+          } else {
+            next();
+          }
+        });
+      }
     },
     {
       path: "/export",
