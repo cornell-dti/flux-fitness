@@ -298,7 +298,6 @@ export default class Home extends Vue {
       return;
     }
 
-    // TODO: if we have time input, just show the time that they have selected (or current time)
     const time = new Date();
     const timeString = time.toLocaleString("en-US", {
       hour: "numeric",
@@ -308,7 +307,8 @@ export default class Home extends Vue {
     });
     this.time = time;
 
-    this.confirm = `${this.gym} at ${roundedTime}: there's ${this.cardio} ${
+    // TODO: if we have time input, just show the time that they have selected (or current time)
+    this.confirm = `${this.gym} at ${timeString}: there's ${this.cardio} ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
