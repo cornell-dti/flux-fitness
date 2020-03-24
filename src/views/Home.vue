@@ -300,10 +300,7 @@ export default class Home extends Vue {
 
     // TODO: if we have time input, just show the time that they have selected (or current time)
     const time = new Date();
-    time.setMilliseconds(Math.round(time.getMilliseconds() / 1000) * 1000);
-    time.setSeconds(Math.round(time.getSeconds() / 60) * 60);
-    time.setMinutes(Math.round(time.getMinutes() / 15) * 15);
-    const roundedTime = time.toLocaleString("en-US", {
+    const timeString = time.toLocaleString("en-US", {
       hour: "numeric",
       minute: "numeric",
       hour12: true,
