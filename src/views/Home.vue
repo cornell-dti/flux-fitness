@@ -184,16 +184,12 @@ import * as firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 import Component from "vue-class-component";
-import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
-import AppCard from "@/components/AppCard.vue";
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import GymLimits from "@/data/GymLimits";
 
 @Component({
   components: {
-    ActionButtonGroup,
-    AppCard,
     TopActions,
     ConfirmDialog
   }
