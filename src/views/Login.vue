@@ -13,7 +13,7 @@
     </v-row>
     <v-form>
       <v-text-field v-model="username" label="Username" prepend-icon="email" />
-      <v-text-field v-model="password" label="Password" prepend-icon="vpn_key" />
+      <v-text-field v-model="password" label="Password" prepend-icon="vpn_key" type="password" />
       <v-select v-model="gym" :items="gyms" label="Select a gym" prepend-icon="location_on" />
       <div class="red--text py-2">{{error}}</div>
       <v-btn color="blue" outlined @click="handler()">Login</v-btn>
