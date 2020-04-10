@@ -129,8 +129,8 @@ import GymLimits from "@/data/GymLimits";
   components: {
     TopActions,
     ConfirmDialog,
-    CountTextField
-  }
+    CountTextField,
+  },
 })
 export default class Home extends Vue {
   weightFields: {
@@ -149,9 +149,9 @@ export default class Home extends Vue {
       help: {
         info: `"Other" includes mats and other weight machines not included
                     above`,
-        show: false
-      }
-    }
+        show: false,
+      },
+    },
   };
 
   cardioFields: {
@@ -164,7 +164,7 @@ export default class Home extends Vue {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
-    amts: { label: "AMTs", count: "" }
+    amts: { label: "AMTs", count: "" },
   };
 
   valid = true;
@@ -254,7 +254,7 @@ export default class Home extends Vue {
    */
   goExport() {
     this.$router.push({
-      name: "export"
+      name: "export",
     });
   }
 
@@ -298,17 +298,8 @@ export default class Home extends Vue {
       return;
     }
 
-    const time = new Date();
-    const timeString = time.toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-      timeZone: "America/New_York"
-    });
-    this.time = time;
-
     // TODO: if we have time input, just show the time that they have selected (or current time)
-    this.confirm = `${this.gym} at ${timeString}: there's ${this.cardio} ${
+    this.confirm = `${this.gym} at ${this.timeSelect}: there's ${this.cardio} ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
@@ -330,7 +321,8 @@ export default class Home extends Vue {
         .add({
           cardio: Number.parseInt(this.cardio),
           weights: Number.parseInt(this.weights),
-          time: this.time
+          // TODO: make this use timeSelect
+          time: this.time,
         })
         .then(() => {
           this.confirm = "";
@@ -340,7 +332,7 @@ export default class Home extends Vue {
             type: "success",
             duration: 2500,
             title: "Success",
-            text: "The data you entered went through!"
+            text: "The data you entered went through!",
           });
         })
         .catch(() => {
