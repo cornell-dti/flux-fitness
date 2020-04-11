@@ -1,23 +1,51 @@
 <template>
-  <v-container>
+  <v-container class="fill-height no-overflow" fluid>
     <v-row>
-      <v-col>
+      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-8 mx-auto">
         <h1>Flux Fitness</h1>
         <p>
           A simple webapp by the
-          <a href="https://www.cornelldti.org/" target="_blank">DTI</a> Flux team
-          to track people in gyms.
+          <a href="https://www.cornelldti.org/" target="_blank">DTI</a> Flux
+          team to track people in gyms.
         </p>
         <p>Please log in with the username and password provided by DTI.</p>
+        <v-form ref="form" v-model="valid" lazy-validation>
+          <v-text-field
+            v-model="email"
+            label="Email"
+            prepend-icon="email"
+            :rules="emailRules"
+            aria-required
+          />
+          <v-text-field
+            v-model="password"
+            label="Password"
+            prepend-icon="vpn_key"
+            type="password"
+            :rules="required"
+            aria-required
+          />
+          <v-select
+            v-model="gym"
+            :items="gyms"
+            :rules="required"
+            label="Select a gym"
+            prepend-icon="location_on"
+            aria-required
+          />
+          <p class="red--text py-2 text-right">{{ error }}</p>
+          <v-btn
+            class="float-right"
+            :disabled="!valid"
+            color="blue"
+            outlined
+            @click="handler()"
+          >
+            Login
+          </v-btn>
+        </v-form>
       </v-col>
     </v-row>
-    <v-form>
-      <v-text-field v-model="username" label="Username" prepend-icon="email" />
-      <v-text-field v-model="password" label="Password" prepend-icon="vpn_key" type="password" />
-      <v-select v-model="gym" :items="gyms" label="Select a gym" prepend-icon="location_on" />
-      <div class="red--text py-2">{{error}}</div>
-      <v-btn color="blue" outlined @click="handler()">Login</v-btn>
-    </v-form>
   </v-container>
 </template>
 
@@ -33,34 +61,50 @@ import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 @Component({
   components: {
     ActionButtonGroup,
-    AppCard
-  }
+    AppCard,
+  },
 })
 export default class Login extends Vue {
-  username = "";
+  email = "";
   password = "";
   gym = "";
   error = "";
 
-  gyms = Gyms.map(gymData => gymData.name);
+  valid = true;
+  readonly emailRules = [
+    (v: any) => !!v || "Email is required",
+    (v: any) => /.+@.+\..+/.test(v) || "Email must be valid",
+  ];
+  readonly required = [(v: any) => !!v || "This is required"];
+
+  // TODO: make this list come from the backend
+  readonly gyms = Gyms.map((gymData) => gymData.name);
+
+  get form(): any {
+    return this.$refs.form;
+  }
 
   handler() {
+    if (!this.valid || !this.form.validate()) {
+      this.error = "Please check your inputs.";
+      return;
+    }
+    if (this.gym === "") {
+      this.error = "Please select a gym.";
+      return;
+    }
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     firebase
       .auth()
-      .signInWithEmailAndPassword(this.username, this.password)
+      .signInWithEmailAndPassword(this.email, this.password)
       .then(() => {
-        if (this.gym === "") {
-          this.error = "Please select a gym.";
-          return;
-        }
         localStorage.gym = this.gym;
         this.$router.push({
-          name: "home"
+          name: "home",
         });
       })
       .catch(() => {
-        this.error = "Your username or password is incorrect.";
+        this.error = "Your username or password is invalid.";
         return;
       });
   }
