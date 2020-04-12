@@ -39,7 +39,7 @@
             :disabled="!valid"
             color="blue"
             outlined
-            @click="handler()"
+            @click="signIn()"
           >
             Login
           </v-btn>
@@ -80,11 +80,17 @@ export default class Login extends Vue {
   // TODO: make this list come from the backend
   readonly gyms = Gyms.map((gymData) => gymData.name);
 
+  /**
+   * Ref for the form component
+   */
   get form(): any {
     return this.$refs.form;
   }
 
-  handler() {
+  /**
+   * Validates and attempts to sign in with given credentials.
+   */
+  signIn() {
     if (!this.valid || !this.form.validate()) {
       this.error = "Please check your inputs.";
       return;
