@@ -14,20 +14,11 @@
 
         <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
-          <h4 class="font-weight-regular pl-1">
-            {{ time.toDateString() }}
-          </h4>
+          <h4 class="font-weight-regular pl-1">{{ time.toDateString() }}</h4>
         </span>
-        <v-text-field
-          class="pt-0 mt-0"
-          v-model="timeSelect"
-          type="time"
-          @input="stopInterval()"
-        >
+        <v-text-field class="pt-0 mt-0" v-model="timeSelect" type="time" @input="stopInterval()">
           <div class="h-36px d-flex align-center" slot="prepend">
-            <v-icon color="black">
-              schedule
-            </v-icon>
+            <v-icon color="black">schedule</v-icon>
           </div>
           <v-tooltip slot="append" bottom>
             <template v-slot:activator="{ on }">
@@ -35,9 +26,7 @@
                 <v-icon v-on="on">restore</v-icon>
               </v-btn>
             </template>
-            <span>
-              Reset time to the current time
-            </span>
+            <span>Reset time to the current time</span>
           </v-tooltip>
           <v-tooltip v-model="timeHelp" slot="append-outer" bottom small>
             <template v-slot:activator="{}">
@@ -45,21 +34,20 @@
                 <v-icon>help</v-icon>
               </v-btn>
             </template>
-            <span>
-              The time that will be submitted with the gym counts
-            </span>
+            <span>The time that will be submitted with the gym counts</span>
           </v-tooltip>
         </v-text-field>
 
-        <p class="pt-3">
-          Please enter the number of people using the following equipment.
-        </p>
+        <p class="pt-3">Please enter the number of people using the following equipment.</p>
 
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Weights</h2>
-              <p v-if="!!weights"><b>Total:</b> {{ weights }}</p>
+              <p v-if="!!weights">
+                <b>Total:</b>
+                {{ weights }}
+              </p>
             </v-col>
             <v-col class="pt-0">
               <count-text-field
@@ -74,7 +62,10 @@
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Cardio</h2>
-              <p v-if="!!cardio"><b>Total:</b> {{ cardio }}</p>
+              <p v-if="!!cardio">
+                <b>Total:</b>
+                {{ cardio }}
+              </p>
             </v-col>
             <v-col class="pt-0">
               <count-text-field
@@ -88,7 +79,10 @@
 
           <v-row v-if="!!gymTotal">
             <v-col>
-              <h2 class="gym-total"><b>Gym Total: </b>{{ gymTotal }}</h2>
+              <h2 class="gym-total">
+                <b>Gym Total:</b>
+                {{ gymTotal }}
+              </h2>
             </v-col>
           </v-row>
 
@@ -96,14 +90,7 @@
             <v-row class="justify-end mt-2 red--text">{{ error }}</v-row>
             <v-row class="justify-end pt-2">
               <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-              <v-btn
-                color="blue"
-                outlined
-                :disabled="!valid"
-                @click="validate()"
-              >
-                Submit
-              </v-btn>
+              <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
             </v-row>
           </v-col>
         </v-form>
@@ -147,8 +134,7 @@ export default class Home extends Vue {
       label: "Other",
       count: "",
       help: {
-        info: `"Other" includes mats and other weight machines not included
-                    above`,
+        info: "mats and weight machines not included above",
         show: false
       }
     }
@@ -321,15 +307,30 @@ export default class Home extends Vue {
    * Submits data to Firebase
    */
   submit() {
-    if (this.weights && this.cardio) {
+    console.log("submit"); // temp
+    if (this.error == "") {
+      console.log("success"); // temp
+      // /* temp
       const db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
-      db.collection("gymdata")
+      const cf = this.cardioFields;
+      const wf = this.weightFields;
+      db.collection("gymGranularData")
         .doc(current_gym)
         .collection("counts")
         .add({
-          cardio: Number.parseInt(this.cardio),
-          weights: Number.parseInt(this.weights),
+          cardio: {
+            treadmills: Number.parseInt(cf["treadmills"].count),
+            ellipticals: Number.parseInt(cf["ellipticals"].count),
+            bikes: Number.parseInt(cf["bikes"].count),
+            amts: Number.parseInt(cf["amts"].count)
+          },
+          weights: {
+            powerRacks: Number.parseInt(wf["powerRacks"].count),
+            benchPress: Number.parseInt(wf["benchPress"].count),
+            dumbbells: Number.parseInt(wf["dumbbells"].count),
+            other: Number.parseInt(wf["other"].count)
+          },
           time: this.time
         })
         .then(() => {
@@ -346,10 +347,11 @@ export default class Home extends Vue {
         .catch(() => {
           this.error = "There was an error in adding the document.";
           return;
-        });
+        }); // temp */
+      this.clearInputs();
       this.confirm = "";
     } else {
-      this.error = "Please enter a value";
+      this.error = "You can't submit this data.";
       return;
     }
   }
