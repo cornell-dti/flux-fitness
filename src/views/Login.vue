@@ -1,153 +1,118 @@
 <template>
-  <app-card>
-    <div class="text">
-      <h1>Flux Fitness</h1>
-      <p>
-        A simple webapp by the
-        <a href="https://www.cornelldti.org/" target="_blank">DTI</a> Flux team
-        to track people in gyms.
-      </p>
-      <p>Please log in with the username and password provided by DTI.</p>
-    </div>
-    <form class="login-form">
-      <div class="icon-input">
-        <label class="material-icons" for="username">email</label>
-        <input
-          v-model="username"
-          type="text"
-          id="username"
-          name="username"
-          required
-          placeholder="Username"
-        />
-      </div>
-      <div class="icon-input">
-        <label class="material-icons" for="password">vpn_key</label>
-        <input
-          v-model="password"
-          type="password"
-          id="password"
-          name="password"
-          required
-          placeholder="Password"
-        />
-      </div>
-      <div class="icon-input">
-        <label class="material-icons" for="gym-select">location_on</label>
-        <select v-model="gym" id="gym-select" required>
-          <option disabled value hidden>Select a gym</option>
-          <option>Teagle</option>
-          <option>Noyes</option>
-          <option>Helen Newman</option>
-          <option>Appel</option>
-        </select>
-        <span class="material-icons select-arrow">arrow_drop_down</span>
-      </div>
-    </form>
-    <div id="error">{{error}}</div>
-    <action-button-group
-      :require-confirmation="false"
-      v-on:submitted="handler()"
-      action-button-text="LOGIN"
-    />
-  </app-card>
+  <v-container class="fill-height no-overflow" fluid>
+    <v-row>
+      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-8 mx-auto">
+        <h1>Flux Fitness</h1>
+        <p>
+          A simple webapp by the
+          <a href="https://www.cornelldti.org/" target="_blank">DTI</a> Flux
+          team to track people in gyms.
+        </p>
+        <p>Please log in with the username and password provided by DTI.</p>
+        <v-form ref="form" v-model="valid" lazy-validation>
+          <v-text-field
+            v-model="email"
+            label="Email"
+            prepend-icon="email"
+            :rules="emailRules"
+            aria-required
+          />
+          <v-text-field
+            v-model="password"
+            label="Password"
+            prepend-icon="vpn_key"
+            type="password"
+            :rules="required"
+            aria-required
+          />
+          <v-select
+            v-model="gym"
+            :items="gyms"
+            :rules="required"
+            label="Select a gym"
+            prepend-icon="location_on"
+            aria-required
+          />
+          <p class="red--text py-2 text-right">{{ error }}</p>
+          <v-btn
+            class="float-right"
+            :disabled="!valid"
+            color="blue"
+            outlined
+            @click="signIn()"
+          >
+            Login
+          </v-btn>
+        </v-form>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script lang="ts">
+import Vue from "vue";
+import Component from "vue-class-component";
 import * as firebase from "firebase/app";
 import "firebase/auth";
-import Component from "vue-class-component";
+import Gyms from "@/data/Gyms";
 import AppCard from "@/components/AppCard.vue";
 import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
-import Vue from "vue";
 
 @Component({
   components: {
     ActionButtonGroup,
-    AppCard
-  }
+    AppCard,
+  },
 })
 export default class Login extends Vue {
-  username = "";
+  email = "";
   password = "";
   gym = "";
   error = "";
-  handler() {
+
+  valid = true;
+  readonly emailRules = [
+    (v: any) => !!v || "Email is required",
+    (v: any) => /.+@.+\..+/.test(v) || "Email must be valid",
+  ];
+  readonly required = [(v: any) => !!v || "This is required"];
+
+  // TODO: make this list come from the backend
+  readonly gyms = Gyms.map((gymData) => gymData.name);
+
+  /**
+   * Ref for the form component
+   */
+  get form(): any {
+    return this.$refs.form;
+  }
+
+  /**
+   * Validates and attempts to sign in with given credentials.
+   */
+  signIn() {
+    if (!this.valid || !this.form.validate()) {
+      this.error = "Please check your inputs.";
+      return;
+    }
+    if (this.gym === "") {
+      this.error = "Please select a gym.";
+      return;
+    }
     firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     firebase
       .auth()
-      .signInWithEmailAndPassword(this.username, this.password)
+      .signInWithEmailAndPassword(this.email, this.password)
       .then(() => {
-        if (this.gym === "") {
-          this.error = "Please select a gym.";
-          return;
-        }
         localStorage.gym = this.gym;
         this.$router.push({
-          name: "home"
+          name: "home",
         });
       })
       .catch(() => {
-        this.error = "Your username or password is incorrect.";
+        this.error = "Your username or password is invalid.";
         return;
       });
   }
 }
 </script>
-
-<style lang="scss" scoped>
-h1 {
-  font-weight: bold;
-}
-
-.login-form {
-  margin-top: 20px;
-  text-align: left;
-}
-
-.text {
-  padding-right: 30px;
-}
-
-.material-icons {
-  color: #000000;
-  font-size: 20px;
-  vertical-align: middle;
-}
-
-.select-arrow {
-  margin-left: -20px;
-}
-
-#error {
-  text-align: left;
-  margin-top: 20px;
-  color: #fa4735;
-}
-
-#gym-select {
-  &:invalid,
-  option[value=""] {
-    color: #767676;
-  }
-
-  &,
-  option {
-    color: black;
-    appearance: none;
-    -webkit-appearance: none;
-    margin-inline-start: 5%;
-    font-family: "Roboto", sans-serif;
-    font-size: 16px;
-    padding: 10px 10px 10px 5px;
-    border: none;
-    border-radius: 0;
-    border-bottom: 1px solid black;
-    max-width: 70%;
-  }
-}
-
-[hidden] {
-  display: none;
-}
-</style>

@@ -3,7 +3,7 @@
     <v-btn
       v-for="act in actions"
       :key="act.desc"
-      class="ml-1"
+      class="mr-3"
       rounded
       text
       @click="$emit(act.emit)"
@@ -24,7 +24,7 @@ export default class TopActions extends Vue {
   actions: { desc: string; icon: string; emit: string; color?: string }[] = [
     { desc: "Export", icon: "cloud_download", emit: "export" },
     { desc: "Help", icon: "help", emit: "help" },
-    { desc: "Log Out", icon: "exit_to_app", emit: "logout" }
+    { desc: "Log Out", icon: "exit_to_app", emit: "logout" },
   ];
 }
 </script>

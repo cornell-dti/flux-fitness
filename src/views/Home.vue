@@ -34,7 +34,7 @@
                 <v-icon>help</v-icon>
               </v-btn>
             </template>
-            <span>The time that will be submitted with the gym counts</span>
+            <span>Time that will be submitted with the gym counts</span>
           </v-tooltip>
         </v-text-field>
 
@@ -86,13 +86,11 @@
             </v-col>
           </v-row>
 
-          <v-col>
-            <v-row class="justify-end mt-2 red--text">{{ error }}</v-row>
-            <v-row class="justify-end pt-2">
-              <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-              <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
-            </v-row>
-          </v-col>
+          <p class="text-right mt-2 red--text">{{ error }}</p>
+          <div class="float-right pt-2">
+            <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
+            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
+          </div>
         </v-form>
 
         <confirm-dialog v-model="dialog" :confirm="confirm" />
@@ -134,7 +132,7 @@ export default class Home extends Vue {
       label: "Other",
       count: "",
       help: {
-        info: "mats and weight machines not included above",
+        info: "Mats and weight machines not included above",
         show: false
       }
     }
@@ -284,17 +282,8 @@ export default class Home extends Vue {
       return;
     }
 
-    const time = new Date();
-    const timeString = time.toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-      timeZone: "America/New_York"
-    });
-    this.time = time;
-
     // TODO: if we have time input, just show the time that they have selected (or current time)
-    this.confirm = `${this.gym} at ${timeString}: there's ${this.cardio} ${
+    this.confirm = `${this.gym} at ${this.timeSelect}: there's ${this.cardio} ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
