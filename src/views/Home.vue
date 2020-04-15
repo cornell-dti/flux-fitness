@@ -93,7 +93,7 @@
           </div>
         </v-form>
 
-        <confirm-dialog v-model="dialog" :confirm="confirm" />
+        <confirm-dialog v-model="dialog" :confirm="confirm" v-on:submit="submit()" />
       </v-col>
     </v-row>
   </v-container>
@@ -296,16 +296,15 @@ export default class Home extends Vue {
    * Submits data to Firebase
    */
   submit() {
-    console.log("submit"); // temp
     if (this.error == "") {
-      console.log("success"); // temp
+      console.log("submit()"); // temp
       // /* temp
       const db = firebase.firestore();
-      let current_gym = this.gym.toLowerCase();
+      // const current_gym = this.gym.toLowerCase();
       const cf = this.cardioFields;
       const wf = this.weightFields;
       db.collection("gymGranularData")
-        .doc(current_gym)
+        .doc("appel") // change back to current_gym
         .collection("counts")
         .add({
           cardio: {
@@ -320,7 +319,8 @@ export default class Home extends Vue {
             dumbbells: Number.parseInt(wf["dumbbells"].count),
             other: Number.parseInt(wf["other"].count)
           },
-          time: this.time
+          time: this.time,
+          valid: false
         })
         .then(() => {
           this.confirm = "";
@@ -333,8 +333,9 @@ export default class Home extends Vue {
             text: "The data you entered went through!"
           });
         })
-        .catch(() => {
+        .catch(e => {
           this.error = "There was an error in adding the document.";
+          console.log(e); // temp
           return;
         }); // temp */
       this.clearInputs();
