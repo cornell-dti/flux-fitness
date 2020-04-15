@@ -14,9 +14,7 @@
 
         <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
-          <h4 class="font-weight-regular pl-1">
-            {{ time.toDateString() }}
-          </h4>
+          <h4 class="font-weight-regular pl-1">{{ time.toDateString() }}</h4>
         </span>
         <v-text-field
           class="pt-0 mt-0"
@@ -25,9 +23,7 @@
           @input="stopInterval()"
         >
           <div class="h-36px d-flex align-center" slot="prepend">
-            <v-icon color="black">
-              schedule
-            </v-icon>
+            <v-icon color="black">schedule</v-icon>
           </div>
           <v-tooltip slot="append" bottom>
             <template v-slot:activator="{ on }">
@@ -35,9 +31,7 @@
                 <v-icon v-on="on">restore</v-icon>
               </v-btn>
             </template>
-            <span>
-              Reset time to the current time
-            </span>
+            <span>Reset time to the current time</span>
           </v-tooltip>
           <v-tooltip v-model="timeHelp" slot="append-outer" bottom small>
             <template v-slot:activator="{}">
@@ -45,9 +39,7 @@
                 <v-icon>help</v-icon>
               </v-btn>
             </template>
-            <span>
-              The time that will be submitted with the gym counts
-            </span>
+            <span>The time that will be submitted with the gym counts</span>
           </v-tooltip>
         </v-text-field>
 
@@ -59,7 +51,10 @@
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Weights</h2>
-              <p v-if="!!weights"><b>Total:</b> {{ weights }}</p>
+              <p v-if="!!weights">
+                <b>Total:</b>
+                {{ weights }}
+              </p>
             </v-col>
             <v-col class="pt-0">
               <count-text-field
@@ -74,7 +69,10 @@
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Cardio</h2>
-              <p v-if="!!cardio"><b>Total:</b> {{ cardio }}</p>
+              <p v-if="!!cardio">
+                <b>Total:</b>
+                {{ cardio }}
+              </p>
             </v-col>
             <v-col class="pt-0">
               <count-text-field
@@ -88,24 +86,20 @@
 
           <v-row v-if="!!gymTotal">
             <v-col>
-              <h2 class="gym-total"><b>Gym Total: </b>{{ gymTotal }}</h2>
+              <h2 class="gym-total">
+                <b>Gym Total:</b>
+                {{ gymTotal }}
+              </h2>
             </v-col>
           </v-row>
 
-          <v-col>
-            <v-row class="justify-end mt-2 red--text">{{ error }}</v-row>
-            <v-row class="justify-end pt-2">
-              <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-              <v-btn
-                color="blue"
-                outlined
-                :disabled="!valid"
-                @click="validate()"
-              >
-                Submit
-              </v-btn>
-            </v-row>
-          </v-col>
+          <p class="text-right mt-2 red--text">{{ error }}</p>
+          <div class="float-right pt-2">
+            <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
+            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">
+              Submit
+            </v-btn>
+          </div>
         </v-form>
 
         <confirm-dialog v-model="dialog" :confirm="confirm" />
@@ -129,8 +123,8 @@ import GymLimits from "@/data/GymLimits";
   components: {
     TopActions,
     ConfirmDialog,
-    CountTextField
-  }
+    CountTextField,
+  },
 })
 export default class Home extends Vue {
   weightFields: {
@@ -149,9 +143,9 @@ export default class Home extends Vue {
       help: {
         info: `"Other" includes mats and other weight machines not included
                     above`,
-        show: false
-      }
-    }
+        show: false,
+      },
+    },
   };
 
   cardioFields: {
@@ -164,7 +158,7 @@ export default class Home extends Vue {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
-    amts: { label: "AMTs", count: "" }
+    amts: { label: "AMTs", count: "" },
   };
 
   valid = true;
@@ -254,7 +248,7 @@ export default class Home extends Vue {
    */
   goExport() {
     this.$router.push({
-      name: "export"
+      name: "export",
     });
   }
 
@@ -298,17 +292,8 @@ export default class Home extends Vue {
       return;
     }
 
-    const time = new Date();
-    const timeString = time.toLocaleString("en-US", {
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-      timeZone: "America/New_York"
-    });
-    this.time = time;
-
     // TODO: if we have time input, just show the time that they have selected (or current time)
-    this.confirm = `${this.gym} at ${timeString}: there's ${this.cardio} ${
+    this.confirm = `${this.gym} at ${this.timeSelect}: there's ${this.cardio} ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
@@ -330,7 +315,8 @@ export default class Home extends Vue {
         .add({
           cardio: Number.parseInt(this.cardio),
           weights: Number.parseInt(this.weights),
-          time: this.time
+          // TODO: make this use timeSelect
+          time: this.time,
         })
         .then(() => {
           this.confirm = "";
@@ -340,7 +326,7 @@ export default class Home extends Vue {
             type: "success",
             duration: 2500,
             title: "Success",
-            text: "The data you entered went through!"
+            text: "The data you entered went through!",
           });
         })
         .catch(() => {
