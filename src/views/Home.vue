@@ -16,7 +16,12 @@
           <v-icon color="black" left>today</v-icon>
           <h4 class="font-weight-regular pl-1">{{ time.toDateString() }}</h4>
         </span>
-        <v-text-field class="pt-0 mt-0" v-model="timeSelect" type="time" @input="stopInterval()">
+        <v-text-field
+          class="pt-0 mt-0"
+          v-model="timeSelect"
+          type="time"
+          @input="stopInterval()"
+        >
           <div class="h-36px d-flex align-center" slot="prepend">
             <v-icon color="black">schedule</v-icon>
           </div>
@@ -38,7 +43,9 @@
           </v-tooltip>
         </v-text-field>
 
-        <p class="pt-3">Please enter the number of people using the following equipment.</p>
+        <p class="pt-3">
+          Please enter the number of people using the following equipment.
+        </p>
 
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
@@ -89,11 +96,17 @@
           <p class="text-right mt-2 red--text">{{ error }}</p>
           <div class="float-right pt-2">
             <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
+            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">
+              Submit
+            </v-btn>
           </div>
         </v-form>
 
-        <confirm-dialog v-model="dialog" :confirm="confirm" v-on:submit="submit()" />
+        <confirm-dialog
+          v-model="dialog"
+          :confirm="confirm"
+          @submit="submit()"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -114,8 +127,8 @@ import GymLimits from "@/data/GymLimits";
   components: {
     TopActions,
     ConfirmDialog,
-    CountTextField
-  }
+    CountTextField,
+  },
 })
 export default class Home extends Vue {
   weightFields: {
@@ -133,9 +146,9 @@ export default class Home extends Vue {
       count: "",
       help: {
         info: "Mats and weight machines not included above",
-        show: false
-      }
-    }
+        show: false,
+      },
+    },
   };
 
   cardioFields: {
@@ -148,7 +161,7 @@ export default class Home extends Vue {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
-    amts: { label: "AMTs", count: "" }
+    amts: { label: "AMTs", count: "" },
   };
 
   valid = true;
@@ -238,7 +251,7 @@ export default class Home extends Vue {
    */
   goExport() {
     this.$router.push({
-      name: "export"
+      name: "export",
     });
   }
 
@@ -311,29 +324,21 @@ export default class Home extends Vue {
             treadmills: Number.parseInt(cf["treadmills"].count),
             ellipticals: Number.parseInt(cf["ellipticals"].count),
             bikes: Number.parseInt(cf["bikes"].count),
-            amts: Number.parseInt(cf["amts"].count)
+            amts: Number.parseInt(cf["amts"].count),
           },
           weights: {
             powerRacks: Number.parseInt(wf["powerRacks"].count),
             benchPress: Number.parseInt(wf["benchPress"].count),
             dumbbells: Number.parseInt(wf["dumbbells"].count),
-            other: Number.parseInt(wf["other"].count)
+            other: Number.parseInt(wf["other"].count),
           },
           time: this.time,
-          valid: false
+          valid: false,
         })
         .then(() => {
           this.confirm = "";
-          // TODO: change this to not use Vue notify
-          this.$notify({
-            group: "default_group",
-            type: "success",
-            duration: 2500,
-            title: "Success",
-            text: "The data you entered went through!"
-          });
         })
-        .catch(e => {
+        .catch((e) => {
           this.error = "There was an error in adding the document.";
           console.log(e); // temp
           return;
