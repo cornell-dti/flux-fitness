@@ -1,12 +1,21 @@
 <template>
-  <v-dialog :value="value" max-width="350">
+  <v-dialog :value="value" max-width="350" @click:outside="exitDialog()">
     <v-card>
       <v-card-title>Confirm Submission</v-card-title>
       <v-card-text>{{ confirm }}</v-card-text>
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="exitDialog()">Edit</v-btn>
-        <v-btn text color="green" @click="exitDialog(); submit()">Confirm</v-btn>
+        <v-btn
+          text
+          color="green"
+          @click="
+            exitDialog();
+            submit();
+          "
+        >
+          Confirm
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
