@@ -6,19 +6,19 @@
 const GymLimits: {
   [key: string]: { cardio: number; other: number };
 } = {
-  Teagle: {
+  teagle: {
     cardio: 42,
     other: 86
   },
-  Noyes: {
+  noyes: {
     cardio: 32,
     other: 40
   },
-  "Helen Newman": {
+  "helen-newman": {
     cardio: 35,
     other: 51
   },
-  Appel: {
+  appel: {
     cardio: 20,
     other: 40
   }
