@@ -8,7 +8,7 @@ const Gyms: {
   id: string;
 }[] = [
   { name: "Appel", id: "appel" },
-  { name: "Helen Newman", id: "helen_newman" },
+  { name: "Helen Newman", id: "helen-newman" },
   { name: "Teagle", id: "teagle" },
   { name: "Noyes", id: "noyes" }
 ];
