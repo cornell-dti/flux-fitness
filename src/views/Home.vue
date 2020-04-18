@@ -10,11 +10,11 @@
 
     <v-row>
       <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-3 mx-auto">
-        <h1 class="mb-2">{{ gym }}</h1>
+        <h1 class="mb-2">{{ gymName }}</h1>
 
         <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
-          <h4 class="font-weight-regular pl-1">{{ time.toDateString() }}</h4>
+          <h4 class="font-weight-regular pl-1">{{ new Date().toDateString() }}</h4>
         </span>
         <v-text-field
           class="pt-0 mt-0"
@@ -166,13 +166,13 @@ export default class Home extends Vue {
 
   valid = true;
 
-  time = new Date();
-  timeSelect = this.time.toTimeString().substring(0, 8);
+  timeSelect = new Date().toTimeString().substring(0, 8);
   timeInterval: any = null;
   timeEditted = false;
   timeHelp = false;
 
-  gym = "";
+  gymName = "";
+  gymId = "";
   readonly limits = GymLimits;
 
   dialog = false;
@@ -181,20 +181,20 @@ export default class Home extends Vue {
 
   get weights(): string {
     const wf = this.weightFields;
-    const prNum = Number.parseInt(wf["powerRacks"].count);
-    const bpNum = Number.parseInt(wf["benchPress"].count);
-    const dbNum = Number.parseInt(wf["dumbbells"].count);
-    const otNum = Number.parseInt(wf["other"].count);
+    const prNum = Number.parseInt(wf.powerRacks.count);
+    const bpNum = Number.parseInt(wf.benchPress.count);
+    const dbNum = Number.parseInt(wf.dumbbells.count);
+    const otNum = Number.parseInt(wf.other.count);
     if (isNaN(prNum) || isNaN(bpNum) || isNaN(dbNum) || isNaN(otNum)) return "";
     return (prNum + bpNum + dbNum + otNum).toString();
   }
 
   get cardio(): string {
     const cf = this.cardioFields;
-    const tmNum = Number.parseInt(cf["treadmills"].count);
-    const elNum = Number.parseInt(cf["ellipticals"].count);
-    const bkNum = Number.parseInt(cf["bikes"].count);
-    const amNum = Number.parseInt(cf["amts"].count);
+    const tmNum = Number.parseInt(cf.treadmills.count);
+    const elNum = Number.parseInt(cf.ellipticals.count);
+    const bkNum = Number.parseInt(cf.bikes.count);
+    const amNum = Number.parseInt(cf.amts.count);
     if (isNaN(tmNum) || isNaN(elNum) || isNaN(bkNum) || isNaN(amNum)) return "";
     return (tmNum + elNum + bkNum + amNum).toString();
   }
@@ -220,8 +220,9 @@ export default class Home extends Vue {
    * Also, starts the time interval
    */
   mounted() {
-    if (localStorage.gym) {
-      this.gym = localStorage.gym;
+    if (localStorage.gymId) {
+      this.gymName = localStorage.gymName;
+      this.gymId = localStorage.gymId;
       this.startInterval(1000);
     } else {
       this.$router.push({ name: "login" });
@@ -276,8 +277,11 @@ export default class Home extends Vue {
    * Validates data and opens confirmation dialog
    */
   validate() {
+    // call form validation
     this.form.validate();
+    // clear error
     this.error = "";
+
     if (!this.weights || !this.cardio) {
       this.error = "Please verify your data.";
       return;
@@ -285,18 +289,17 @@ export default class Home extends Vue {
     const weightsNum = Number.parseInt(this.weights);
     const cardioNum = Number.parseInt(this.cardio);
 
-    const gymLimits = this.limits[this.gym];
+    const gymLimits = this.limits[this.gymId];
     if (cardioNum > gymLimits.cardio) {
-      this.error = `${this.gym} does not have space for ${cardioNum} cardio.`;
+      this.error = `${this.gymName} does not have space for ${cardioNum} cardio.`;
       return;
     }
     if (weightsNum > gymLimits.other) {
-      this.error = `${this.gym} does not have space for ${weightsNum} weights.`;
+      this.error = `${this.gymName} does not have space for ${weightsNum} weights.`;
       return;
     }
 
-    // TODO: if we have time input, just show the time that they have selected (or current time)
-    this.confirm = `${this.gym} at ${this.timeSelect}: there's ${this.cardio} ${
+    this.confirm = `${this.gymName} at ${this.timeSelect}: there's ${this.cardio} ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
@@ -309,46 +312,38 @@ export default class Home extends Vue {
    * Submits data to Firebase
    */
   submit() {
-    if (this.error == "") {
-      console.log("submit()"); // temp
-      // /* temp
-      const db = firebase.firestore();
-      // const current_gym = this.gym.toLowerCase();
-      const cf = this.cardioFields;
-      const wf = this.weightFields;
-      db.collection("gymGranularData")
-        .doc("appel") // change back to current_gym
-        .collection("counts")
-        .add({
-          cardio: {
-            treadmills: Number.parseInt(cf["treadmills"].count),
-            ellipticals: Number.parseInt(cf["ellipticals"].count),
-            bikes: Number.parseInt(cf["bikes"].count),
-            amts: Number.parseInt(cf["amts"].count),
-          },
-          weights: {
-            powerRacks: Number.parseInt(wf["powerRacks"].count),
-            benchPress: Number.parseInt(wf["benchPress"].count),
-            dumbbells: Number.parseInt(wf["dumbbells"].count),
-            other: Number.parseInt(wf["other"].count),
-          },
-          time: this.time,
-          valid: false,
-        })
-        .then(() => {
-          this.confirm = "";
-        })
-        .catch((e) => {
-          this.error = "There was an error in adding the document.";
-          console.log(e); // temp
-          return;
-        }); // temp */
-      this.clearInputs();
-      this.confirm = "";
-    } else {
-      this.error = "You can't submit this data.";
-      return;
-    }
+    const db = firebase.firestore();
+    const cf = this.cardioFields;
+    const wf = this.weightFields;
+    db.collection("gymGranularData")
+      .doc(this.gymId)
+      .collection("counts")
+      .add({
+        cardio: {
+          treadmills: Number.parseInt(cf.treadmills.count),
+          ellipticals: Number.parseInt(cf.ellipticals.count),
+          bikes: Number.parseInt(cf.bikes.count),
+          amts: Number.parseInt(cf.amts.count),
+        },
+        weights: {
+          powerRacks: Number.parseInt(wf.powerRacks.count),
+          benchPress: Number.parseInt(wf.benchPress.count),
+          dumbbells: Number.parseInt(wf.dumbbells.count),
+          other: Number.parseInt(wf.other.count),
+        },
+        // TODO: store chosen time instead of just current
+        time: new Date(),
+        // TODO: change this to `true` for deployment
+        valid: false,
+      })
+      .then(() => {
+        this.confirm = "";
+        this.clearInputs();
+      })
+      .catch(() => {
+        this.error = "There was an error in adding the document.";
+        return;
+      });
   }
 
   /**
