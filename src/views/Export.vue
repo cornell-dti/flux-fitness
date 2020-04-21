@@ -2,7 +2,9 @@
   <app-card>
     <div class="text">
       <h1>Export</h1>
-      <p>Export data.</p>
+      <div class="text">
+        <p>Export data from a time range (inclusive).</p>
+      </div>
     </div>
     <form class="date-form">
       <div class="date-select">
@@ -19,6 +21,7 @@
     <div id="error">{{error}}</div>
     <p :hidden="!downloading">Download is in progress...</p>
     <action-button-group
+      id="done"
       :require-confirmation="true"
       v-on:submitted="handler()"
       action-button-text="DONE"
@@ -101,7 +104,8 @@ export default class Settings extends Vue {
 @import "../scss/variables";
 
 .text {
-  padding-right: 30px;
+  margin-right: 30px;
+  margin-top: 20px;
 }
 
 #error {
@@ -111,11 +115,16 @@ export default class Settings extends Vue {
   color: #fa4735;
 }
 
+#done {
+  margin-top: 0px;
+}
+
 .date-input {
   border: solid 1px black;
   border-radius: 5px;
   margin-left: 0px;
-  max-width: 30%;
+  max-width: 35%;
+  padding: 5px;
 }
 
 .date-input::-webkit-inner-spin-button {
