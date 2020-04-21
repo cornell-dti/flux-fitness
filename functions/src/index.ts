@@ -9,7 +9,6 @@ admin.initializeApp({
 });
 
 const db = admin.firestore();
-const gyms = ['teagle', 'helen_newman', 'noyes', 'appel'];
 const round30 = true;
 
 exports.getURL = functions.https.onCall((data: { id: string, startDate: string, endDate: string, offset: number }) => {
@@ -27,7 +26,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     endDate.setDate(endDate.getDate() + 1);
 
     // retrieve data
-    const gymCounts = db.collection('gymdata').doc(gymName).collection('counts').where('time', '>=', startDate).where('time', '<', endDate);
+    const gymCounts = db.collection('gyms').doc(gymName).collection('counts').where('time', '>=', startDate).where('time', '<', endDate);
     const allGymDocs = await gymCounts.get();
     const docs = allGymDocs.docs;
     const wb = XLSX.utils.book_new();

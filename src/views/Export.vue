@@ -34,6 +34,7 @@ import BoxedButton from "@/components/BoxedButton.vue";
 import Vue from "vue";
 import * as firebase from "firebase/app";
 import "firebase/functions";
+import "firebase/storage";
 
 @Component({
   components: {
@@ -75,10 +76,7 @@ export default class Settings extends Vue {
     const getURL = firebase.functions().httpsCallable("getURL");
     // Uncomment if running `npm run shell` for backend functions:
     // firebase.functions().useFunctionsEmulator("http://localhost:5000");
-    let gymId = localStorage.gym.toLowerCase();
-    if (gymId === "helen newman") {
-      gymId = "helen_newman";
-    }
+    let gymId = localStorage.gymId;
     const startDate = this.start_date;
     const endDate = this.end_date;
     const offset = this.offset;
@@ -91,7 +89,8 @@ export default class Settings extends Vue {
           window.open(url);
         });
       })
-      .catch(() => {
+      .catch(e => {
+        console.log("Error downloading.\n" + e);
         this.downloading = false;
       });
   }
