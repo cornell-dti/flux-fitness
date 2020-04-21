@@ -50,7 +50,7 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     for (const d of dates) {
         const fullDateData = docs.filter((doc: any) => {
             const recordedDate = new Date(doc.get('time').toDate().getTime()); // UTC
-            const referenceDate = new Date(d)
+            const referenceDate = new Date(d);
             recordedDate.setHours(0, 0, 0, 0);
             referenceDate.setHours(24, 0, 0, 0);
             return referenceDate.getTime() === recordedDate.getTime();
@@ -81,22 +81,22 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
     }
 
     // populate data
-    const cardioSheet = [];
-    const weightsSheet = [];
+    const cardioGranularSheet = [];
+    const weightsGranularSheet = [];
+    const cardioTotalSheet = [];
+    const weightsTotalSheet = [];
     for (const time of times) {
         const hmDate = new Date(dates[0].getTime() + time * 60000);
-        const cardioRow = [hmDate.toLocaleString("en-US", {
+        const hmString = hmDate.toLocaleString("en-US", {
             hour: "numeric",
             minute: "numeric",
             hour12: true,
             timeZone: 'UTC'
-        })];
-        const weightsRow = [hmDate.toLocaleString("en-US", {
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true,
-            timeZone: 'UTC'
-        })];
+        });
+        const cardioGranularRow = [hmString];
+        const weightsGranularRow = [hmString];
+        const cardioTotalRow = [hmString];
+        const weightsTotalRow = [hmString];
         for (const dateData of separateDates) {
             const timeData = dateData.filter((doc: any) => {
                 const recordedTime = doc.get('time').toDate(); // UTC
@@ -106,28 +106,66 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
             })
             if (timeData.length !== 0) {
                 const doc = timeData[timeData.length - 1]; // latest data entry
-                cardioRow.push(doc.get('cardio'));
-                weightsRow.push(doc.get('weights'));
+                const cardioDoc = doc.get('cardio');
+                const treadmills = cardioDoc.treadmills;
+                const ellipticals = cardioDoc.ellipticals;
+                const bikes = cardioDoc.bikes;
+                const amts = cardioDoc.amts;
+                const cardioGranularCell =
+                    "Treadmills: " + treadmills +
+                    "// Ellipticals: " + ellipticals +
+                    "// ikes: " + bikes +
+                    "// AMTs: " + amts;
+                const cardioTotalCell = treadmills + ellipticals + bikes + amts;
+                const weightsDoc = doc.get('weights');
+                const powerRacks = weightsDoc.powerRacks;
+                const benchPress = weightsDoc.benchPress;
+                const dumbbells = weightsDoc.dumbbells;
+                const other = weightsDoc.other;
+                const weightsGranularCell =
+                    "Power Racks: " + powerRacks +
+                    "// Bench Press: " + benchPress +
+                    "// Dumbbells: " + dumbbells +
+                    "// Other: " + other;
+                const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
+                cardioGranularRow.push(cardioGranularCell);
+                weightsGranularRow.push(weightsGranularCell);
+                cardioTotalRow.push(cardioTotalCell);
+                weightsTotalRow.push(weightsTotalCell);
             }
             else {
-                cardioRow.push('');
-                weightsRow.push('');
+                cardioGranularRow.push('');
+                weightsGranularRow.push('');
+                cardioTotalRow.push('');
+                weightsTotalRow.push('');
             }
         }
-        cardioSheet.push(cardioRow);
-        weightsSheet.push(weightsRow);
+        cardioGranularSheet.push(cardioGranularRow);
+        weightsGranularSheet.push(weightsGranularRow);
+        cardioTotalSheet.push(cardioTotalRow);
+        weightsTotalSheet.push(weightsTotalRow);
     }
 
     // write to spreadsheet
-    cardioSheet.unshift([''].concat(dateHeader));
+    cardioGranularSheet.unshift([''].concat(dateHeader));
     wb.SheetNames.push("Cardio");
-    const cardioWS = XLSX.utils.aoa_to_sheet(cardioSheet);
-    wb.Sheets["Cardio"] = cardioWS;
+    const cardioGranularWS = XLSX.utils.aoa_to_sheet(cardioGranularSheet);
+    wb.Sheets["Cardio"] = cardioGranularWS;
 
-    weightsSheet.unshift([''].concat(dateHeader));
+    weightsGranularSheet.unshift([''].concat(dateHeader));
     wb.SheetNames.push("Weights");
-    const weightsWS = XLSX.utils.aoa_to_sheet(weightsSheet);
-    wb.Sheets["Weights"] = weightsWS;
+    const weightsGranularWS = XLSX.utils.aoa_to_sheet(weightsGranularSheet);
+    wb.Sheets["Weights"] = weightsGranularWS;
+
+    cardioTotalSheet.unshift([''].concat(dateHeader));
+    wb.SheetNames.push("Cardio Total");
+    const cardioTotalWS = XLSX.utils.aoa_to_sheet(cardioTotalSheet);
+    wb.Sheets["Cardio Total"] = cardioTotalWS;
+
+    weightsTotalSheet.unshift([''].concat(dateHeader));
+    wb.SheetNames.push("Weights Total");
+    const weightsTotalWS = XLSX.utils.aoa_to_sheet(weightsTotalSheet);
+    wb.Sheets["Weights Total"] = weightsTotalWS;
 
     const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'buffer' });
     const storage = admin.storage();

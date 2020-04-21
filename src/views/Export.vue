@@ -54,7 +54,7 @@ export default class Settings extends Vue {
     .toISOString()
     .substring(0, 10);
   start_date = new Date(
-    new Date(this.end_date).getTime() - 60 * 60 * 24 * 7 * 1000
+    new Date(this.end_date).getTime() - 60 * 60 * 24 * 6 * 1000
   )
     .toISOString()
     .substring(0, 10);
@@ -78,7 +78,7 @@ export default class Settings extends Vue {
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
     // Uncomment if running `npm run shell` for backend functions:
-    // firebase.functions().useFunctionsEmulator("http://localhost:5000");
+    firebase.functions().useFunctionsEmulator("http://localhost:5000");
     let gymId = localStorage.gymId;
     const startDate = this.start_date;
     const endDate = this.end_date;
