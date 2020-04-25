@@ -17,6 +17,14 @@
           <v-icon :size="20" color="black">schedule</v-icon>
         </v-progress-circular>
       </div>
+      <v-tooltip slot="append" bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon small :disabled="resetDisabled" @click="$emit('reset')">
+            <v-icon v-on="on">restore</v-icon>
+          </v-btn>
+        </template>
+        <span>Reset time to the current time</span>
+      </v-tooltip>
     </v-text-field>
   </v-col>
 </template>
@@ -33,6 +41,9 @@ export default class TimeTextField extends Vue {
 
   @Prop()
   readonly seconds!: number;
+
+  @Prop()
+  readonly resetDisabled!: boolean;
 
   readonly inputCharLimit = 8;
   readonly rules = [
