@@ -14,9 +14,7 @@
 
         <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
-          <h4 class="font-weight-regular pl-1">
-            {{ new Date().toDateString() }}
-          </h4>
+          <h4 class="font-weight-regular pl-1">{{ this.getDate() }}</h4>
         </span>
 
         <v-form ref="form" v-model="valid" lazy-validation>
@@ -27,9 +25,7 @@
             @input="stopInterval"
             @reset="startInterval"
           />
-          <p class="pt-3">
-            Please enter the number of people using the following equipment.
-          </p>
+          <p class="pt-3">Please enter the number of people using the following equipment.</p>
 
           <v-row>
             <v-col cols="12" sm="6">
@@ -79,17 +75,11 @@
           <p class="text-right mt-2 red--text">{{ error }}</p>
           <div class="float-right pt-2">
             <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined :disabled="!valid" @click="validate()"
-              >Submit</v-btn
-            >
+            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
           </div>
         </v-form>
 
-        <confirm-dialog
-          v-model="dialog"
-          :confirm="confirm"
-          @submit="submit()"
-        />
+        <confirm-dialog v-model="dialog" :confirm="confirm" @submit="submit()" />
       </v-col>
     </v-row>
   </v-container>
@@ -106,14 +96,15 @@ import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import CountTextField from "@/components/Home/CountTextField.vue";
 import TimeTextField from "@/components/Home/TimeTextField.vue";
 import GymLimits from "@/data/GymLimits";
+import moment from "moment";
 
 @Component({
   components: {
     TopActions,
     ConfirmDialog,
     CountTextField,
-    TimeTextField,
-  },
+    TimeTextField
+  }
 })
 export default class Home extends Vue {
   weightFields: {
@@ -131,9 +122,9 @@ export default class Home extends Vue {
       count: "",
       help: {
         info: "Mats and weight machines not included above",
-        show: false,
-      },
-    },
+        show: false
+      }
+    }
   };
 
   cardioFields: {
@@ -146,7 +137,7 @@ export default class Home extends Vue {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
-    amts: { label: "AMTs", count: "" },
+    amts: { label: "AMTs", count: "" }
   };
 
   valid = true;
@@ -164,13 +155,14 @@ export default class Home extends Vue {
   confirm = "";
   error = "";
 
+  getDate(): string {
+    const date = moment(this.dateTime);
+    return date.format("dddd MMMM Do, YYYY");
+  }
+
   getTime(): string {
-    const hr = this.dateTime.getHours();
-    const min = this.dateTime.getMinutes();
-    const amPm = hr < 12 ? "AM" : "PM";
-    const fixedHr = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
-    const fixedMin = min < 10 ? `0${min}` : `${min}`;
-    return `${fixedHr}:${fixedMin} ${amPm}`;
+    const time = moment(this.dateTime);
+    return time.format("h:mm A");
   }
 
   get time(): string {
@@ -178,7 +170,7 @@ export default class Home extends Vue {
   }
 
   set time(value: string) {
-    // TODO: is there a better way of doing this
+    // TODO: use moment
     if (value.length < 8) {
       value = "0" + value;
     }
@@ -279,7 +271,7 @@ export default class Home extends Vue {
    */
   goExport() {
     this.$router.push({
-      name: "export",
+      name: "export"
     });
   }
 
@@ -363,17 +355,17 @@ export default class Home extends Vue {
           treadmills: Number.parseInt(cf.treadmills.count),
           ellipticals: Number.parseInt(cf.ellipticals.count),
           bikes: Number.parseInt(cf.bikes.count),
-          amts: Number.parseInt(cf.amts.count),
+          amts: Number.parseInt(cf.amts.count)
         },
         weights: {
           powerRacks: Number.parseInt(wf.powerRacks.count),
           benchPress: Number.parseInt(wf.benchPress.count),
           dumbbells: Number.parseInt(wf.dumbbells.count),
-          other: Number.parseInt(wf.other.count),
+          other: Number.parseInt(wf.other.count)
         },
         time: this.dateTime,
         // TODO: change this to `true` for deployment
-        valid: false,
+        valid: false
       })
       .then(() => {
         this.confirm = "";
