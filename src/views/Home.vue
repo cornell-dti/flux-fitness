@@ -14,33 +14,23 @@
 
         <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
-          <h4 class="font-weight-regular pl-1">{{ new Date().toDateString() }}</h4>
+          <h4 class="font-weight-regular pl-1">
+            {{ new Date().toDateString() }}
+          </h4>
         </span>
-        <v-text-field class="pt-0 mt-0" v-model="timeSelect" type="time" @input="stopInterval()">
-          <div class="h-36px d-flex align-center" slot="prepend">
-            <v-icon color="black">schedule</v-icon>
-          </div>
-          <v-tooltip slot="append" bottom>
-            <template v-slot:activator="{ on }">
-              <v-btn icon :disabled="!timeEditted" @click="startInterval()">
-                <v-icon v-on="on">restore</v-icon>
-              </v-btn>
-            </template>
-            <span>Reset time to the current time</span>
-          </v-tooltip>
-          <v-tooltip v-model="timeHelp" slot="append-outer" bottom small>
-            <template v-slot:activator="{}">
-              <v-btn icon @click="timeHelp = !timeHelp">
-                <v-icon>help</v-icon>
-              </v-btn>
-            </template>
-            <span>Time that will be submitted with the gym counts</span>
-          </v-tooltip>
-        </v-text-field>
-
-        <p class="pt-3">Please enter the number of people using the following equipment.</p>
 
         <v-form ref="form" v-model="valid" lazy-validation>
+          <time-text-field
+            v-model="time"
+            :reset-disabled="!timeEditted"
+            :seconds="dateTime.getSeconds()"
+            @input="stopInterval"
+            @reset="startInterval"
+          />
+          <p class="pt-3">
+            Please enter the number of people using the following equipment.
+          </p>
+
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Weights</h2>
@@ -89,11 +79,17 @@
           <p class="text-right mt-2 red--text">{{ error }}</p>
           <div class="float-right pt-2">
             <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
+            <v-btn color="blue" outlined :disabled="!valid" @click="validate()"
+              >Submit</v-btn
+            >
           </div>
         </v-form>
 
-        <confirm-dialog v-model="dialog" :confirm="confirm" @submit="submit()" />
+        <confirm-dialog
+          v-model="dialog"
+          :confirm="confirm"
+          @submit="submit()"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -108,14 +104,16 @@ import Component from "vue-class-component";
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import CountTextField from "@/components/Home/CountTextField.vue";
+import TimeTextField from "@/components/Home/TimeTextField.vue";
 import GymLimits from "@/data/GymLimits";
 
 @Component({
   components: {
     TopActions,
     ConfirmDialog,
-    CountTextField
-  }
+    CountTextField,
+    TimeTextField,
+  },
 })
 export default class Home extends Vue {
   weightFields: {
@@ -133,9 +131,9 @@ export default class Home extends Vue {
       count: "",
       help: {
         info: "Mats and weight machines not included above",
-        show: false
-      }
-    }
+        show: false,
+      },
+    },
   };
 
   cardioFields: {
@@ -148,12 +146,12 @@ export default class Home extends Vue {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
-    amts: { label: "AMTs", count: "" }
+    amts: { label: "AMTs", count: "" },
   };
 
   valid = true;
 
-  timeSelect = new Date().toTimeString().substring(0, 8);
+  dateTime = new Date();
   timeInterval: any = null;
   timeEditted = false;
   timeHelp = false;
@@ -165,6 +163,48 @@ export default class Home extends Vue {
   dialog = false;
   confirm = "";
   error = "";
+
+  getTime(): string {
+    const hr = this.dateTime.getHours();
+    const min = this.dateTime.getMinutes();
+    const amPm = hr < 12 ? "AM" : "PM";
+    const fixedHr = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    const fixedMin = min < 10 ? `0${min}` : `${min}`;
+    return `${fixedHr}:${fixedMin} ${amPm}`;
+  }
+
+  get time(): string {
+    return this.getTime();
+  }
+
+  set time(value: string) {
+    // TODO: is there a better way of doing this
+    if (value.length < 8) {
+      value = "0" + value;
+    }
+    const hr = Number.parseInt(value.substring(0, 2));
+    const min = Number.parseInt(value.substring(3, 5));
+    const amPm = value.substring(6, 8).toLowerCase();
+    const fixedHr = amPm === "pm" && hr !== 12 ? hr + 12 : hr === 12 ? 0 : hr;
+    const setDate = new Date();
+    setDate.setHours(fixedHr);
+    setDate.setMinutes(min);
+    // validate time
+    if (this.validateTime(setDate)) {
+      this.error = "";
+      this.dateTime.setHours(fixedHr);
+      this.dateTime.setMinutes(min);
+      console.log(this.dateTime.toLocaleString());
+    } else {
+      this.error = "Only submissions within the past 30 minutes are valid.";
+    }
+  }
+
+  validateTime(time: Date) {
+    const diff = new Date().getTime() - time.getTime();
+    // check if new time is in the last 30 min
+    return diff < 30 * 60 * 1000 && diff >= 0;
+  }
 
   get weights(): string {
     const wf = this.weightFields;
@@ -222,7 +262,7 @@ export default class Home extends Vue {
   startInterval(interval: number) {
     this.timeEditted = false;
     this.timeInterval = setInterval(() => {
-      this.timeSelect = new Date().toTimeString().substring(0, 8);
+      this.dateTime = new Date();
     }, interval);
   }
 
@@ -239,7 +279,7 @@ export default class Home extends Vue {
    */
   goExport() {
     this.$router.push({
-      name: "export"
+      name: "export",
     });
   }
 
@@ -264,11 +304,13 @@ export default class Home extends Vue {
    * Validates data and opens confirmation dialog
    */
   validate() {
-    // call form validation
+    // call Vuetify form validation
     this.form.validate();
+
     // clear error
     this.error = "";
 
+    // check if data is empty
     if (!this.weights || !this.cardio) {
       this.error = "Please verify your data.";
       return;
@@ -276,6 +318,7 @@ export default class Home extends Vue {
     const weightsNum = Number.parseInt(this.weights);
     const cardioNum = Number.parseInt(this.cardio);
 
+    // check gym limits
     const gymLimits = this.limits[this.gymId];
     if (cardioNum > gymLimits.cardio) {
       this.error = `${this.gymName} does not have space for ${cardioNum} cardio.`;
@@ -286,7 +329,15 @@ export default class Home extends Vue {
       return;
     }
 
-    this.confirm = `${this.gymName} at ${this.timeSelect}: there's ${
+    // check time
+    if (!this.validateTime(this.dateTime)) {
+      this.error = "Only submissions within the past 30 minutes are valid.";
+      return;
+    }
+
+    // TODO: redesign confirm dialog
+    // create confirmation message
+    this.confirm = `${this.gymName} at ${this.getTime()}: there's ${
       this.cardio
     } ${
       this.cardio === "1" ? " person" : " people"
@@ -312,18 +363,17 @@ export default class Home extends Vue {
           treadmills: Number.parseInt(cf.treadmills.count),
           ellipticals: Number.parseInt(cf.ellipticals.count),
           bikes: Number.parseInt(cf.bikes.count),
-          amts: Number.parseInt(cf.amts.count)
+          amts: Number.parseInt(cf.amts.count),
         },
         weights: {
           powerRacks: Number.parseInt(wf.powerRacks.count),
           benchPress: Number.parseInt(wf.benchPress.count),
           dumbbells: Number.parseInt(wf.dumbbells.count),
-          other: Number.parseInt(wf.other.count)
+          other: Number.parseInt(wf.other.count),
         },
-        // TODO: store chosen time instead of just current
-        time: new Date(),
+        time: this.dateTime,
         // TODO: change this to `true` for deployment
-        valid: false
+        valid: false,
       })
       .then(() => {
         this.confirm = "";
