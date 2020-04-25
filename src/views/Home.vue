@@ -16,28 +16,8 @@
           <v-icon color="black" left>today</v-icon>
           <h4 class="font-weight-regular pl-1">{{ new Date().toDateString() }}</h4>
         </span>
-        <v-text-field class="pt-0 mt-0" v-model="timeSelect" type="time" @input="stopInterval()">
-          <div class="h-36px d-flex align-center" slot="prepend">
-            <v-icon color="black">schedule</v-icon>
-          </div>
-          <v-tooltip slot="append" bottom>
-            <template v-slot:activator="{ on }">
-              <v-btn icon :disabled="!timeEditted" @click="startInterval()">
-                <v-icon v-on="on">restore</v-icon>
-              </v-btn>
-            </template>
-            <span>Reset time to the current time</span>
-          </v-tooltip>
-          <v-tooltip v-model="timeHelp" slot="append-outer" bottom small>
-            <template v-slot:activator="{}">
-              <v-btn icon @click="timeHelp = !timeHelp">
-                <v-icon>help</v-icon>
-              </v-btn>
-            </template>
-            <span>Time that will be submitted with the gym counts</span>
-          </v-tooltip>
-        </v-text-field>
 
+        <time-text-field v-model="time" @input="stopInterval" :seconds="dateTime.getSeconds()" />
         <p class="pt-3">Please enter the number of people using the following equipment.</p>
 
         <v-form ref="form" v-model="valid" lazy-validation>
@@ -108,14 +88,16 @@ import Component from "vue-class-component";
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import CountTextField from "@/components/Home/CountTextField.vue";
+import TimeTextField from "@/components/Home/TimeTextField.vue";
 import GymLimits from "@/data/GymLimits";
 
 @Component({
   components: {
     TopActions,
     ConfirmDialog,
-    CountTextField
-  }
+    CountTextField,
+    TimeTextField,
+  },
 })
 export default class Home extends Vue {
   weightFields: {
@@ -133,9 +115,9 @@ export default class Home extends Vue {
       count: "",
       help: {
         info: "Mats and weight machines not included above",
-        show: false
-      }
-    }
+        show: false,
+      },
+    },
   };
 
   cardioFields: {
@@ -148,12 +130,31 @@ export default class Home extends Vue {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
-    amts: { label: "AMTs", count: "" }
+    amts: { label: "AMTs", count: "" },
   };
 
   valid = true;
 
-  timeSelect = new Date().toTimeString().substring(0, 8);
+  dateTime = new Date();
+
+  get time(): string {
+    const hr = this.dateTime.getHours();
+    const min = this.dateTime.getMinutes();
+    const amPm = hr < 12 ? "AM" : "PM";
+    const fixedHr = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    const fixedMin = min < 10 ? `0${min}` : `${min}`;
+    return `${fixedHr}:${fixedMin} ${amPm}`;
+  }
+
+  set time(value: string) {
+    const hr = Number.parseInt(value.substring(0, 2));
+    const min = Number.parseInt(value.substring(3, 5));
+    const amPm = value.substring(6, 8).toLowerCase();
+    const fixedHr = amPm === "pm" && hr !== 12 ? hr + 12 : hr === 12 ? 0 : hr;
+    this.dateTime.setHours(fixedHr);
+    this.dateTime.setMinutes(min);
+  }
+
   timeInterval: any = null;
   timeEditted = false;
   timeHelp = false;
@@ -222,7 +223,7 @@ export default class Home extends Vue {
   startInterval(interval: number) {
     this.timeEditted = false;
     this.timeInterval = setInterval(() => {
-      this.timeSelect = new Date().toTimeString().substring(0, 8);
+      this.dateTime = new Date();
     }, interval);
   }
 
@@ -239,7 +240,7 @@ export default class Home extends Vue {
    */
   goExport() {
     this.$router.push({
-      name: "export"
+      name: "export",
     });
   }
 
@@ -286,7 +287,7 @@ export default class Home extends Vue {
       return;
     }
 
-    this.confirm = `${this.gymName} at ${this.timeSelect}: there's ${
+    this.confirm = `${this.gymName} at ${this.time}: there's ${
       this.cardio
     } ${
       this.cardio === "1" ? " person" : " people"
@@ -312,18 +313,17 @@ export default class Home extends Vue {
           treadmills: Number.parseInt(cf.treadmills.count),
           ellipticals: Number.parseInt(cf.ellipticals.count),
           bikes: Number.parseInt(cf.bikes.count),
-          amts: Number.parseInt(cf.amts.count)
+          amts: Number.parseInt(cf.amts.count),
         },
         weights: {
           powerRacks: Number.parseInt(wf.powerRacks.count),
           benchPress: Number.parseInt(wf.benchPress.count),
           dumbbells: Number.parseInt(wf.dumbbells.count),
-          other: Number.parseInt(wf.other.count)
+          other: Number.parseInt(wf.other.count),
         },
-        // TODO: store chosen time instead of just current
-        time: new Date(),
+        time: this.dateTime,
         // TODO: change this to `true` for deployment
-        valid: false
+        valid: false,
       })
       .then(() => {
         this.confirm = "";
