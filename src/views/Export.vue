@@ -38,6 +38,7 @@ import Vue from "vue";
 import * as firebase from "firebase/app";
 import "firebase/functions";
 import "firebase/storage";
+import moment from "moment";
 
 @Component({
   components: {
@@ -50,14 +51,10 @@ export default class Settings extends Vue {
   active = false;
   downloading = false;
   offset = new Date().getTimezoneOffset();
-  end_date = new Date(new Date().getTime() - this.offset * 60000)
-    .toISOString()
-    .substring(0, 10);
-  start_date = new Date(
-    new Date(this.end_date).getTime() - 60 * 60 * 24 * 6 * 1000
-  )
-    .toISOString()
-    .substring(0, 10);
+  end_date = moment().format("YYYY-MM-DD");
+  start_date = moment()
+    .subtract(6, "days")
+    .format("YYYY-MM-DD");
   error = "";
 
   handler() {
@@ -78,7 +75,7 @@ export default class Settings extends Vue {
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
     // Uncomment if running `npm run shell` for backend functions:
-    firebase.functions().useFunctionsEmulator("http://localhost:5000");
+    // firebase.functions().useFunctionsEmulator("http://localhost:5000");
     let gymId = localStorage.gymId;
     const startDate = this.start_date;
     const endDate = this.end_date;

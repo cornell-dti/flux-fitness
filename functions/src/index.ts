@@ -1,7 +1,8 @@
 const serviceAccount = require('../firebase.json');
 const admin = require('firebase-admin');
-const XLSX = require('xlsx');
 const functions = require('firebase-functions');
+const XLSX = require('xlsx');
+const moment = require('moment');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -111,22 +112,22 @@ async function getData(gymName: string, startDate: Date, endDate: Date, offset: 
                 const ellipticals = cardioDoc.ellipticals;
                 const bikes = cardioDoc.bikes;
                 const amts = cardioDoc.amts;
-                const cardioGranularCell =
+                const cardioGranularCell = // TODO change to newlines
                     "Treadmills: " + treadmills +
-                    "// Ellipticals: " + ellipticals +
-                    "// ikes: " + bikes +
-                    "// AMTs: " + amts;
+                    " // Ellipticals: " + ellipticals +
+                    " // Bikes: " + bikes +
+                    " // AMTs: " + amts;
                 const cardioTotalCell = treadmills + ellipticals + bikes + amts;
                 const weightsDoc = doc.get('weights');
                 const powerRacks = weightsDoc.powerRacks;
                 const benchPress = weightsDoc.benchPress;
                 const dumbbells = weightsDoc.dumbbells;
                 const other = weightsDoc.other;
-                const weightsGranularCell =
+                const weightsGranularCell = // TODO change to newlines
                     "Power Racks: " + powerRacks +
-                    "// Bench Press: " + benchPress +
-                    "// Dumbbells: " + dumbbells +
-                    "// Other: " + other;
+                    " // Bench Press: " + benchPress +
+                    " // Dumbbells: " + dumbbells +
+                    " // Other: " + other;
                 const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
                 cardioGranularRow.push(cardioGranularCell);
                 weightsGranularRow.push(weightsGranularCell);
