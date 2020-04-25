@@ -19,16 +19,18 @@
           </h4>
         </span>
 
-        <time-text-field
-          v-model="time"
-          @input="stopInterval"
-          :seconds="dateTime.getSeconds()"
-        />
-        <p class="pt-3">
-          Please enter the number of people using the following equipment.
-        </p>
-
         <v-form ref="form" v-model="valid" lazy-validation>
+          <time-text-field
+            v-model="time"
+            :reset-disabled="!timeEditted"
+            :seconds="dateTime.getSeconds()"
+            @input="stopInterval"
+            @reset="startInterval"
+          />
+          <p class="pt-3">
+            Please enter the number of people using the following equipment.
+          </p>
+
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Weights</h2>
@@ -150,25 +152,6 @@ export default class Home extends Vue {
   valid = true;
 
   dateTime = new Date();
-
-  get time(): string {
-    const hr = this.dateTime.getHours();
-    const min = this.dateTime.getMinutes();
-    const amPm = hr < 12 ? "AM" : "PM";
-    const fixedHr = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
-    const fixedMin = min < 10 ? `0${min}` : `${min}`;
-    return `${fixedHr}:${fixedMin} ${amPm}`;
-  }
-
-  set time(value: string) {
-    const hr = Number.parseInt(value.substring(0, 2));
-    const min = Number.parseInt(value.substring(3, 5));
-    const amPm = value.substring(6, 8).toLowerCase();
-    const fixedHr = amPm === "pm" && hr !== 12 ? hr + 12 : hr === 12 ? 0 : hr;
-    this.dateTime.setHours(fixedHr);
-    this.dateTime.setMinutes(min);
-  }
-
   timeInterval: any = null;
   timeEditted = false;
   timeHelp = false;
@@ -180,6 +163,48 @@ export default class Home extends Vue {
   dialog = false;
   confirm = "";
   error = "";
+
+  getTime(): string {
+    const hr = this.dateTime.getHours();
+    const min = this.dateTime.getMinutes();
+    const amPm = hr < 12 ? "AM" : "PM";
+    const fixedHr = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+    const fixedMin = min < 10 ? `0${min}` : `${min}`;
+    return `${fixedHr}:${fixedMin} ${amPm}`;
+  }
+
+  get time(): string {
+    return this.getTime();
+  }
+
+  set time(value: string) {
+    // TODO: is there a better way of doing this
+    if (value.length < 8) {
+      value = "0" + value;
+    }
+    const hr = Number.parseInt(value.substring(0, 2));
+    const min = Number.parseInt(value.substring(3, 5));
+    const amPm = value.substring(6, 8).toLowerCase();
+    const fixedHr = amPm === "pm" && hr !== 12 ? hr + 12 : hr === 12 ? 0 : hr;
+    const setDate = new Date();
+    setDate.setHours(fixedHr);
+    setDate.setMinutes(min);
+    // validate time
+    if (this.validateTime(setDate)) {
+      this.error = "";
+      this.dateTime.setHours(fixedHr);
+      this.dateTime.setMinutes(min);
+      console.log(this.dateTime.toLocaleString());
+    } else {
+      this.error = "Only submissions within the past 30 minutes are valid.";
+    }
+  }
+
+  validateTime(time: Date) {
+    const diff = new Date().getTime() - time.getTime();
+    // check if new time is in the last 30 min
+    return diff < 30 * 60 * 1000 && diff >= 0;
+  }
 
   get weights(): string {
     const wf = this.weightFields;
@@ -279,11 +304,13 @@ export default class Home extends Vue {
    * Validates data and opens confirmation dialog
    */
   validate() {
-    // call form validation
+    // call Vuetify form validation
     this.form.validate();
+
     // clear error
     this.error = "";
 
+    // check if data is empty
     if (!this.weights || !this.cardio) {
       this.error = "Please verify your data.";
       return;
@@ -291,6 +318,7 @@ export default class Home extends Vue {
     const weightsNum = Number.parseInt(this.weights);
     const cardioNum = Number.parseInt(this.cardio);
 
+    // check gym limits
     const gymLimits = this.limits[this.gymId];
     if (cardioNum > gymLimits.cardio) {
       this.error = `${this.gymName} does not have space for ${cardioNum} cardio.`;
@@ -301,7 +329,17 @@ export default class Home extends Vue {
       return;
     }
 
-    this.confirm = `${this.gymName} at ${this.time}: there's ${this.cardio} ${
+    // check time
+    if (!this.validateTime(this.dateTime)) {
+      this.error = "Only submissions within the past 30 minutes are valid.";
+      return;
+    }
+
+    // TODO: redesign confirm dialog
+    // create confirmation message
+    this.confirm = `${this.gymName} at ${this.getTime()}: there's ${
+      this.cardio
+    } ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
