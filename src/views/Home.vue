@@ -14,11 +14,19 @@
 
         <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
-          <h4 class="font-weight-regular pl-1">{{ new Date().toDateString() }}</h4>
+          <h4 class="font-weight-regular pl-1">
+            {{ new Date().toDateString() }}
+          </h4>
         </span>
 
-        <time-text-field v-model="time" @input="stopInterval" :seconds="dateTime.getSeconds()" />
-        <p class="pt-3">Please enter the number of people using the following equipment.</p>
+        <time-text-field
+          v-model="time"
+          @input="stopInterval"
+          :seconds="dateTime.getSeconds()"
+        />
+        <p class="pt-3">
+          Please enter the number of people using the following equipment.
+        </p>
 
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-row>
@@ -69,11 +77,17 @@
           <p class="text-right mt-2 red--text">{{ error }}</p>
           <div class="float-right pt-2">
             <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">Submit</v-btn>
+            <v-btn color="blue" outlined :disabled="!valid" @click="validate()"
+              >Submit</v-btn
+            >
           </div>
         </v-form>
 
-        <confirm-dialog v-model="dialog" :confirm="confirm" @submit="submit()" />
+        <confirm-dialog
+          v-model="dialog"
+          :confirm="confirm"
+          @submit="submit()"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -287,9 +301,7 @@ export default class Home extends Vue {
       return;
     }
 
-    this.confirm = `${this.gymName} at ${this.time}: there's ${
-      this.cardio
-    } ${
+    this.confirm = `${this.gymName} at ${this.time}: there's ${this.cardio} ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
