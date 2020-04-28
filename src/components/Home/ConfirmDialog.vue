@@ -1,24 +1,24 @@
 <template>
-  <v-dialog :value="value" max-width="500" @click:outside="exitDialog()">
+  <v-dialog :value="value" max-width="350" @click:outside="exitDialog()">
     <v-card>
       <v-card-title>Please confirm</v-card-title>
-      <v-card-text>
+      <v-card-text class="black--text">
         <v-row>
           <v-col>
             <div class="d-flex align-center">
-              <v-icon left>today</v-icon>
-              <h4>{{ date }}</h4>
+              <v-icon left color="black">today</v-icon>
+              <h4 class="body-2">{{ date }}</h4>
             </div>
             <div class="d-flex align-center mt-3">
-              <v-icon left>schedule</v-icon>
-              <h4>{{ time }}</h4>
+              <v-icon left color="black">schedule</v-icon>
+              <h4 class="body-2">{{ time }}</h4>
             </div>
           </v-col>
         </v-row>
         <v-row>
           <v-col cols="6">
             <h2>Cardio</h2>
-            <p><b>Total:</b> {{ cardioTotal }}</p>
+            <p class="mt-2 body-1"><b>Total:</b> {{ cardioTotal }}</p>
           </v-col>
           <v-col>
             <p>Treadmills: {{ cardio.treadmills.count }}</p>
@@ -30,7 +30,7 @@
         <v-row>
           <v-col cols="6">
             <h2>Weights</h2>
-            <p><b>Total:</b> {{ weightsTotal }}</p>
+            <p class="mt-2 body-1"><b>Total:</b> {{ weightsTotal }}</p>
           </v-col>
           <v-col>
             <p>Power Racks: {{ weights.powerRacks.count }}</p>
@@ -40,11 +40,10 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="6">
-            <h2>Total</h2>
-          </v-col>
           <v-col>
-            <p>Noyes: {{ gymTotal }}</p>
+            <h2 class="font-weight-regular">
+              <b>{{ gymName }} Total:</b> {{ gymTotal }}
+            </h2>
           </v-col>
         </v-row>
       </v-card-text>
@@ -99,6 +98,9 @@ export default class ConfirmDialog extends Vue {
 
   @Prop({ default: new Date() })
   readonly dateTime!: Date;
+
+  @Prop({ default: "Gym" })
+  readonly gymName!: string;
 
   get date(): string {
     const date = moment(this.dateTime);
