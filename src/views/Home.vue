@@ -105,6 +105,7 @@ import Component from "vue-class-component";
 import moment from "moment";
 // data
 import GymLimits from "@/data/GymLimits";
+import InputFields from "@/data/InputFields";
 // components
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
@@ -120,13 +121,7 @@ import TimeTextField from "@/components/Home/TimeTextField.vue";
   },
 })
 export default class Home extends Vue {
-  weightFields: {
-    [key: string]: {
-      label: string;
-      count: string;
-      help?: { info: string; show: boolean };
-    };
-  } = {
+  weightFields: InputFields = {
     powerRacks: { label: "Power Racks", count: "" },
     benchPress: { label: "Bench Press", count: "" },
     dumbbells: { label: "Dumbbells", count: "" },
@@ -140,13 +135,7 @@ export default class Home extends Vue {
     },
   };
 
-  cardioFields: {
-    [key: string]: {
-      label: string;
-      count: string;
-      help?: { info: string; show: boolean };
-    };
-  } = {
+  cardioFields: InputFields = {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
@@ -164,7 +153,8 @@ export default class Home extends Vue {
   gymId = "";
   readonly limits = GymLimits;
 
-  dialog = false;
+  // TODO: change default back to false for deploy
+  dialog = true;
   confirm = "";
   error = "";
 
