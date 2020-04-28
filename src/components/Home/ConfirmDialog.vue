@@ -25,6 +25,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
+import InputFields from "@/data/InputFields";
 
 @Component({})
 export default class ConfirmDialog extends Vue {
@@ -33,6 +34,12 @@ export default class ConfirmDialog extends Vue {
 
   @Prop({ default: "Confirm" })
   readonly confirm!: string;
+
+  @Prop()
+  readonly weights!: InputFields;
+
+  @Prop()
+  readonly cardio!: InputFields;
 
   exitDialog() {
     this.$emit("input", false);
