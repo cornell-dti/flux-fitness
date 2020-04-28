@@ -18,16 +18,18 @@
         </span>
 
         <v-form ref="form" v-model="valid" lazy-validation>
-          <time-text-field
-            :value="getTime()"
-            :reset-disabled="!timeEditted"
-            :seconds="dateTime.getSeconds()"
-            @input="
-              stopInterval();
-              setTime($event);
-            "
-            @reset="startInterval"
-          />
+          <v-col class="ma-0 pa-0" cols="12" sm="6">
+            <time-text-field
+              :value="getTime()"
+              :reset-disabled="!timeEditted"
+              :seconds="dateTime.getSeconds()"
+              @input="
+                stopInterval();
+                setTime($event);
+              "
+              @reset="startInterval"
+            />
+          </v-col>
           <p class="pt-3">
             Please enter the number of people using the following equipment.
           </p>
