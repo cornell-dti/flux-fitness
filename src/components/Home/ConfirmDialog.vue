@@ -5,39 +5,46 @@
       <v-card-text>
         <v-row>
           <v-col>
-            <h4>Apr 28 2020 | 16:07</h4>
+            <div class="d-flex align-center">
+              <v-icon left>today</v-icon>
+              <h4>{{ date }}</h4>
+            </div>
+            <div class="d-flex align-center mt-3">
+              <v-icon left>schedule</v-icon>
+              <h4>{{ time }}</h4>
+            </div>
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="5">
+          <v-col cols="6">
             <h2>Cardio</h2>
-            <p><b>Total:</b> 0</p>
+            <p><b>Total:</b> {{ cardioTotal }}</p>
           </v-col>
           <v-col>
-            <p>Treadmills: 0</p>
-            <p>Ellipticals: 0</p>
-            <p>Bikes: 0</p>
-            <p>AMTs: 0</p>
+            <p>Treadmills: {{ cardio.treadmills.count }}</p>
+            <p>Ellipticals: {{ cardio.ellipticals.count }}</p>
+            <p>Bikes: {{ cardio.bikes.count }}</p>
+            <p>AMTs: {{ cardio.amts.count }}</p>
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="5">
+          <v-col cols="6">
             <h2>Weights</h2>
-            <p><b>Total:</b> 0</p>
+            <p><b>Total:</b> {{ weightsTotal }}</p>
           </v-col>
           <v-col>
-            <p>Power Racks: 0</p>
-            <p>Benchpress: 0</p>
-            <p>Dumbbells: 0</p>
-            <p>Other: 0</p>
+            <p>Power Racks: {{ weights.powerRacks.count }}</p>
+            <p>Bench Press: {{ weights.benchPress.count }}</p>
+            <p>Dumbbells: {{ weights.dumbbells.count }}</p>
+            <p>Other: {{ weights.other.count }}</p>
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="5">
+          <v-col cols="6">
             <h2>Total</h2>
           </v-col>
           <v-col>
-            <p>Noyes: 0</p>
+            <p>Noyes: {{ gymTotal }}</p>
           </v-col>
         </v-row>
       </v-card-text>
@@ -64,6 +71,7 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 import { Prop } from "vue-property-decorator";
+import moment from "moment";
 import InputFields from "@/data/InputFields";
 
 @Component({})
@@ -78,7 +86,29 @@ export default class ConfirmDialog extends Vue {
   readonly weights!: InputFields;
 
   @Prop()
+  readonly weightsTotal!: string;
+
+  @Prop()
   readonly cardio!: InputFields;
+
+  @Prop()
+  readonly cardioTotal!: string;
+
+  @Prop()
+  readonly gymTotal!: string;
+
+  @Prop({ default: new Date() })
+  readonly dateTime!: Date;
+
+  get date(): string {
+    const date = moment(this.dateTime);
+    return date.format("ddd MMM D, YYYY");
+  }
+
+  get time(): string {
+    const time = moment(this.dateTime);
+    return time.format("h:mm A");
+  }
 
   exitDialog() {
     this.$emit("input", false);

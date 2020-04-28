@@ -89,6 +89,12 @@
         <confirm-dialog
           v-model="dialog"
           :confirm="confirm"
+          :cardio="cardioFields"
+          :weights="weightFields"
+          :cardio-total="cardio"
+          :weights-total="weights"
+          :gym-total="gymTotal"
+          :date-time="dateTime"
           @submit="submit()"
         />
       </v-col>
@@ -154,7 +160,7 @@ export default class Home extends Vue {
   readonly limits = GymLimits;
 
   // TODO: change default back to false for deploy
-  dialog = true;
+  dialog = false;
   confirm = "";
   error = "";
 
