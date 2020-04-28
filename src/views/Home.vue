@@ -70,7 +70,7 @@
 
           <v-row v-if="!!gymTotal">
             <v-col>
-              <h2 class="gym-total">
+              <h2 class="font-weight-regular">
                 <b>Gym Total:</b>
                 {{ gymTotal }}
               </h2>
@@ -95,6 +95,7 @@
           :weights-total="weights"
           :gym-total="gymTotal"
           :date-time="dateTime"
+          :gym-name="gymName"
           @submit="submit()"
         />
       </v-col>
@@ -374,10 +375,6 @@ export default class Home extends Vue {
 </script>
 
 <style lang="scss" scoped>
-.gym-total {
-  font-weight: normal;
-}
-
 .h-36px {
   height: 36px;
 }
