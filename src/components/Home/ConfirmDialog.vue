@@ -6,7 +6,7 @@
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="exitDialog()">Edit</v-btn>
-        <v-btn text color="green" @click="exitDialog()">Confirm</v-btn>
+        <v-btn text color="green" @click="exitDialog();submit()">Confirm</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -29,6 +29,8 @@ export default class ConfirmDialog extends Vue {
     this.$emit("input", false);
   }
 
-  // TODO: create methods for submit
+  submit() {
+    this.$emit("submit")
+  }
 }
 </script>

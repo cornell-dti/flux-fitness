@@ -102,7 +102,7 @@
           </div>
         </v-form>
 
-        <confirm-dialog v-model="dialog" :confirm="confirm" />
+        <confirm-dialog v-model="dialog" :confirm="confirm" @submit="submit()"/>
       </v-col>
     </v-row>
   </v-container>
@@ -306,10 +306,11 @@ export default class Home extends Vue {
    * Submits data to Firebase
    */
   submit() {
+    console.log("lksjdkljskl")
     if (this.weights && this.cardio) {
       const db = firebase.firestore();
       let current_gym = this.gym.toLowerCase();
-      db.collection("gymdata")
+      db.collection("gymdatatest")
         .doc(current_gym)
         .collection("counts")
         .add({
@@ -334,8 +335,6 @@ export default class Home extends Vue {
           return;
         });
         let day = ""
-        console.log("hiiii")
-        console.log(this.time)
         switch (this.time.getDay()) {
           case 0:
             day = "Sunday";
@@ -358,7 +357,7 @@ export default class Home extends Vue {
           case 6:
             day = "Saturday"
         }
-      db.collection("gyms")
+      db.collection("gymstestt")
         .doc(current_gym)
         .collection("history")
         .doc(day)
