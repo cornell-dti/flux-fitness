@@ -333,6 +333,36 @@ export default class Home extends Vue {
           this.error = "There was an error in adding the document.";
           return;
         });
+        let day = ""
+        console.log("hiiii")
+        console.log(this.time)
+        switch (this.time.getDay()) {
+          case 0:
+            day = "Sunday";
+            break;
+          case 1:
+            day = "Monday"
+            break;
+          case 2:
+            day = "Tuesday"
+            break;
+          case 3:
+            day = "Wednesday"
+            break;
+          case 4:
+            day = "Thursday"
+            break;
+          case 5:
+            day = "Friday"
+            break;
+          case 6:
+            day = "Saturday"
+        }
+      db.collection("gyms")
+        .doc(current_gym)
+        .collection("history")
+        .doc(day)
+        .update({})
       this.confirm = "";
     } else {
       this.error = "Please enter a value";
