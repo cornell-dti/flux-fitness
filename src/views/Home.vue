@@ -367,6 +367,17 @@ export default class Home extends Vue {
           case 6:
             day = "Saturday"
         }
+
+      const postData = {
+        gymID: current_gym,
+        day: day,
+        data: {
+          time: roundToQuarter(this.time),
+          cardio: this.cardio,
+          weights: this.weights
+        }
+      }
+      
       db.collection("gyms")
         .doc(current_gym)
         .collection("history")
