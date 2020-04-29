@@ -302,6 +302,15 @@ export default class Home extends Vue {
     this.dialog = true;
   }
 
+  roundToQuarter(time) {
+    const hours = time.getHours()
+    const suffix = (hours >= 12) ? 'PM' : 'AM'
+    const hoursRegular = (hours !== 0) ? hours % 12 : 12
+    const minutes = time.getMinutes()
+    const nearestQuarter = (minutes <= 30) ? 15 : 45
+
+    return `${hoursRegular}:${minutes}${suffix}`
+  }
   /**
    * Submits data to Firebase
    */
