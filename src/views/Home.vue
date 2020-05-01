@@ -118,6 +118,7 @@ import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import CountTextField from "@/components/Home/CountTextField.vue";
 import GymLimits from "@/data/GymLimits";
+import Axios from "axios";
 
 @Component({
   components: {
@@ -304,7 +305,7 @@ export default class Home extends Vue {
 
   roundToQuarter(time: Date) {
     const hours = time.getHours()
-    const suffix = (hours >= 12) ? 'PM' : 'AM'
+    const suffix = (hours >= 12) ? 'pm' : 'am'
     const hoursRegular = (hours !== 0) ? hours % 12 : 12
     const minutes = time.getMinutes()
     const nearestQuarter = (minutes <= 30) ? 15 : 45
@@ -365,15 +366,25 @@ export default class Home extends Vue {
           case 6:
             day = "Saturday"
         }
-      db.collection("gymstestt")
-        .doc(current_gym)
-        .collection("history")
-        .doc(day)
-        .update({})
-      this.confirm = "";
+        const postData =
+        {
+          time: this.roundToQuarter(this.time),
+          cardio: this.cardio,
+          weights: this.weights
+        }
+        const options = {
+          headers: {'Content-Type': 'application/json'}
+        }
+        let url = 'http://localhost:5000/update-live-averages' + '?id=' + current_gym + '&day=' + day;
+        Axios.post(url, postData, options).then(() => {
+          console.log('successfully made post request')
+        }).catch(err => {
+          console.log(err)
+        })
+        this.confirm = "";
     } else {
-      this.error = "Please enter a value";
-      return;
+        this.error = "Please enter a value";
+        return;
     }
   }
 
