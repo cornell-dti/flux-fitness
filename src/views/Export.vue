@@ -56,16 +56,10 @@ import "firebase/functions";
 import "firebase/storage";
 import moment from "moment";
 // components
-import AppCard from "@/components/AppCard.vue";
-import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
-import BoxedButton from "@/components/BoxedButton.vue";
 import DatePickerMenu from "@/components/Export/DatePickerMenu.vue";
 
 @Component({
   components: {
-    ActionButtonGroup,
-    AppCard,
-    BoxedButton,
     DatePickerMenu,
   },
 })

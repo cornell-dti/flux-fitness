@@ -55,15 +55,8 @@ import Component from "vue-class-component";
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import Gyms from "@/data/Gyms";
-import AppCard from "@/components/AppCard.vue";
-import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 
-@Component({
-  components: {
-    ActionButtonGroup,
-    AppCard,
-  },
-})
+@Component
 export default class Login extends Vue {
   email = "";
   password = "";
@@ -105,7 +98,7 @@ export default class Login extends Vue {
       .signInWithEmailAndPassword(this.email, this.password)
       .then(() => {
         // TODO: need a better system for storing ids
-        const gymData = Gyms.find((gym) => gym.name === this.gym)!
+        const gymData = Gyms.find((gym) => gym.name === this.gym)!;
         localStorage.gymId = gymData.id;
         localStorage.gymName = gymData.name;
         this.$router.push({
