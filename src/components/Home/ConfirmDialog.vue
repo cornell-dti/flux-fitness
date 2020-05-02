@@ -78,9 +78,6 @@ export default class ConfirmDialog extends Vue {
   @Prop({ default: false })
   readonly value!: boolean;
 
-  @Prop({ default: "Confirm" })
-  readonly confirm!: string;
-
   @Prop()
   readonly weights!: InputFields;
 
@@ -121,3 +118,9 @@ export default class ConfirmDialog extends Vue {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+p {
+  font-size: 16px;
+}
+</style>

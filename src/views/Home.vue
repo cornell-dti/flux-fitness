@@ -96,7 +96,6 @@
 
         <confirm-dialog
           v-model="dialog"
-          :confirm="confirm"
           :cardio="cardioFields"
           :weights="weightFields"
           :cardio-total="cardio"
@@ -170,7 +169,6 @@ export default class Home extends Vue {
   readonly limits = GymLimits;
 
   dialog = false;
-  confirm = "";
   error = "";
 
   getDate(): string {
@@ -326,16 +324,6 @@ export default class Home extends Vue {
       return;
     }
 
-    // TODO: redesign confirm dialog
-    // create confirmation message
-    this.confirm = `${this.gymName} at ${this.getTime()}: there's ${
-      this.cardio
-    } ${
-      this.cardio === "1" ? " person" : " people"
-    } using cardio machines and ${this.weights} ${
-      this.weights === "1" ? " person" : " people"
-    } using weights.`;
-
     this.dialog = true;
   }
 
@@ -370,7 +358,6 @@ export default class Home extends Vue {
       .then(() => {
         this.dateTime = new Date();
         this.startInterval(1000);
-        this.confirm = "";
         this.clearInputs();
         // TODO: confirmation message/notification that data was submitted
       })
