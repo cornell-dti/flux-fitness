@@ -12,9 +12,12 @@
         :label="label"
         :class="spacing"
         readonly
-        hide-details
         v-on="on"
-      />
+      >
+        <template v-slot:prepend>
+          <v-icon color="black">{{ prependIcon }}</v-icon>
+        </template>
+      </v-text-field>
     </template>
     <v-date-picker
       :value="value"
@@ -27,6 +30,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { Prop, Component } from "vue-property-decorator";
+import moment from "moment";
 
 @Component
 export default class DatePickerMenu extends Vue {
@@ -42,23 +46,23 @@ export default class DatePickerMenu extends Vue {
   @Prop({ default: false })
   readonly readonly!: boolean;
 
+  @Prop()
+  readonly prependIcon!: string;
+
   dateMenu = false;
 
   get formattedValue(): string {
-    return DatePickerMenu.formatDate(this.value);
+    const date = moment(this.value, ["YYYY-MM-DD"], true);
+    if (!date.isValid()) return "";
+    return date.format("MM/DD/YYYY");
   }
 
+  /**
+   * Emits the date in the format YYYY-MM-DD and closes the date picker
+   */
   updateDate(value: string): void {
     this.dateMenu = false;
     this.$emit("input", value);
-  }
-
-  // TODO: use moment
-  static formatDate(date: string): string {
-    if (!date) return "";
-
-    const [year, month, day] = date.split("-");
-    return `${month}/${day}/${year}`;
   }
 }
 </script>
