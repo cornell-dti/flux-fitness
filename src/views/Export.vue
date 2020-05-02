@@ -1,65 +1,89 @@
 <template>
-  <app-card>
-    <div class="text">
-      <h1>Export</h1>
-      <div class="text">
-        <p>Export data from a time range (inclusive).</p>
-      </div>
-    </div>
-    <form class="date-form">
-      <div class="date-select">
-        <i class="material-icons">date_range</i>
-        <input class="date-input" v-model="start_date" type="date" required />
-        &mdash;
-        <input class="date-input" v-model="end_date" type="date" required />
-      </div>
-    </form>
-    <div class="text">
-      <p>Click "Download" to export data as an Excel spreadsheet.</p>
-    </div>
-    <boxed-button :disabled="downloading" v-on:click="download" />
-    <div id="error">{{error}}</div>
+  <v-container fluid>
+    <v-row>
+      <v-col class="pl-0">
+        <v-btn rounded text @click="goHome()">
+          <v-icon left>arrow_back</v-icon>
+          Back
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col class="pb-0">
+        <h1>Export</h1>
+        <p>
+          Please select a date range to export the data.
+        </p>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-form>
+        <v-col>
+          <date-picker-menu
+            v-model="startDate"
+            label="Start date"
+            prepend-icon="today"
+          />
+          <date-picker-menu
+            v-model="endDate"
+            label="End date"
+            prepend-icon="event"
+          />
+        </v-col>
+      </v-form>
+    </v-row>
+
+    <v-row>
+      <v-col>
+        <p>Click "Download" to export data as an Excel spreadsheet.</p>
+        <v-btn color="primary" @click="download" :loading="downloading">
+          <v-icon left>file_download</v-icon>Download
+        </v-btn>
+      </v-col>
+    </v-row>
+    <div id="error">{{ error }}</div>
     <p :hidden="!downloading">Download is in progress...</p>
-    <action-button-group
-      id="done"
-      :require-confirmation="true"
-      v-on:submitted="handler()"
-      action-button-text="DONE"
-    />
-  </app-card>
+  </v-container>
 </template>
 
 <script lang="ts">
-import Component from "vue-class-component";
-import AppCard from "@/components/AppCard.vue";
-import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
-import BoxedButton from "@/components/BoxedButton.vue";
 import Vue from "vue";
+import Component from "vue-class-component";
 import * as firebase from "firebase/app";
 import "firebase/functions";
 import "firebase/storage";
 import moment from "moment";
+// components
+import AppCard from "@/components/AppCard.vue";
+import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
+import BoxedButton from "@/components/BoxedButton.vue";
+import DatePickerMenu from "@/components/Export/DatePickerMenu.vue";
 
 @Component({
   components: {
     ActionButtonGroup,
     AppCard,
-    BoxedButton
-  }
+    BoxedButton,
+    DatePickerMenu,
+  },
 })
 export default class Settings extends Vue {
   active = false;
   downloading = false;
   offset = new Date().getTimezoneOffset();
+
+  endDate = moment().format("YYYY-MM-DD");
+  startDate = moment().subtract(6, "days").format("YYYY-MM-DD");
+
   end_date = moment().format("YYYY-MM-DD");
-  start_date = moment()
-    .subtract(6, "days")
-    .format("YYYY-MM-DD");
+  start_date = moment().subtract(6, "days").format("YYYY-MM-DD");
   error = "";
 
-  handler() {
+  goHome() {
     this.$router.push({
-      name: "home"
+      name: "home",
     });
   }
 
@@ -81,15 +105,15 @@ export default class Settings extends Vue {
     const endDate = this.end_date;
     const offset = this.offset;
     getURL({ id: gymId, startDate, endDate, offset })
-      .then(res => {
+      .then((res) => {
         this.downloading = false;
         const storage = firebase.storage();
         const gsref = storage.refFromURL(`gs:/${res.data}`);
-        gsref.getDownloadURL().then(url => {
+        gsref.getDownloadURL().then((url) => {
           window.open(url);
         });
       })
-      .catch(e => {
+      .catch((e) => {
         console.log("Error downloading.\n" + e);
         this.downloading = false;
       });
@@ -100,60 +124,10 @@ export default class Settings extends Vue {
 <style lang="scss" scoped>
 @import "../scss/variables";
 
-.text {
-  margin-right: 30px;
-  margin-top: 20px;
-}
-
 #error {
   padding-top: 15px;
   text-align: left;
   margin-bottom: 10px;
   color: #fa4735;
-}
-
-#done {
-  margin-top: 0px;
-}
-
-.date-input {
-  border: solid 1px black;
-  border-radius: 5px;
-  margin-left: 0px;
-  max-width: 35%;
-  padding: 5px;
-}
-
-.date-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  display: none;
-  margin: 0px;
-}
-
-.date-input::-webkit-calendar-picker-indicator {
-  opacity: 100;
-  margin-left: -15px;
-}
-
-.material-icons {
-  color: black;
-  vertical-align: middle;
-  font-size: 20px;
-  margin-right: 16px;
-}
-
-.button-boxed {
-  padding-right: 16px;
-
-  .material-icons {
-    color: white;
-    vertical-align: middle;
-    font-size: 20px;
-  }
-
-  &:disabled {
-    color: white;
-    background-color: $mainAccentDisable;
-  }
 }
 </style>
