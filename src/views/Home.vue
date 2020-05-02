@@ -34,24 +34,6 @@
 
           <v-row>
             <v-col cols="12" sm="6">
-              <h2>Weights</h2>
-              <p v-if="!!weights">
-                <b>Total:</b>
-                {{ weights }}
-              </p>
-            </v-col>
-            <v-col class="pt-0">
-              <count-text-field
-                v-for="field in weightFields"
-                v-model="field.count"
-                :key="field.key"
-                :field="field"
-              />
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col cols="12" sm="6">
               <h2>Cardio</h2>
               <p v-if="!!cardio">
                 <b>Total:</b>
@@ -61,6 +43,24 @@
             <v-col class="pt-0">
               <count-text-field
                 v-for="field in cardioFields"
+                v-model="field.count"
+                :key="field.key"
+                :field="field"
+              />
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <v-col cols="12" sm="6">
+              <h2>Weights</h2>
+              <p v-if="!!weights">
+                <b>Total:</b>
+                {{ weights }}
+              </p>
+            </v-col>
+            <v-col class="pt-0">
+              <count-text-field
+                v-for="field in weightFields"
                 v-model="field.count"
                 :key="field.key"
                 :field="field"
