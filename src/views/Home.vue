@@ -17,7 +17,7 @@
           <h4 class="font-weight-regular pl-1">{{ getDate() }}</h4>
         </span>
 
-        <v-form ref="form" v-model="valid" lazy-validation>
+        <v-form ref="timeForm" v-model="timeValid">
           <time-text-field
             :value="getTime()"
             :reset-disabled="!timeEditted"
@@ -28,6 +28,9 @@
             "
             @reset="startInterval"
           />
+        </v-form>
+
+        <v-form ref="form" v-model="valid" lazy-validation>
           <p class="pt-3">
             Please enter the number of people using the following equipment.
           </p>
@@ -80,7 +83,12 @@
           <p class="text-right mt-2 red--text">{{ error }}</p>
           <div class="float-right pt-2">
             <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">
+            <v-btn
+              color="blue"
+              outlined
+              :disabled="!valid || !timeValid"
+              @click="validate()"
+            >
               Submit
             </v-btn>
           </div>
@@ -150,6 +158,7 @@ export default class Home extends Vue {
   };
 
   valid = true;
+  timeValid = true;
 
   dateTime = new Date();
   timeInterval: any = null;
@@ -160,7 +169,6 @@ export default class Home extends Vue {
   gymId = "";
   readonly limits = GymLimits;
 
-  // TODO: change default back to false for deploy
   dialog = false;
   confirm = "";
   error = "";
@@ -214,7 +222,11 @@ export default class Home extends Vue {
   }
 
   get form(): any {
-    return this.$refs.form as any;
+    return this.$refs.form;
+  }
+
+  get timeForm(): any {
+    return this.$refs.timeForm;
   }
 
   /**
@@ -285,9 +297,15 @@ export default class Home extends Vue {
   validate() {
     // call Vuetify form validation
     this.form.validate();
+    const timeValid = this.timeForm.validate();
 
     // clear error
     this.error = "";
+
+    if (!timeValid) {
+      this.error = "Please check the time input.";
+      return;
+    }
 
     // check if data is empty
     if (!this.weights || !this.cardio) {
@@ -325,6 +343,7 @@ export default class Home extends Vue {
    * Submits data to Firebase
    */
   submit() {
+    this.stopInterval();
     const db = firebase.firestore();
     const cf = this.cardioFields;
     const wf = this.weightFields;
@@ -349,6 +368,8 @@ export default class Home extends Vue {
         valid: false,
       })
       .then(() => {
+        this.dateTime = new Date();
+        this.startInterval(1000);
         this.confirm = "";
         this.clearInputs();
         // TODO: confirmation message/notification that data was submitted
