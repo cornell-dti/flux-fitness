@@ -375,7 +375,7 @@ export default class Home extends Vue {
         const options = {
           headers: {'Content-Type': 'application/json'}
         }
-        let url = 'http://localhost:5000/update-live-averages' + '?id=' + current_gym + '&day=' + day;
+        let url = 'http://localhost:5000/updateLiveAverages' + '?id=' + current_gym + '&day=' + day;
         Axios.post(url, postData, options).then(() => {
           console.log('successfully made post request')
         }).catch(err => {
