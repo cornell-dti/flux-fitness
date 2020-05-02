@@ -86,7 +86,7 @@ export default class Settings extends Vue {
         });
       })
       .catch((e) => {
-        // console.log("Error downloading.\n" + e);
+        "Error downloading.\n" + e; // console.log
         this.downloading = false;
       });
   }
