@@ -2,7 +2,9 @@
   <app-card>
     <div class="text">
       <h1>Export</h1>
-      <p>Export data.</p>
+      <div class="text">
+        <p>Export data from a time range (inclusive).</p>
+      </div>
     </div>
     <form class="date-form">
       <div class="date-select">
@@ -16,9 +18,10 @@
       <p>Click "Download" to export data as an Excel spreadsheet.</p>
     </div>
     <boxed-button :disabled="downloading" v-on:click="download" />
-    <div id="error">{{error}}</div>
+    <div id="error">{{ error }}</div>
     <p :hidden="!downloading">Download is in progress...</p>
     <action-button-group
+      id="done"
       :require-confirmation="true"
       v-on:submitted="handler()"
       action-button-text="DONE"
@@ -34,31 +37,26 @@ import BoxedButton from "@/components/BoxedButton.vue";
 import Vue from "vue";
 import * as firebase from "firebase/app";
 import "firebase/functions";
+import "firebase/storage";
+import moment from "moment";
 
 @Component({
   components: {
     ActionButtonGroup,
     AppCard,
-    BoxedButton
-  }
+    BoxedButton,
+  },
 })
 export default class Settings extends Vue {
   active = false;
   downloading = false;
-  offset = new Date().getTimezoneOffset();
-  end_date = new Date(new Date().getTime() - this.offset * 60000)
-    .toISOString()
-    .substring(0, 10);
-  start_date = new Date(
-    new Date(this.end_date).getTime() - 60 * 60 * 24 * 7 * 1000
-  )
-    .toISOString()
-    .substring(0, 10);
+  end_date = moment().format("YYYY-MM-DD");
+  start_date = moment().subtract(6, "days").format("YYYY-MM-DD");
   error = "";
 
   handler() {
     this.$router.push({
-      name: "home"
+      name: "home",
     });
   }
 
@@ -75,23 +73,20 @@ export default class Settings extends Vue {
     const getURL = firebase.functions().httpsCallable("getURL");
     // Uncomment if running `npm run shell` for backend functions:
     // firebase.functions().useFunctionsEmulator("http://localhost:5000");
-    let gymId = localStorage.gym.toLowerCase();
-    if (gymId === "helen newman") {
-      gymId = "helen_newman";
-    }
+    let gymId = localStorage.gymId;
     const startDate = this.start_date;
     const endDate = this.end_date;
-    const offset = this.offset;
-    getURL({ id: gymId, startDate, endDate, offset })
-      .then(res => {
+    getURL({ id: gymId, startDate, endDate })
+      .then((res) => {
         this.downloading = false;
         const storage = firebase.storage();
         const gsref = storage.refFromURL(`gs:/${res.data}`);
-        gsref.getDownloadURL().then(url => {
+        gsref.getDownloadURL().then((url) => {
           window.open(url);
         });
       })
-      .catch(() => {
+      .catch((e) => {
+        "Error downloading.\n" + e; // console.log
         this.downloading = false;
       });
   }
@@ -102,7 +97,8 @@ export default class Settings extends Vue {
 @import "../scss/variables";
 
 .text {
-  padding-right: 30px;
+  margin-right: 30px;
+  margin-top: 20px;
 }
 
 #error {
@@ -112,11 +108,16 @@ export default class Settings extends Vue {
   color: #fa4735;
 }
 
+#done {
+  margin-top: 0px;
+}
+
 .date-input {
   border: solid 1px black;
   border-radius: 5px;
   margin-left: 0px;
-  max-width: 30%;
+  max-width: 35%;
+  padding: 5px;
 }
 
 .date-input::-webkit-inner-spin-button {

@@ -10,44 +10,30 @@
 
     <v-row>
       <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-3 mx-auto">
-        <h1 class="mb-2">{{ gym }}</h1>
+        <h1 class="mb-2">{{ gymName }}</h1>
 
         <span class="d-inline-flex align-center mt-3">
           <v-icon color="black" left>today</v-icon>
-          <h4 class="font-weight-regular pl-1">{{ time.toDateString() }}</h4>
+          <h4 class="font-weight-regular pl-1">{{ getDate() }}</h4>
         </span>
-        <v-text-field
-          class="pt-0 mt-0"
-          v-model="timeSelect"
-          type="time"
-          @input="stopInterval()"
-        >
-          <div class="h-36px d-flex align-center" slot="prepend">
-            <v-icon color="black">schedule</v-icon>
-          </div>
-          <v-tooltip slot="append" bottom>
-            <template v-slot:activator="{ on }">
-              <v-btn icon :disabled="!timeEditted" @click="startInterval()">
-                <v-icon v-on="on">restore</v-icon>
-              </v-btn>
-            </template>
-            <span>Reset time to the current time</span>
-          </v-tooltip>
-          <v-tooltip v-model="timeHelp" slot="append-outer" bottom small>
-            <template v-slot:activator="{}">
-              <v-btn icon @click="timeHelp = !timeHelp">
-                <v-icon>help</v-icon>
-              </v-btn>
-            </template>
-            <span>The time that will be submitted with the gym counts</span>
-          </v-tooltip>
-        </v-text-field>
-
-        <p class="pt-3">
-          Please enter the number of people using the following equipment.
-        </p>
 
         <v-form ref="form" v-model="valid" lazy-validation>
+          <v-col class="ma-0 pa-0" cols="12" sm="6">
+            <time-text-field
+              :value="getTime()"
+              :reset-disabled="!timeEditted"
+              :seconds="dateTime.getSeconds()"
+              @input="
+                stopInterval();
+                setTime($event);
+              "
+              @reset="startInterval"
+            />
+          </v-col>
+          <p class="pt-3">
+            Please enter the number of people using the following equipment.
+          </p>
+
           <v-row>
             <v-col cols="12" sm="6">
               <h2>Weights</h2>
@@ -102,7 +88,11 @@
           </div>
         </v-form>
 
-        <confirm-dialog v-model="dialog" :confirm="confirm" />
+        <confirm-dialog
+          v-model="dialog"
+          :confirm="confirm"
+          @submit="submit()"
+        />
       </v-col>
     </v-row>
   </v-container>
@@ -114,16 +104,21 @@ import * as firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 import Component from "vue-class-component";
+import moment from "moment";
+// data
+import GymLimits from "@/data/GymLimits";
+// components
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import CountTextField from "@/components/Home/CountTextField.vue";
-import GymLimits from "@/data/GymLimits";
+import TimeTextField from "@/components/Home/TimeTextField.vue";
 
 @Component({
   components: {
     TopActions,
     ConfirmDialog,
     CountTextField,
+    TimeTextField,
   },
 })
 export default class Home extends Vue {
@@ -141,8 +136,7 @@ export default class Home extends Vue {
       label: "Other",
       count: "",
       help: {
-        info: `"Other" includes mats and other weight machines not included
-                    above`,
+        info: "Mats and weight machines not included above",
         show: false,
       },
     },
@@ -163,35 +157,55 @@ export default class Home extends Vue {
 
   valid = true;
 
-  time = new Date();
-  timeSelect = this.time.toTimeString().substring(0, 8);
+  dateTime = new Date();
   timeInterval: any = null;
   timeEditted = false;
   timeHelp = false;
 
-  gym = "";
+  gymName = "";
+  gymId = "";
   readonly limits = GymLimits;
 
   dialog = false;
   confirm = "";
   error = "";
 
+  getDate(): string {
+    const date = moment(this.dateTime);
+    return date.format("ddd MMM D, YYYY");
+  }
+
+  getTime(): string {
+    const time = moment(this.dateTime);
+    return time.format("h:mm A");
+  }
+
+  setTime(value: string) {
+    const momentTime = moment(
+      `${moment().format("YYYY-MM-DD")} ${value}`,
+      ["YYYY-MM-DD h:mm A", "YYYY-MM-DD hh:mm A", "YYYY-MM-DD HH:mm"],
+      true
+    );
+
+    this.dateTime = momentTime.toDate();
+  }
+
   get weights(): string {
     const wf = this.weightFields;
-    const prNum = Number.parseInt(wf["powerRacks"].count);
-    const bpNum = Number.parseInt(wf["benchPress"].count);
-    const dbNum = Number.parseInt(wf["dumbbells"].count);
-    const otNum = Number.parseInt(wf["other"].count);
+    const prNum = Number.parseInt(wf.powerRacks.count);
+    const bpNum = Number.parseInt(wf.benchPress.count);
+    const dbNum = Number.parseInt(wf.dumbbells.count);
+    const otNum = Number.parseInt(wf.other.count);
     if (isNaN(prNum) || isNaN(bpNum) || isNaN(dbNum) || isNaN(otNum)) return "";
     return (prNum + bpNum + dbNum + otNum).toString();
   }
 
   get cardio(): string {
     const cf = this.cardioFields;
-    const tmNum = Number.parseInt(cf["treadmills"].count);
-    const elNum = Number.parseInt(cf["ellipticals"].count);
-    const bkNum = Number.parseInt(cf["bikes"].count);
-    const amNum = Number.parseInt(cf["amts"].count);
+    const tmNum = Number.parseInt(cf.treadmills.count);
+    const elNum = Number.parseInt(cf.ellipticals.count);
+    const bkNum = Number.parseInt(cf.bikes.count);
+    const amNum = Number.parseInt(cf.amts.count);
     if (isNaN(tmNum) || isNaN(elNum) || isNaN(bkNum) || isNaN(amNum)) return "";
     return (tmNum + elNum + bkNum + amNum).toString();
   }
@@ -217,8 +231,9 @@ export default class Home extends Vue {
    * Also, starts the time interval
    */
   mounted() {
-    if (localStorage.gym) {
-      this.gym = localStorage.gym;
+    if (localStorage.gymId) {
+      this.gymName = localStorage.gymName;
+      this.gymId = localStorage.gymId;
       this.startInterval(1000);
     } else {
       this.$router.push({ name: "login" });
@@ -231,7 +246,7 @@ export default class Home extends Vue {
   startInterval(interval: number) {
     this.timeEditted = false;
     this.timeInterval = setInterval(() => {
-      this.timeSelect = new Date().toTimeString().substring(0, 8);
+      this.dateTime = new Date();
     }, interval);
   }
 
@@ -273,8 +288,13 @@ export default class Home extends Vue {
    * Validates data and opens confirmation dialog
    */
   validate() {
+    // call Vuetify form validation
     this.form.validate();
+
+    // clear error
     this.error = "";
+
+    // check if data is empty
     if (!this.weights || !this.cardio) {
       this.error = "Please verify your data.";
       return;
@@ -282,18 +302,22 @@ export default class Home extends Vue {
     const weightsNum = Number.parseInt(this.weights);
     const cardioNum = Number.parseInt(this.cardio);
 
-    const gymLimits = this.limits[this.gym];
+    // check gym limits
+    const gymLimits = this.limits[this.gymId];
     if (cardioNum > gymLimits.cardio) {
-      this.error = `${this.gym} does not have space for ${cardioNum} cardio.`;
+      this.error = `${this.gymName} does not have space for ${cardioNum} cardio.`;
       return;
     }
     if (weightsNum > gymLimits.other) {
-      this.error = `${this.gym} does not have space for ${weightsNum} weights.`;
+      this.error = `${this.gymName} does not have space for ${weightsNum} weights.`;
       return;
     }
 
-    // TODO: if we have time input, just show the time that they have selected (or current time)
-    this.confirm = `${this.gym} at ${this.timeSelect}: there's ${this.cardio} ${
+    // TODO: redesign confirm dialog
+    // create confirmation message
+    this.confirm = `${this.gymName} at ${this.getTime()}: there's ${
+      this.cardio
+    } ${
       this.cardio === "1" ? " person" : " people"
     } using cardio machines and ${this.weights} ${
       this.weights === "1" ? " person" : " people"
@@ -306,38 +330,38 @@ export default class Home extends Vue {
    * Submits data to Firebase
    */
   submit() {
-    if (this.weights && this.cardio) {
-      const db = firebase.firestore();
-      let current_gym = this.gym.toLowerCase();
-      db.collection("gymdata")
-        .doc(current_gym)
-        .collection("counts")
-        .add({
-          cardio: Number.parseInt(this.cardio),
-          weights: Number.parseInt(this.weights),
-          // TODO: make this use timeSelect
-          time: this.time,
-        })
-        .then(() => {
-          this.confirm = "";
-          // TODO: change this to not use Vue notify
-          this.$notify({
-            group: "default_group",
-            type: "success",
-            duration: 2500,
-            title: "Success",
-            text: "The data you entered went through!",
-          });
-        })
-        .catch(() => {
-          this.error = "There was an error in adding the document.";
-          return;
-        });
-      this.confirm = "";
-    } else {
-      this.error = "Please enter a value";
-      return;
-    }
+    const db = firebase.firestore();
+    const cf = this.cardioFields;
+    const wf = this.weightFields;
+    db.collection("gyms")
+      .doc(this.gymId)
+      .collection("counts")
+      .add({
+        cardio: {
+          treadmills: Number.parseInt(cf.treadmills.count),
+          ellipticals: Number.parseInt(cf.ellipticals.count),
+          bikes: Number.parseInt(cf.bikes.count),
+          amts: Number.parseInt(cf.amts.count),
+        },
+        weights: {
+          powerRacks: Number.parseInt(wf.powerRacks.count),
+          benchPress: Number.parseInt(wf.benchPress.count),
+          dumbbells: Number.parseInt(wf.dumbbells.count),
+          other: Number.parseInt(wf.other.count),
+        },
+        time: this.dateTime,
+        // TODO: change this to `true` for deployment
+        valid: false,
+      })
+      .then(() => {
+        this.confirm = "";
+        this.clearInputs();
+        // TODO: confirmation message/notification that data was submitted
+      })
+      .catch(() => {
+        this.error = "There was an error in adding the document.";
+        return;
+      });
   }
 
   /**

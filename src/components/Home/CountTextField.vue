@@ -34,7 +34,7 @@ import { Prop } from "vue-property-decorator";
 @Component({})
 export default class CountTextField extends Vue {
   @Prop()
-  field!: {
+  readonly field!: {
     [key: string]: {
       label: string;
       count: string;
@@ -43,7 +43,7 @@ export default class CountTextField extends Vue {
   };
 
   @Prop()
-  value!: string;
+  readonly value!: string;
 
   count = "";
 
@@ -54,7 +54,7 @@ export default class CountTextField extends Vue {
       (v && v.length <= this.inputCharLimit) ||
       "Input is over the character limit",
     (v: any) => (v && /^([0-9]*)$/.test(v)) || "Please input a number",
-    (v: any) => (v && /^(0|[1-9][0-9]*)$/.test(v)) || "No leading zeros"
+    (v: any) => (v && /^(0|[1-9][0-9]*)$/.test(v)) || "No leading zeros",
   ];
   readonly clearable = false;
 }

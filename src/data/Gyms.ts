@@ -7,10 +7,11 @@ const Gyms: {
   name: string;
   id: string;
 }[] = [
-  { name: "Appel", id: "appel" },
-  { name: "Helen Newman", id: "helen_newman" },
-  { name: "Teagle", id: "teagle" },
-  { name: "Noyes", id: "noyes" }
-];
+    { name: "Appel", id: "appel" },
+    { name: "Helen Newman", id: "helen-newman" },
+    { name: "Noyes", id: "noyes" },
+    { name: "Teagle Up", id: "teagle-up" },
+    { name: "Teagle Down", id: "teagle-down" },
+  ];
 
 export default Gyms;
