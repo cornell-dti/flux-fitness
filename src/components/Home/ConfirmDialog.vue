@@ -110,6 +110,7 @@ export default class ConfirmDialog extends Vue {
   }
 
   exitDialog() {
+    this.$emit("exit");
     this.$emit("input", false);
   }
 

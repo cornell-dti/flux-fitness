@@ -104,6 +104,7 @@
           :date-time="dateTime"
           :gym-name="gymName"
           @submit="submit()"
+          @exit="startInterval()"
         />
       </v-col>
     </v-row>
@@ -248,7 +249,7 @@ export default class Home extends Vue {
   /**
    * Starts time interval that refreshes the time at a given interval
    */
-  startInterval(interval: number) {
+  startInterval(interval: number = 1000) {
     this.timeEditted = false;
     this.timeInterval = setInterval(() => {
       this.dateTime = new Date();
@@ -324,6 +325,7 @@ export default class Home extends Vue {
       return;
     }
 
+    this.stopInterval();
     this.dialog = true;
   }
 
@@ -331,7 +333,6 @@ export default class Home extends Vue {
    * Submits data to Firebase
    */
   submit() {
-    this.stopInterval();
     const db = firebase.firestore();
     const cf = this.cardioFields;
     const wf = this.weightFields;
@@ -357,7 +358,6 @@ export default class Home extends Vue {
       })
       .then(() => {
         this.dateTime = new Date();
-        this.startInterval(1000);
         this.clearInputs();
         // TODO: confirmation message/notification that data was submitted
       })
