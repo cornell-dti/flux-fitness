@@ -327,15 +327,13 @@ export default class Home extends Vue {
     this.dialog = true;
   }
 
-  roundToQuarter(time: Date) {
-    const hours = time.getHours()
-    const suffix = (hours >= 12) ? 'pm' : 'am'
-    const hoursRegular = (hours !== 0) ? hours % 12 : 12
-    const minutes = time.getMinutes()
-    const nearestQuarter = (minutes <= 30) ? 15 : 45
-
-    return `${hoursRegular}:${nearestQuarter}${suffix}`
-  }
+roundDate(d: Date) {
+  const date = moment(d);
+  date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
+  date.second(Math.floor(date.second() / 60) * 60);
+  date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
+  return date.format("h:mma");
+}
 
   updateHistoricalAverages() {
     let day = ""
@@ -363,7 +361,7 @@ export default class Home extends Vue {
     }
     const postData =
     {
-      time: this.roundToQuarter(this.dateTime),
+      time: this.roundDate(this.dateTime),
       cardio: this.cardio,
       weights: this.weights
     }
