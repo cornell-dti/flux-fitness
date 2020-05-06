@@ -6,20 +6,14 @@
       <v-card-actions>
         <v-spacer />
         <v-btn text @click="exitDialog()">Edit</v-btn>
-<<<<<<< HEAD
-        <v-btn text color="green" @click="exitDialog();submit()">Confirm</v-btn>
-=======
         <v-btn
-          text
-          color="green"
+          textcolor="green"
           @click="
             exitDialog();
             submit();
-          "
-        >
+          ">
           Confirm
         </v-btn>
->>>>>>> afc44c88a20c4dec35a9d3ce8d8ee9407ac163d5
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -43,11 +37,7 @@ export default class ConfirmDialog extends Vue {
   }
 
   submit() {
-<<<<<<< HEAD
-    this.$emit("submit")
-=======
     this.$emit("submit");
->>>>>>> afc44c88a20c4dec35a9d3ce8d8ee9407ac163d5
   }
 }
 </script>
