@@ -104,7 +104,10 @@ export default class Login extends Vue {
       .auth()
       .signInWithEmailAndPassword(this.email, this.password)
       .then(() => {
-        localStorage.gym = this.gym;
+        // TODO: need a better system for storing ids
+        const gymData = Gyms.find((gym) => gym.name === this.gym)!
+        localStorage.gymId = gymData.id;
+        localStorage.gymName = gymData.name;
         this.$router.push({
           name: "home",
         });

@@ -1,6 +1,6 @@
+import "core-js/stable";
 import Vue from "vue";
 import App from "./App.vue";
-import Notifications from "vue-notification";
 import router from "./router";
 import * as firebase from "firebase/app";
 import vuetify from "./plugins/vuetify";
@@ -16,8 +16,6 @@ firebase.initializeApp({
 });
 
 Vue.config.productionTip = false;
-
-Vue.use(Notifications);
 
 new Vue({
   router,
