@@ -7,13 +7,11 @@
         <v-spacer />
         <v-btn text @click="exitDialog()">Edit</v-btn>
         <v-btn
-          text
-          color="green"
+          textcolor="green"
           @click="
             exitDialog();
             submit();
-          "
-        >
+          ">
           Confirm
         </v-btn>
       </v-card-actions>

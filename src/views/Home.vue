@@ -111,6 +111,7 @@ import GymLimits from "@/data/GymLimits";
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import CountTextField from "@/components/Home/CountTextField.vue";
+import Axios from "axios";
 import TimeTextField from "@/components/Home/TimeTextField.vue";
 
 @Component({
@@ -326,6 +327,55 @@ export default class Home extends Vue {
     this.dialog = true;
   }
 
+roundDate(d: Date) {
+  const date = moment(d);
+  date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
+  date.second(Math.floor(date.second() / 60) * 60);
+  date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
+  return date.format("h:mma");
+}
+
+  updateHistoricalAverages() {
+    let day = ""
+    switch (this.dateTime.getDay()) {
+      case 0:
+        day = "Sunday";
+        break;
+      case 1:
+        day = "Monday"
+        break;
+      case 2:
+        day = "Tuesday"
+        break;
+      case 3:
+        day = "Wednesday"
+        break;
+      case 4:
+        day = "Thursday"
+        break;
+      case 5:
+        day = "Friday"
+        break;
+      case 6:
+        day = "Saturday"
+    }
+    const postData =
+    {
+      time: this.roundDate(this.dateTime),
+      cardio: this.cardio,
+      weights: this.weights
+    }
+    const options = {
+      headers: {'Content-Type': 'application/json'}
+    }
+    let url = process.env.VUE_APP_UPDATE_GYM_HISTORICAL_AVERAGES_API + '?id=' + this.gymId + '&day=' + day;
+    Axios.post(url, postData, options).then(() => {
+      // SUCCESSFUL POST REQUEST :)
+    }).catch(err => {
+      throw err
+    });
+  }
+
   /**
    * Submits data to Firebase
    */
@@ -362,6 +412,7 @@ export default class Home extends Vue {
         this.error = "There was an error in adding the document.";
         return;
       });
+    this.updateHistoricalAverages();
   }
 
   /**
