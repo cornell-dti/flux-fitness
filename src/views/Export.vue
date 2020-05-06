@@ -18,7 +18,7 @@
       <p>Click "Download" to export data as an Excel spreadsheet.</p>
     </div>
     <boxed-button :disabled="downloading" v-on:click="download" />
-    <div id="error">{{error}}</div>
+    <div id="error">{{ error }}</div>
     <p :hidden="!downloading">Download is in progress...</p>
     <action-button-group
       id="done"
@@ -44,22 +44,19 @@ import moment from "moment";
   components: {
     ActionButtonGroup,
     AppCard,
-    BoxedButton
-  }
+    BoxedButton,
+  },
 })
 export default class Settings extends Vue {
   active = false;
   downloading = false;
-  offset = new Date().getTimezoneOffset();
   end_date = moment().format("YYYY-MM-DD");
-  start_date = moment()
-    .subtract(6, "days")
-    .format("YYYY-MM-DD");
+  start_date = moment().subtract(6, "days").format("YYYY-MM-DD");
   error = "";
 
   handler() {
     this.$router.push({
-      name: "home"
+      name: "home",
     });
   }
 
@@ -79,18 +76,17 @@ export default class Settings extends Vue {
     let gymId = localStorage.gymId;
     const startDate = this.start_date;
     const endDate = this.end_date;
-    const offset = this.offset;
-    getURL({ id: gymId, startDate, endDate, offset })
-      .then(res => {
+    getURL({ id: gymId, startDate, endDate })
+      .then((res) => {
         this.downloading = false;
         const storage = firebase.storage();
         const gsref = storage.refFromURL(`gs:/${res.data}`);
-        gsref.getDownloadURL().then(url => {
+        gsref.getDownloadURL().then((url) => {
           window.open(url);
         });
       })
-      .catch(e => {
-        console.log("Error downloading.\n" + e);
+      .catch((e) => {
+        "Error downloading.\n" + e; // console.log
         this.downloading = false;
       });
   }

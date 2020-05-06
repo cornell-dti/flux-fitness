@@ -1,32 +1,30 @@
 <template>
-  <v-col class="ma-0 pa-0" cols="6">
-    <v-text-field
-      :value="value"
-      :rules="rules"
-      :maxlength="inputCharLimit"
-      :clearable="clearable"
-      @input="updateTime($event)"
-    >
-      <div class="d-flex align-center" slot="prepend">
-        <v-progress-circular
-          :rotate="-90"
-          :size="25"
-          :width="3"
-          :value="(seconds * 5) / 3"
-        >
-          <v-icon :size="20" color="black">schedule</v-icon>
-        </v-progress-circular>
-      </div>
-      <v-tooltip slot="append" bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn icon small :disabled="resetDisabled" @click="$emit('reset')">
-            <v-icon v-on="on">restore</v-icon>
-          </v-btn>
-        </template>
-        <span>Reset time to the current time</span>
-      </v-tooltip>
-    </v-text-field>
-  </v-col>
+  <v-text-field
+    :value="value"
+    :rules="rules"
+    :maxlength="inputCharLimit"
+    :clearable="clearable"
+    @input="updateTime($event)"
+  >
+    <div class="d-flex align-center" slot="prepend">
+      <v-progress-circular
+        :rotate="-90"
+        :size="25"
+        :width="3"
+        :value="(seconds * 5) / 3"
+      >
+        <v-icon :size="20" color="black">schedule</v-icon>
+      </v-progress-circular>
+    </div>
+    <v-tooltip slot="append" bottom>
+      <template v-slot:activator="{ on }">
+        <v-btn icon small :disabled="resetDisabled" @click="$emit('reset')">
+          <v-icon v-on="on">restore</v-icon>
+        </v-btn>
+      </template>
+      <span>Reset time to the current time</span>
+    </v-tooltip>
+  </v-text-field>
 </template>
 
 <script lang="ts">
