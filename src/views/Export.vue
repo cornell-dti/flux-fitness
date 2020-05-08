@@ -67,7 +67,6 @@ import DatePickerMenu from "@/components/Export/DatePickerMenu.vue";
 })
 export default class Settings extends Vue {
   downloading = false;
-  readonly offset = new Date().getTimezoneOffset();
 
   endDate = moment().format("YYYY-MM-DD");
   startDate = moment().subtract(6, "days").format("YYYY-MM-DD");
@@ -103,8 +102,7 @@ export default class Settings extends Vue {
     let gymId = localStorage.gymId;
     const startDate = this.startDate;
     const endDate = this.endDate;
-    const offset = this.offset;
-    getURL({ id: gymId, startDate, endDate, offset })
+    getURL({ id: gymId, startDate, endDate })
       .then((res) => {
         this.downloading = false;
         const storage = firebase.storage();
