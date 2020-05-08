@@ -51,6 +51,9 @@ export default class DatePickerMenu extends Vue {
 
   dateMenu = false;
 
+  /**
+   * Returns a value using moment with format: `MM/DD/YYYY`
+   */
   get formattedValue(): string {
     const date = moment(this.value, ["YYYY-MM-DD"], true);
     if (!date.isValid()) return "";
