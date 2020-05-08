@@ -1,50 +1,52 @@
 <template>
   <v-container fluid>
-    <v-row>
-      <v-col class="pl-0">
-        <v-btn rounded text @click="goHome()">
-          <v-icon left>arrow_back</v-icon>
-          Back
-        </v-btn>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-col class="pb-0">
-        <h1>Export</h1>
-        <p>
-          Please select a date range to export the data.
-        </p>
-      </v-col>
-    </v-row>
-
-    <v-row>
-      <v-form>
-        <v-col>
-          <date-picker-menu
-            v-model="startDate"
-            label="Start date"
-            prepend-icon="today"
-          />
-          <date-picker-menu
-            v-model="endDate"
-            label="End date"
-            prepend-icon="event"
-          />
+    <v-col cols="12" sm="8" md="5" class="mx-auto">
+      <v-row>
+        <v-col class="pl-0">
+          <v-btn rounded text @click="goHome()">
+            <v-icon left>arrow_back</v-icon>
+            Back
+          </v-btn>
         </v-col>
-      </v-form>
-    </v-row>
+      </v-row>
 
-    <v-row>
-      <v-col>
-        <p>Click "Download" to export data as an Excel spreadsheet.</p>
-        <v-btn color="primary" @click="download" :loading="downloading">
-          <v-icon left>file_download</v-icon>Download
-        </v-btn>
-      </v-col>
-    </v-row>
-    <div id="error">{{ error }}</div>
-    <p :hidden="!downloading">Download is in progress...</p>
+      <v-row>
+        <v-col class="pb-0">
+          <h1>Export</h1>
+          <p>
+            Please select a date range to export the data.
+          </p>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-form>
+          <v-col>
+            <date-picker-menu
+              v-model="startDate"
+              label="Start date"
+              prepend-icon="today"
+            />
+            <date-picker-menu
+              v-model="endDate"
+              label="End date"
+              prepend-icon="event"
+            />
+          </v-col>
+        </v-form>
+      </v-row>
+
+      <v-row>
+        <v-col>
+          <p>Click "Download" to export data as an Excel spreadsheet.</p>
+          <v-btn color="primary" @click="download" :loading="downloading">
+            <v-icon left>file_download</v-icon>Download
+          </v-btn>
+        </v-col>
+      </v-row>
+      <div id="error">{{ error }}</div>
+      <p :hidden="!downloading">Download is in progress...</p>
+    </v-col>
   </v-container>
 </template>
 
