@@ -66,30 +66,34 @@ import DatePickerMenu from "@/components/Export/DatePickerMenu.vue";
   },
 })
 export default class Settings extends Vue {
-  active = false;
   downloading = false;
-  offset = new Date().getTimezoneOffset();
+  readonly offset = new Date().getTimezoneOffset();
 
   endDate = moment().format("YYYY-MM-DD");
   startDate = moment().subtract(6, "days").format("YYYY-MM-DD");
 
-  end_date = moment().format("YYYY-MM-DD");
-  start_date = moment().subtract(6, "days").format("YYYY-MM-DD");
   error = "";
 
+  /**
+   * Navigates to home page
+   */
   goHome() {
     this.$router.push({
       name: "home",
     });
   }
 
+  /**
+   * Attempts to download spreadsheet by calling the Firebase function
+   */
   download() {
     this.error = "";
-    if (this.start_date > this.end_date) {
-      this.error = "Please enter a valid date range.";
-      return;
-    } else if (this.start_date === "" || this.end_date === "") {
+    if (this.startDate === "" || this.endDate === "") {
       this.error = "Please enter valid dates.";
+      return;
+    }
+    if (this.startDate > this.endDate) {
+      this.error = "Please enter a valid date range.";
       return;
     }
     this.downloading = true;
@@ -97,8 +101,8 @@ export default class Settings extends Vue {
     // Uncomment if running `npm run shell` for backend functions:
     // firebase.functions().useFunctionsEmulator("http://localhost:5000");
     let gymId = localStorage.gymId;
-    const startDate = this.start_date;
-    const endDate = this.end_date;
+    const startDate = this.startDate;
+    const endDate = this.endDate;
     const offset = this.offset;
     getURL({ id: gymId, startDate, endDate, offset })
       .then((res) => {
