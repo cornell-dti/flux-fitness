@@ -43,116 +43,25 @@ async function getData(gymName: string, startStr: string, endStr: string) {
   const docs = allGymDocs.docs;
 
   // dates
-  const dates = []; // list of dates from startDate to endDate
-  const currDate = startDate.clone();
-  while (currDate.diff(endDate) < 0) {
-    dates.push(currDate.clone());
-    currDate.add(1, "days");
-  }
+  const dates = generateDates(startDate, endDate); // list of dates from startDate to endDate
 
   // times
-  let beginTime = 24 * 60;
-  let endTime = 0;
-  const separateDates = []; // 2d list of data, separated by date
-  for (const d of dates) {
-    const dateData = docs.filter((doc: any) => {
-      const t = moment(doc.get("time").toDate());
-      return d.isSame(t, "day");
-    });
-    if (dateData.length !== 0) {
-      const timeData = dateData.map((doc: any) =>
-        moment(doc.get("time").toDate())
-      );
-      const earliest = moment.min(timeData);
-      const earliestTime = earliest.hour() * 60 + earliest.minute();
-      beginTime = Math.min(beginTime, earliestTime);
-      const latest = moment.max(timeData);
-      const latestTime = latest.hour() * 60 + latest.minute();
-      endTime = Math.max(endTime, latestTime);
-      separateDates.push(dateData);
-    } else {
-      separateDates.push([]);
-    }
-  }
-
-  // list of times (in intervals of 15min) from the earliest to latest for the entire time frame
-  const times = [];
-  const currentTime = moment.duration(roundTime(beginTime), "minutes");
-  endTime = moment.duration(roundTime(endTime), "minutes");
-  while (currentTime <= endTime) {
-    times.push(currentTime.clone());
-    currentTime.add(round30 ? 30 : 15, "minutes");
-  }
+  const separateDates: any[] = []; // 2d list of data, separated by date
+  let [beginTime, endTime] = cycleDateData(docs, separateDates, dates);
+  const times = generateTimes(beginTime, endTime); // 15min interval
 
   // populate data
-  const cardioGranularSheet = [];
-  const weightsGranularSheet = [];
-  const cardioTotalSheet = [];
-  const weightsTotalSheet = [];
-
+  const cardioGranularSheet: any[] = [];
+  const weightsGranularSheet: any[] = [];
+  const cardioTotalSheet: any[] = [];
+  const weightsTotalSheet: any[] = [];
   for (const time of times) {
-    const hm = dates[0].clone().add(time);
-    const timeHeader = hm.format("h:mm A");
-
-    const cardioGranularRow = [timeHeader];
-    const weightsGranularRow = [timeHeader];
-    const cardioTotalRow = [timeHeader];
-    const weightsTotalRow = [timeHeader];
-    for (const separateDate of separateDates) {
-      const dateData = separateDate.filter((doc: any) => {
-        const t = moment(doc.get("time").toDate());
-        const roundedTime = roundDate(t);
-        const timeInMinutes = roundedTime.hour() * 60 + roundedTime.minute();
-        const timeDuration = moment.duration(timeInMinutes, "minutes");
-        return time.as("minutes") === timeDuration.as("minutes");
-      });
-      if (dateData.length !== 0) {
-        const doc = dateData[dateData.length - 1]; // latest data entry
-        const cardioDoc = doc.get("cardio");
-        const treadmills = cardioDoc.treadmills;
-        const ellipticals = cardioDoc.ellipticals;
-        const bikes = cardioDoc.bikes;
-        const amts = cardioDoc.amts;
-        const cardioGranularCell =
-          "Treadmills: " +
-          treadmills +
-          " \nEllipticals: " +
-          ellipticals +
-          " \nBikes: " +
-          bikes +
-          " \nAMTs: " +
-          amts;
-        const cardioTotalCell = treadmills + ellipticals + bikes + amts;
-        const weightsDoc = doc.get("weights");
-        const powerRacks = weightsDoc.powerRacks;
-        const benchPress = weightsDoc.benchPress;
-        const dumbbells = weightsDoc.dumbbells;
-        const other = weightsDoc.other;
-        const weightsGranularCell =
-          "Power Racks: " +
-          powerRacks +
-          " \nBench Press: " +
-          benchPress +
-          " \nDumbbells: " +
-          dumbbells +
-          " \nOther: " +
-          other;
-        const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
-        cardioGranularRow.push(cardioGranularCell);
-        weightsGranularRow.push(weightsGranularCell);
-        cardioTotalRow.push(cardioTotalCell);
-        weightsTotalRow.push(weightsTotalCell);
-      } else {
-        cardioGranularRow.push("");
-        weightsGranularRow.push("");
-        cardioTotalRow.push("");
-        weightsTotalRow.push("");
-      }
-    }
-    cardioGranularSheet.push(cardioGranularRow);
-    weightsGranularSheet.push(weightsGranularRow);
-    cardioTotalSheet.push(cardioTotalRow);
-    weightsTotalSheet.push(weightsTotalRow);
+    addRow(separateDates, dates, time, [
+      cardioGranularSheet,
+      weightsGranularSheet,
+      cardioTotalSheet,
+      weightsTotalSheet,
+    ]);
   }
 
   // add column header
@@ -165,7 +74,6 @@ async function getData(gymName: string, startStr: string, endStr: string) {
   // write to spreadsheet
   const wb = new Excel.Workbook();
   wb.created = wb.modified = moment();
-
   addWS(wb, "Cardio", "3fd2f3", cardioGranularSheet);
   addWS(wb, "Weights", "b3ebfb", weightsGranularSheet);
   addWS(wb, "Cardio Total", "3fd2f3", cardioTotalSheet);
@@ -198,6 +106,132 @@ function roundDate(d: Date) {
     date.minute(Math.round(date.minute() / 15) * 15);
   }
   return date;
+}
+
+function cycleDateData(docs: any, separateDates: any[], dates: any) {
+  let beginTime = 24 * 60;
+  let endTime = 0;
+  for (const d of dates) {
+    const dateData = docs.filter((doc: any) => {
+      const t = moment(doc.get("time").toDate());
+      return d.isSame(t, "day");
+    });
+    let data = [];
+    if (dateData.length !== 0) {
+      const timeData = dateData.map((doc: any) =>
+        moment(doc.get("time").toDate())
+      );
+      const earliest = moment.min(timeData);
+      const earliestTime = earliest.hour() * 60 + earliest.minute();
+      beginTime = Math.min(beginTime, earliestTime);
+      const latest = moment.max(timeData);
+      const latestTime = latest.hour() * 60 + latest.minute();
+      endTime = Math.max(endTime, latestTime);
+      data = dateData;
+    }
+    separateDates.push(data);
+  }
+  return [beginTime, endTime];
+}
+
+function generateDates(startDate: any, endDate: any) {
+  const dates = [];
+  const currDate = startDate.clone();
+  while (currDate.diff(endDate) < 0) {
+    dates.push(currDate.clone());
+    currDate.add(1, "days");
+  }
+  return dates;
+}
+
+function generateTimes(begin: any, end: any) {
+  const times = [];
+  const currentTime = moment.duration(roundTime(begin), "minutes");
+  let endTime = moment.duration(roundTime(end), "minutes");
+  while (currentTime <= endTime) {
+    times.push(currentTime.clone());
+    currentTime.add(round30 ? 30 : 15, "minutes");
+  }
+  return times;
+}
+
+function addCell(separateDate: any, time: any, rows: string[][]) {
+  const dateData = separateDate.filter((doc: any) => {
+    const t = moment(doc.get("time").toDate());
+    const roundedTime = roundDate(t);
+    const timeInMinutes = roundedTime.hour() * 60 + roundedTime.minute();
+    const timeDuration = moment.duration(timeInMinutes, "minutes");
+    return time.as("minutes") === timeDuration.as("minutes");
+  });
+
+  let cardioGranularData = "";
+  let weightsGranularData = "";
+  let cardioTotalData = "";
+  let weightsTotalData = "";
+  if (dateData.length !== 0) {
+    const doc = dateData[dateData.length - 1]; // latest data entry
+    const cardioDoc = doc.get("cardio");
+    const treadmills = cardioDoc.treadmills;
+    const ellipticals = cardioDoc.ellipticals;
+    const bikes = cardioDoc.bikes;
+    const amts = cardioDoc.amts;
+    const cardioGranularCell =
+      "Treadmills: " +
+      treadmills +
+      " \nEllipticals: " +
+      ellipticals +
+      " \nBikes: " +
+      bikes +
+      " \nAMTs: " +
+      amts;
+    const cardioTotalCell = treadmills + ellipticals + bikes + amts;
+    cardioGranularData = cardioGranularCell;
+    cardioTotalData = cardioTotalCell;
+
+    const weightsDoc = doc.get("weights");
+    const powerRacks = weightsDoc.powerRacks;
+    const benchPress = weightsDoc.benchPress;
+    const dumbbells = weightsDoc.dumbbells;
+    const other = weightsDoc.other;
+    const weightsGranularCell =
+      "Power Racks: " +
+      powerRacks +
+      " \nBench Press: " +
+      benchPress +
+      " \nDumbbells: " +
+      dumbbells +
+      " \nOther: " +
+      other;
+    const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
+    weightsGranularData = weightsGranularCell;
+    weightsTotalData = weightsTotalCell;
+  }
+  rows[0].push(cardioGranularData);
+  rows[1].push(weightsGranularData);
+  rows[2].push(cardioTotalData);
+  rows[3].push(weightsTotalData);
+}
+
+function addRow(separateDates: any, dates: any, time: any, sheets: any[][]) {
+  const hm = dates[0].clone().add(time);
+  const timeHeader = hm.format("h:mm A");
+
+  const cardioGranularRow = [timeHeader];
+  const weightsGranularRow = [timeHeader];
+  const cardioTotalRow = [timeHeader];
+  const weightsTotalRow = [timeHeader];
+  for (const separateDate of separateDates) {
+    addCell(separateDate, time, [
+      cardioGranularRow,
+      weightsGranularRow,
+      cardioTotalRow,
+      weightsTotalRow,
+    ]);
+  }
+  sheets[0].push(cardioGranularRow);
+  sheets[1].push(weightsGranularRow);
+  sheets[2].push(cardioTotalRow);
+  sheets[3].push(weightsTotalRow);
 }
 
 function addWS(workbook: any, name: string, color: string, rows: string[][]) {
