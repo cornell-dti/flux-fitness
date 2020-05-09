@@ -13,6 +13,19 @@
           <h4 class="font-weight-regular pl-1">{{ getDate() }}</h4>
         </span>
 
+        <v-form ref="timeForm" v-model="timeValid">
+          <time-text-field
+            :value="getTime()"
+            :reset-disabled="!timeEditted"
+            :seconds="dateTime.getSeconds()"
+            @input="
+              stopInterval();
+              setTime($event);
+            "
+            @reset="startInterval"
+          />
+        </v-form>
+
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-col class="ma-0 pa-0" cols="12" sm="4">
             <time-text-field
@@ -32,24 +45,6 @@
 
           <v-row>
             <v-col cols="12" sm="6">
-              <h2>Weights</h2>
-              <p v-if="!!weights">
-                <b>Total:</b>
-                {{ weights }}
-              </p>
-            </v-col>
-            <v-col class="pt-0">
-              <count-text-field
-                v-for="field in weightFields"
-                v-model="field.count"
-                :key="field.key"
-                :field="field"
-              />
-            </v-col>
-          </v-row>
-
-          <v-row>
-            <v-col cols="12" sm="6">
               <h2>Cardio</h2>
               <p v-if="!!cardio">
                 <b>Total:</b>
@@ -66,9 +61,27 @@
             </v-col>
           </v-row>
 
+          <v-row>
+            <v-col cols="12" sm="6">
+              <h2>Weights</h2>
+              <p v-if="!!weights">
+                <b>Total:</b>
+                {{ weights }}
+              </p>
+            </v-col>
+            <v-col class="pt-0">
+              <count-text-field
+                v-for="field in weightFields"
+                v-model="field.count"
+                :key="field.key"
+                :field="field"
+              />
+            </v-col>
+          </v-row>
+
           <v-row v-if="!!gymTotal">
             <v-col>
-              <h2 class="gym-total">
+              <h2 class="font-weight-regular">
                 <b>Gym Total:</b>
                 {{ gymTotal }}
               </h2>
@@ -78,7 +91,12 @@
           <p class="text-right mt-2 red--text">{{ error }}</p>
           <div class="float-right pt-2">
             <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">
+            <v-btn
+              color="blue"
+              outlined
+              :disabled="!valid || !timeValid"
+              @click="validate()"
+            >
               Submit
             </v-btn>
           </div>
@@ -86,8 +104,15 @@
 
         <confirm-dialog
           v-model="dialog"
-          :confirm="confirm"
+          :cardio="cardioFields"
+          :weights="weightFields"
+          :cardio-total="cardio"
+          :weights-total="weights"
+          :gym-total="gymTotal"
+          :date-time="dateTime"
+          :gym-name="gymName"
           @submit="submit()"
+          @exit="startInterval()"
         />
       </v-col>
     </v-row>
@@ -103,10 +128,12 @@ import Component from "vue-class-component";
 import moment from "moment";
 // data
 import GymLimits from "@/data/GymLimits";
+import InputFields from "@/data/InputFields";
 // components
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
 import CountTextField from "@/components/Home/CountTextField.vue";
+import Axios from "axios";
 import TimeTextField from "@/components/Home/TimeTextField.vue";
 
 @Component({
@@ -118,13 +145,7 @@ import TimeTextField from "@/components/Home/TimeTextField.vue";
   },
 })
 export default class Home extends Vue {
-  weightFields: {
-    [key: string]: {
-      label: string;
-      count: string;
-      help?: { info: string; show: boolean };
-    };
-  } = {
+  weightFields: InputFields = {
     powerRacks: { label: "Power Racks", count: "" },
     benchPress: { label: "Bench Press", count: "" },
     dumbbells: { label: "Dumbbells", count: "" },
@@ -138,13 +159,7 @@ export default class Home extends Vue {
     },
   };
 
-  cardioFields: {
-    [key: string]: {
-      label: string;
-      count: string;
-      help?: { info: string; show: boolean };
-    };
-  } = {
+  cardioFields: InputFields = {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
@@ -152,6 +167,7 @@ export default class Home extends Vue {
   };
 
   valid = true;
+  timeValid = true;
 
   dateTime = new Date();
   timeInterval: any = null;
@@ -163,7 +179,6 @@ export default class Home extends Vue {
   readonly limits = GymLimits;
 
   dialog = false;
-  confirm = "";
   error = "";
 
   getDate(): string {
@@ -215,7 +230,11 @@ export default class Home extends Vue {
   }
 
   get form(): any {
-    return this.$refs.form as any;
+    return this.$refs.form;
+  }
+
+  get timeForm(): any {
+    return this.$refs.timeForm;
   }
 
   /**
@@ -239,7 +258,7 @@ export default class Home extends Vue {
   /**
    * Starts time interval that refreshes the time at a given interval
    */
-  startInterval(interval: number) {
+  startInterval(interval: number = 1000) {
     this.timeEditted = false;
     this.timeInterval = setInterval(() => {
       this.dateTime = new Date();
@@ -286,9 +305,15 @@ export default class Home extends Vue {
   validate() {
     // call Vuetify form validation
     this.form.validate();
+    const timeValid = this.timeForm.validate();
 
     // clear error
     this.error = "";
+
+    if (!timeValid) {
+      this.error = "Please check the time input.";
+      return;
+    }
 
     // check if data is empty
     if (!this.weights || !this.cardio) {
@@ -309,17 +334,57 @@ export default class Home extends Vue {
       return;
     }
 
-    // TODO: redesign confirm dialog
-    // create confirmation message
-    this.confirm = `${this.gymName} at ${this.getTime()}: there's ${
-      this.cardio
-    } ${
-      this.cardio === "1" ? " person" : " people"
-    } using cardio machines and ${this.weights} ${
-      this.weights === "1" ? " person" : " people"
-    } using weights.`;
-
+    this.stopInterval();
     this.dialog = true;
+  }
+
+roundDate(d: Date) {
+  const date = moment(d);
+  date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
+  date.second(Math.floor(date.second() / 60) * 60);
+  date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
+  return date.format("h:mma");
+}
+
+  updateHistoricalAverages() {
+    let day = ""
+    switch (this.dateTime.getDay()) {
+      case 0:
+        day = "Sunday";
+        break;
+      case 1:
+        day = "Monday"
+        break;
+      case 2:
+        day = "Tuesday"
+        break;
+      case 3:
+        day = "Wednesday"
+        break;
+      case 4:
+        day = "Thursday"
+        break;
+      case 5:
+        day = "Friday"
+        break;
+      case 6:
+        day = "Saturday"
+    }
+    const postData =
+    {
+      time: this.roundDate(this.dateTime),
+      cardio: this.cardio,
+      weights: this.weights
+    }
+    const options = {
+      headers: {'Content-Type': 'application/json'}
+    }
+    let url = process.env.VUE_APP_UPDATE_GYM_HISTORICAL_AVERAGES_API + '?id=' + this.gymId + '&day=' + day;
+    Axios.post(url, postData, options).then(() => {
+      // SUCCESSFUL POST REQUEST :)
+    }).catch(err => {
+      throw err
+    });
   }
 
   /**
@@ -350,7 +415,7 @@ export default class Home extends Vue {
         valid: false,
       })
       .then(() => {
-        this.confirm = "";
+        this.dateTime = new Date();
         this.clearInputs();
         // TODO: confirmation message/notification that data was submitted
       })
@@ -358,6 +423,7 @@ export default class Home extends Vue {
         this.error = "There was an error in adding the document.";
         return;
       });
+    this.updateHistoricalAverages();
   }
 
   /**
@@ -382,5 +448,6 @@ export default class Home extends Vue {
 
 .gym-form {
   max-width: 600px;
+
 }
 </style>
