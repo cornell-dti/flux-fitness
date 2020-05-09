@@ -14,7 +14,7 @@
         </span>
 
         <v-form ref="form" v-model="valid" lazy-validation>
-          <v-col class="ma-0 pa-0" cols="12" sm="6">
+          <v-col class="ma-0 pa-0" cols="12" sm="4">
             <time-text-field
               :value="getTime()"
               :reset-disabled="!timeEditted"
