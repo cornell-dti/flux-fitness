@@ -247,7 +247,7 @@ function addWS(workbook: any, name: string, color: string, rows: string[][]) {
   };
   worksheet.getColumn("A").alignment = {
     vertical: "middle",
-    horizontal: "center",
+    horizontal: "left",
   };
 
   // fit cells to height and width
@@ -267,10 +267,12 @@ function addWS(workbook: any, name: string, color: string, rows: string[][]) {
   for (let i = 0; i < worksheet.columns.length; i++) {
     const colNum = i + 1;
     const col = worksheet.getColumn(colNum);
-    if (colsWithData.has(colNum)) {
-      col.width = 13.5;
-    } else {
-      col.width = 10.5;
+    let width = 11.5;
+    if (colNum === 1) {
+      width = 9;
+    } else if (colsWithData.has(colNum)) {
+      width = 13.5;
     }
+    col.width = width;
   }
 }
