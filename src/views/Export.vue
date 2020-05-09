@@ -22,7 +22,7 @@
       <v-row>
         <v-form>
           <v-col>
-            <date-quick-select class="pb-3" />
+            <date-quick-select class="pb-3" @select="quickSelect($event)" />
             <date-picker-menu
               v-model="startDate"
               label="Start date"
@@ -71,24 +71,57 @@ import DateQuickSelect from "@/components/Export/DateQuickSelect.vue";
 export default class Settings extends Vue {
   downloading = false;
 
+  startDate = moment().startOf("week").format("YYYY-MM-DD");
   endDate = moment().format("YYYY-MM-DD");
-  startDate = moment().subtract(6, "days").format("YYYY-MM-DD");
 
   error = "";
 
   /**
    * Navigates to home page
    */
-  goHome() {
+  goHome(): void {
     this.$router.push({
       name: "home",
     });
   }
 
   /**
+   * Sets `startDate` and `endDate` based on preset intervals
+   */
+  quickSelect(selection: string): void {
+    if (selection === "thisWeek") {
+      this.startDate = moment().startOf("week").format("YYYY-MM-DD");
+      this.endDate = moment().format("YYYY-MM-DD");
+    }
+    if (selection === "lastWeek") {
+      const startOfLast = moment().startOf("week").subtract(1, "weeks");
+      this.startDate = startOfLast.format("YYYY-MM-DD");
+      this.endDate = startOfLast.add(6, "day").format("YYYY-MM-DD");
+    }
+    if (selection === "weekToDate") {
+      this.startDate = moment().subtract(7, "days").format("YYYY-MM-DD");
+      this.endDate = moment().format("YYYY-MM-DD");
+    }
+    if (selection === "monthToDate") {
+      this.startDate = moment().subtract(1, "months").format("YYYY-MM-DD");
+      this.endDate = moment().format("YYYY-MM-DD");
+    }
+    if (selection === "prevMonth") {
+      this.startDate = moment()
+        .subtract(1, "months")
+        .startOf("month")
+        .format("YYYY-MM-DD");
+      this.endDate = moment()
+        .subtract(1, "months")
+        .endOf("month")
+        .format("YYYY-MM-DD");
+    }
+  }
+
+  /**
    * Attempts to download spreadsheet by calling the Firebase function
    */
-  download() {
+  download(): void {
     this.error = "";
     if (this.startDate === "" || this.endDate === "") {
       this.error = "Please enter valid dates.";
@@ -109,7 +142,7 @@ export default class Settings extends Vue {
       .then((res) => {
         this.downloading = false;
         const storage = firebase.storage();
-        const gsref = storage.refFromURL(`gs:/${res.data}`);
+        const gsref = storage.refFromURL(`gs://campus-density-gym/${res.data}`);
         gsref.getDownloadURL().then((url) => {
           window.open(url);
         });
