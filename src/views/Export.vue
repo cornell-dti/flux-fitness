@@ -22,16 +22,22 @@
       <v-row>
         <v-form>
           <v-col>
-            <date-quick-select class="pb-3" @select="quickSelect($event)" />
+            <date-quick-select
+              class="pb-3"
+              @select="quickSelect($event)"
+              :edited="edited"
+            />
             <date-picker-menu
               v-model="startDate"
               label="Start date"
               prepend-icon="today"
+              @input="edited = true"
             />
             <date-picker-menu
               v-model="endDate"
               label="End date"
               prepend-icon="event"
+              @input="edited = true"
             />
           </v-col>
         </v-form>
@@ -72,9 +78,12 @@ export default class Settings extends Vue {
   downloading = false;
 
   startDate = moment().startOf("week").format("YYYY-MM-DD");
+
   endDate = moment().format("YYYY-MM-DD");
 
   error = "";
+
+  edited = false;
 
   /**
    * Navigates to home page
@@ -89,6 +98,7 @@ export default class Settings extends Vue {
    * Sets `startDate` and `endDate` based on preset intervals
    */
   quickSelect(selection: string): void {
+    this.edited = false;
     if (selection === "thisWeek") {
       this.startDate = moment().startOf("week").format("YYYY-MM-DD");
       this.endDate = moment().format("YYYY-MM-DD");
@@ -131,6 +141,7 @@ export default class Settings extends Vue {
       this.error = "Please enter a valid date range.";
       return;
     }
+    // TODO: add check if endDate is after today
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
     // Uncomment if running `npm run shell` for backend functions:
