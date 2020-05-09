@@ -1,15 +1,11 @@
 <template>
   <v-container class="fill-height" fluid>
-    <v-row class="justify-sm-end">
-      <v-col cols="12" sm="8" md="5">
-        <v-row class="justify-center justify-sm-end">
-          <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
-        </v-row>
-      </v-col>
+    <v-row class="justify-center justify-sm-end">
+      <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
     </v-row>
 
     <v-row>
-      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-3 mx-auto">
+      <v-col cols="12" class="px-8 mx-auto gym-form">
         <h1 class="mb-2">{{ gymName }}</h1>
 
         <span class="d-inline-flex align-center mt-3">
@@ -384,7 +380,7 @@ export default class Home extends Vue {
   font-weight: normal;
 }
 
-.h-36px {
-  height: 36px;
+.gym-form {
+  max-width: 600px;
 }
 </style>
