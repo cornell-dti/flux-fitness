@@ -52,6 +52,10 @@ export default class DateQuickSelect extends Vue {
 
   selected = "thisWeek";
 
+  /**
+   * Gets the selected option or returns empty string if user manually edited
+   * the date.
+   */
   getSelected(): string {
     return this.edited ? "" : this.selected;
   }
