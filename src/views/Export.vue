@@ -141,7 +141,10 @@ export default class Settings extends Vue {
       this.error = "Please enter a valid date range.";
       return;
     }
-    // TODO: add check if endDate is after today
+    if (this.endDate > moment().format("YYYY-MM-DD")) {
+      this.error = "Please select an end date that is today or earlier.";
+      return;
+    }
     this.downloading = true;
     const getURL = firebase.functions().httpsCallable("getURL");
     // Uncomment if running `npm run shell` for backend functions:
