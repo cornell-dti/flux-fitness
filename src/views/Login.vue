@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height no-overflow" fluid>
     <v-row>
-      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-8 mx-auto">
+      <v-col cols="12" class="px-8 py-8 mx-auto login-form">
         <h1>Flux Fitness</h1>
         <p>
           A simple webapp by the
@@ -112,3 +112,9 @@ export default class Login extends Vue {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.login-form {
+  max-width: 600px;
+}
+</style>
