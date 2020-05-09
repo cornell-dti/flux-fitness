@@ -1,6 +1,6 @@
 <template>
   <v-container fluid>
-    <v-col cols="12" sm="8" md="5" class="mx-auto">
+    <v-col cols="12" class="px-8 mx-auto export-form">
       <v-row>
         <v-col class="pl-0">
           <v-btn rounded text @click="goHome()">
@@ -22,6 +22,7 @@
       <v-row>
         <v-form>
           <v-col>
+            <date-quick-select class="pb-3" />
             <date-picker-menu
               v-model="startDate"
               label="Start date"
@@ -59,10 +60,12 @@ import "firebase/storage";
 import moment from "moment";
 // components
 import DatePickerMenu from "@/components/Export/DatePickerMenu.vue";
+import DateQuickSelect from "@/components/Export/DateQuickSelect.vue";
 
 @Component({
   components: {
     DatePickerMenu,
+    DateQuickSelect,
   },
 })
 export default class Settings extends Vue {
@@ -122,10 +125,14 @@ export default class Settings extends Vue {
 <style lang="scss" scoped>
 @import "../scss/variables";
 
+.export-form {
+  max-width: 600px;
+}
+
 #error {
   padding-top: 15px;
   text-align: left;
   margin-bottom: 10px;
-  color: #fa4735;
+  color: $colorError;
 }
 </style>
