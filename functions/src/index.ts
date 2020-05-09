@@ -44,9 +44,10 @@ async function getData(gymName: string, startStr: string, endStr: string) {
 
   // dates
   const dates = []; // list of dates from startDate to endDate
-  while (startDate.diff(endDate) < 0) {
-    dates.push(startDate.clone());
-    startDate.add(1, "days");
+  const currDate = startDate.clone();
+  while (currDate.diff(endDate) < 0) {
+    dates.push(currDate.clone());
+    currDate.add(1, "days");
   }
 
   // times
