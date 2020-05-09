@@ -155,43 +155,21 @@ async function getData(gymName: string, startStr: string, endStr: string) {
     weightsTotalSheet.push(weightsTotalRow);
   }
 
-  // write to spreadsheet
+  // add column header
   const dateHeader = dates.map((d) => d.format("ddd M/D/YY"));
-  const wb = new Excel.Workbook();
-  wb.created = moment();
-
-  wb.addWorksheet("Cardio", {
-    properties: { tabColor: { argb: "FA4735" } },
-    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
-    defaultColWidth: 120,
-  });
   cardioGranularSheet.unshift([""].concat(dateHeader));
-  const cardioGranularWS = wb.getWorksheet("Cardio");
-  cardioGranularWS.addRows(cardioGranularSheet);
-
-  wb.addWorksheet("Weights", {
-    properties: { tabColor: { argb: "FFC780" } },
-    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
-  });
   weightsGranularSheet.unshift([""].concat(dateHeader));
-  const weightsGranularWS = wb.getWorksheet("Weights");
-  weightsGranularWS.addRows(weightsGranularSheet);
-
-  wb.addWorksheet("Cardio Total", {
-    properties: { tabColor: { argb: "FFE082" } },
-    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
-  });
   cardioTotalSheet.unshift([""].concat(dateHeader));
-  const cardioTotalWS = wb.getWorksheet("Cardio Total");
-  cardioTotalWS.addRows(cardioTotalSheet);
-
-  wb.addWorksheet("Weights Total", {
-    properties: { tabColor: { argb: "87E9BA" } },
-    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
-  });
   weightsTotalSheet.unshift([""].concat(dateHeader));
-  const weightsTotalWS = wb.getWorksheet("Weights Total");
-  weightsTotalWS.addRows(weightsTotalSheet);
+
+  // write to spreadsheet
+  const wb = new Excel.Workbook();
+  wb.created = wb.modified = moment();
+
+  addWS(wb, "Cardio", "FA4735", cardioGranularSheet);
+  addWS(wb, "Weights", "FFC780", weightsGranularSheet);
+  addWS(wb, "Cardio Total", "FFE082", cardioTotalSheet);
+  addWS(wb, "Weights Total", "87E9BA", weightsTotalSheet);
 
   // add to storage
   const storage = admin.storage();
@@ -220,4 +198,44 @@ function roundDate(d: Date) {
     date.minute(Math.round(date.minute() / 15) * 15);
   }
   return date;
+}
+
+function addWS(workbook: any, name: string, color: string, rows: string[][]) {
+  workbook.addWorksheet(name, {
+    properties: { tabColor: { argb: color } },
+    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+  });
+  const worksheet = workbook.getWorksheet(name);
+  worksheet.addRows(rows);
+  worksheet.getRow("1").alignment = {
+    vertical: "middle",
+    horizontal: "center",
+  };
+  worksheet.getColumn("A").alignment = {
+    vertical: "middle",
+    horizontal: "center",
+  };
+
+  // fit cells to height and width
+  const colsWithData = new Set();
+  worksheet.eachRow((row: any) => {
+    let maxHeight = 0;
+    row.eachCell((cell: any, colNum: number) => {
+      const value = cell.value;
+      if (value.toString().indexOf("\n") !== -1) {
+        maxHeight = 57.6;
+        colsWithData.add(colNum);
+      }
+    });
+    row.height = Math.max(maxHeight, 14.4);
+  });
+  for (let i = 0; i < worksheet.columns.length; i++) {
+    const colNum = i + 1;
+    const col = worksheet.getColumn(colNum);
+    if (colsWithData.has(colNum)) {
+      col.width = 13.5;
+    } else {
+      col.width = 10.5;
+    }
+  }
 }

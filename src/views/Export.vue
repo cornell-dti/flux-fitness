@@ -80,7 +80,7 @@ export default class Settings extends Vue {
       .then((res) => {
         this.downloading = false;
         const storage = firebase.storage();
-        const gsref = storage.refFromURL(`gs:/${res.data}`);
+        const gsref = storage.refFromURL(`gs://campus-density-gym/${res.data}`);
         gsref.getDownloadURL().then((url) => {
           window.open(url);
         });
