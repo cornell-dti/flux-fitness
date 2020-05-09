@@ -1,7 +1,7 @@
 const serviceAccount = require("../firebase.json");
 const admin = require("firebase-admin");
 const functions = require("firebase-functions");
-const XLSX = require("xlsx");
+const Excel = require("exceljs");
 const moment = require("moment");
 require("moment-timezone");
 
@@ -113,14 +113,14 @@ async function getData(gymName: string, startStr: string, endStr: string) {
         const ellipticals = cardioDoc.ellipticals;
         const bikes = cardioDoc.bikes;
         const amts = cardioDoc.amts;
-        const cardioGranularCell = // TODO change to newlines
+        const cardioGranularCell =
           "Treadmills: " +
           treadmills +
-          " // Ellipticals: " +
+          "\r\nEllipticals: " +
           ellipticals +
-          " // Bikes: " +
+          "\r\nBikes: " +
           bikes +
-          " // AMTs: " +
+          "\r\nAMTs: " +
           amts;
         const cardioTotalCell = treadmills + ellipticals + bikes + amts;
         const weightsDoc = doc.get("weights");
@@ -128,14 +128,14 @@ async function getData(gymName: string, startStr: string, endStr: string) {
         const benchPress = weightsDoc.benchPress;
         const dumbbells = weightsDoc.dumbbells;
         const other = weightsDoc.other;
-        const weightsGranularCell = // TODO change to newlines
+        const weightsGranularCell =
           "Power Racks: " +
           powerRacks +
-          " // Bench Press: " +
+          "\r\nBench Press: " +
           benchPress +
-          " // Dumbbells: " +
+          "\r\nDumbbells: " +
           dumbbells +
-          " // Other: " +
+          "\r\nOther: " +
           other;
         const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
         cardioGranularRow.push(cardioGranularCell);
@@ -157,37 +157,51 @@ async function getData(gymName: string, startStr: string, endStr: string) {
 
   // write to spreadsheet
   const dateHeader = dates.map((d) => d.format("ddd M/D/YY"));
-  const wb = XLSX.utils.book_new();
+  const wb = new Excel.Workbook();
+  wb.created = moment();
 
+  wb.addWorksheet("Cardio", {
+    properties: { tabColor: { argb: "FA4735" } },
+    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+    defaultColWidth: 120,
+  });
   cardioGranularSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Cardio");
-  const cardioGranularWS = XLSX.utils.aoa_to_sheet(cardioGranularSheet);
-  wb.Sheets["Cardio"] = cardioGranularWS;
+  const cardioGranularWS = wb.getWorksheet("Cardio");
+  cardioGranularWS.addRows(cardioGranularSheet);
 
+  wb.addWorksheet("Weights", {
+    properties: { tabColor: { argb: "FFC780" } },
+    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+  });
   weightsGranularSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Weights");
-  const weightsGranularWS = XLSX.utils.aoa_to_sheet(weightsGranularSheet);
-  wb.Sheets["Weights"] = weightsGranularWS;
+  const weightsGranularWS = wb.getWorksheet("Weights");
+  weightsGranularWS.addRows(weightsGranularSheet);
 
+  wb.addWorksheet("Cardio Total", {
+    properties: { tabColor: { argb: "FFE082" } },
+    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+  });
   cardioTotalSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Cardio Total");
-  const cardioTotalWS = XLSX.utils.aoa_to_sheet(cardioTotalSheet);
-  wb.Sheets["Cardio Total"] = cardioTotalWS;
+  const cardioTotalWS = wb.getWorksheet("Cardio Total");
+  cardioTotalWS.addRows(cardioTotalSheet);
 
+  wb.addWorksheet("Weights Total", {
+    properties: { tabColor: { argb: "87E9BA" } },
+    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+  });
   weightsTotalSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Weights Total");
-  const weightsTotalWS = XLSX.utils.aoa_to_sheet(weightsTotalSheet);
-  wb.Sheets["Weights Total"] = weightsTotalWS;
+  const weightsTotalWS = wb.getWorksheet("Weights Total");
+  weightsTotalWS.addRows(weightsTotalSheet);
 
-  const buffer = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
+  // add to storage
   const storage = admin.storage();
   const bucket = storage.bucket("campus-density-gym");
   const fileName = `${gymName}_${startDate.format(
     "YYYY-MM-DD"
   )}_${endDate.format("YYYY-MM-DD")}.xlsx`;
-  const file = bucket.file(fileName);
-  await file.save(buffer);
-  return `/campus-density-gym/${fileName}`;
+  const buffer = await wb.xlsx.writeBuffer();
+  await bucket.file(fileName).save(buffer);
+  return fileName;
 }
 
 function roundTime(t: number) {
