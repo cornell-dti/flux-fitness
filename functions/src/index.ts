@@ -116,11 +116,11 @@ async function getData(gymName: string, startStr: string, endStr: string) {
         const cardioGranularCell =
           "Treadmills: " +
           treadmills +
-          "\r\nEllipticals: " +
+          " \nEllipticals: " +
           ellipticals +
-          "\r\nBikes: " +
+          " \nBikes: " +
           bikes +
-          "\r\nAMTs: " +
+          " \nAMTs: " +
           amts;
         const cardioTotalCell = treadmills + ellipticals + bikes + amts;
         const weightsDoc = doc.get("weights");
@@ -131,11 +131,11 @@ async function getData(gymName: string, startStr: string, endStr: string) {
         const weightsGranularCell =
           "Power Racks: " +
           powerRacks +
-          "\r\nBench Press: " +
+          " \nBench Press: " +
           benchPress +
-          "\r\nDumbbells: " +
+          " \nDumbbells: " +
           dumbbells +
-          "\r\nOther: " +
+          " \nOther: " +
           other;
         const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
         cardioGranularRow.push(cardioGranularCell);
@@ -223,6 +223,7 @@ function addWS(workbook: any, name: string, color: string, rows: string[][]) {
     row.eachCell((cell: any, colNum: number) => {
       const value = cell.value;
       if (value.toString().indexOf("\n") !== -1) {
+        cell.alignment = { wrapText: true };
         maxHeight = 57.6;
         colsWithData.add(colNum);
       }
