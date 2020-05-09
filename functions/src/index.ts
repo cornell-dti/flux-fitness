@@ -166,10 +166,10 @@ async function getData(gymName: string, startStr: string, endStr: string) {
   const wb = new Excel.Workbook();
   wb.created = wb.modified = moment();
 
-  addWS(wb, "Cardio", "FA4735", cardioGranularSheet);
-  addWS(wb, "Weights", "FFC780", weightsGranularSheet);
-  addWS(wb, "Cardio Total", "FFE082", cardioTotalSheet);
-  addWS(wb, "Weights Total", "87E9BA", weightsTotalSheet);
+  addWS(wb, "Cardio", "3fd2f3", cardioGranularSheet);
+  addWS(wb, "Weights", "b3ebfb", weightsGranularSheet);
+  addWS(wb, "Cardio Total", "3fd2f3", cardioTotalSheet);
+  addWS(wb, "Weights Total", "b3ebfb", weightsTotalSheet);
 
   // add to storage
   const storage = admin.storage();
