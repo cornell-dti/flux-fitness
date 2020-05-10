@@ -52,11 +52,13 @@
         <v-spacer />
         <v-btn text @click="exitDialog()">Edit</v-btn>
         <v-btn
-          textcolor="green"
+          text
+          color="green"
           @click="
             exitDialog();
             submit();
-          ">
+          "
+        >
           Confirm
         </v-btn>
       </v-card-actions>
