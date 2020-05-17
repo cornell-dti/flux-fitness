@@ -1,4 +1,5 @@
 import "core-js/stable";
+import "whatwg-fetch";
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
@@ -12,7 +13,7 @@ firebase.initializeApp({
   databaseURL: "https://campus-density.firebaseio.com",
   projectId: "campus-density",
   storageBucket: "campus-density.appspot.com",
-  messagingSenderId: "833550952996"
+  messagingSenderId: "833550952996",
 });
 
 Vue.config.productionTip = false;
@@ -20,5 +21,5 @@ Vue.config.productionTip = false;
 new Vue({
   router,
   vuetify,
-  render: h => h(App)
+  render: (h) => h(App),
 }).$mount("#app");
