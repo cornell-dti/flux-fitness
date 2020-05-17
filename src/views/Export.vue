@@ -99,33 +99,31 @@ export default class Settings extends Vue {
    */
   quickSelect(selection: string): void {
     this.edited = false;
-    if (selection === "thisWeek") {
-      this.startDate = moment().startOf("week").format("YYYY-MM-DD");
-      this.endDate = moment().format("YYYY-MM-DD");
+    let start = moment();
+    let end = moment();
+
+    switch (selection) {
+      case "thisWeek":
+        start = moment().startOf("week");
+        break;
+      case "lastWeek":
+        start = moment().subtract(1, "weeks").startOf("week");
+        end = moment(start).add(6, "days");
+        break;
+      case "weekToDate":
+        start = moment().subtract(7, "days");
+        break;
+      case "monthToDate":
+        start = moment().subtract(1, "months");
+        break;
+      case "prevMonth":
+        start = moment().subtract(1, "months").startOf("month");
+        end = moment(start).endOf("month");
+        break;
     }
-    if (selection === "lastWeek") {
-      const startOfLast = moment().startOf("week").subtract(1, "weeks");
-      this.startDate = startOfLast.format("YYYY-MM-DD");
-      this.endDate = startOfLast.add(6, "day").format("YYYY-MM-DD");
-    }
-    if (selection === "weekToDate") {
-      this.startDate = moment().subtract(7, "days").format("YYYY-MM-DD");
-      this.endDate = moment().format("YYYY-MM-DD");
-    }
-    if (selection === "monthToDate") {
-      this.startDate = moment().subtract(1, "months").format("YYYY-MM-DD");
-      this.endDate = moment().format("YYYY-MM-DD");
-    }
-    if (selection === "prevMonth") {
-      this.startDate = moment()
-        .subtract(1, "months")
-        .startOf("month")
-        .format("YYYY-MM-DD");
-      this.endDate = moment()
-        .subtract(1, "months")
-        .endOf("month")
-        .format("YYYY-MM-DD");
-    }
+
+    this.startDate = start.format("YYYY-MM-DD");
+    this.endDate = end.format("YYYY-MM-DD");
   }
 
   /**
