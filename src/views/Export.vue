@@ -1,72 +1,146 @@
 <template>
-  <app-card>
-    <div class="text">
-      <h1>Export</h1>
-      <div class="text">
-        <p>Export data from a time range (inclusive).</p>
-      </div>
-    </div>
-    <form class="date-form">
-      <div class="date-select">
-        <i class="material-icons">date_range</i>
-        <input class="date-input" v-model="start_date" type="date" required />
-        &mdash;
-        <input class="date-input" v-model="end_date" type="date" required />
-      </div>
-    </form>
-    <div class="text">
-      <p>Click "Download" to export data as an Excel spreadsheet.</p>
-    </div>
-    <boxed-button :disabled="downloading" v-on:click="download" />
-    <div id="error">{{ error }}</div>
-    <p :hidden="!downloading">Download is in progress...</p>
-    <action-button-group
-      id="done"
-      :require-confirmation="true"
-      v-on:submitted="handler()"
-      action-button-text="DONE"
-    />
-  </app-card>
+  <v-container fluid>
+    <v-col cols="12" class="px-8 mx-auto export-form">
+      <v-row>
+        <v-col class="pl-0">
+          <v-btn rounded text @click="goHome()">
+            <v-icon left>arrow_back</v-icon>
+            Back
+          </v-btn>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-col class="pb-0">
+          <h1>Export</h1>
+          <p>
+            Please select a date range to export the data.
+          </p>
+        </v-col>
+      </v-row>
+
+      <v-row>
+        <v-form>
+          <v-col>
+            <date-quick-select
+              class="pb-3"
+              @select="quickSelect($event)"
+              :edited="edited"
+            />
+            <date-picker-menu
+              v-model="startDate"
+              label="Start date"
+              prepend-icon="today"
+              @input="edited = true"
+            />
+            <date-picker-menu
+              v-model="endDate"
+              label="End date"
+              prepend-icon="event"
+              @input="edited = true"
+            />
+          </v-col>
+        </v-form>
+      </v-row>
+
+      <v-row>
+        <v-col>
+          <p>Click "Download" to export data as an Excel spreadsheet.</p>
+          <v-btn color="primary" @click="download" :loading="downloading">
+            <v-icon left>file_download</v-icon>Download
+          </v-btn>
+        </v-col>
+      </v-row>
+      <div id="error">{{ error }}</div>
+      <p :hidden="!downloading">Download is in progress...</p>
+    </v-col>
+  </v-container>
 </template>
 
 <script lang="ts">
-import Component from "vue-class-component";
-import AppCard from "@/components/AppCard.vue";
-import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
-import BoxedButton from "@/components/BoxedButton.vue";
 import Vue from "vue";
+import Component from "vue-class-component";
 import * as firebase from "firebase/app";
 import "firebase/functions";
 import "firebase/storage";
 import moment from "moment";
+// components
+import DatePickerMenu from "@/components/Export/DatePickerMenu.vue";
+import DateQuickSelect from "@/components/Export/DateQuickSelect.vue";
 
 @Component({
   components: {
-    ActionButtonGroup,
-    AppCard,
-    BoxedButton,
+    DatePickerMenu,
+    DateQuickSelect,
   },
 })
 export default class Settings extends Vue {
-  active = false;
   downloading = false;
-  end_date = moment().format("YYYY-MM-DD");
-  start_date = moment().subtract(6, "days").format("YYYY-MM-DD");
+
+  startDate = moment().startOf("week").format("YYYY-MM-DD");
+
+  endDate = moment().format("YYYY-MM-DD");
+
   error = "";
 
-  handler() {
+  edited = false;
+
+  /**
+   * Navigates to home page
+   */
+  goHome(): void {
     this.$router.push({
       name: "home",
     });
   }
 
-  download() {
+  /**
+   * Sets `startDate` and `endDate` based on preset intervals
+   */
+  quickSelect(selection: string): void {
+    this.edited = false;
+    let start = moment();
+    let end = moment();
+
+    switch (selection) {
+      case "thisWeek":
+        start = moment().startOf("week");
+        break;
+      case "lastWeek":
+        start = moment().subtract(1, "weeks").startOf("week");
+        end = moment(start).add(6, "days");
+        break;
+      case "weekToDate":
+        start = moment().subtract(7, "days");
+        break;
+      case "monthToDate":
+        start = moment().subtract(1, "months");
+        break;
+      case "prevMonth":
+        start = moment().subtract(1, "months").startOf("month");
+        end = moment(start).endOf("month");
+        break;
+    }
+
+    this.startDate = start.format("YYYY-MM-DD");
+    this.endDate = end.format("YYYY-MM-DD");
+  }
+
+  /**
+   * Attempts to download spreadsheet by calling the Firebase function
+   */
+  download(): void {
     this.error = "";
-    if (this.start_date > this.end_date) {
+    if (this.startDate === "" || this.endDate === "") {
+      this.error = "Please enter valid dates.";
+      return;
+    }
+    if (this.startDate > this.endDate) {
       this.error = "Please enter a valid date range.";
       return;
-    } else if (this.start_date === "" || this.end_date === "") {
-      this.error = "Please enter valid dates.";
+    }
+    if (this.endDate > moment().format("YYYY-MM-DD")) {
+      this.error = "Please select an end date that is today or earlier.";
       return;
     }
     this.downloading = true;
@@ -74,19 +148,19 @@ export default class Settings extends Vue {
     // Uncomment if running `npm run shell` for backend functions:
     // firebase.functions().useFunctionsEmulator("http://localhost:5000");
     let gymId = localStorage.gymId;
-    const startDate = this.start_date;
-    const endDate = this.end_date;
+    const startDate = this.startDate;
+    const endDate = this.endDate;
     getURL({ id: gymId, startDate, endDate })
       .then((res) => {
         this.downloading = false;
         const storage = firebase.storage();
-        const gsref = storage.refFromURL(`gs:/${res.data}`);
+        const gsref = storage.refFromURL(`gs://campus-density-gym/${res.data}`);
         gsref.getDownloadURL().then((url) => {
           window.open(url);
         });
       })
-      .catch((e) => {
-        "Error downloading.\n" + e; // console.log
+      .catch(() => {
+        this.error = "Error downloading.";
         this.downloading = false;
       });
   }
@@ -96,60 +170,14 @@ export default class Settings extends Vue {
 <style lang="scss" scoped>
 @import "../scss/variables";
 
-.text {
-  margin-right: 30px;
-  margin-top: 20px;
+.export-form {
+  max-width: 600px;
 }
 
 #error {
   padding-top: 15px;
   text-align: left;
   margin-bottom: 10px;
-  color: #fa4735;
-}
-
-#done {
-  margin-top: 0px;
-}
-
-.date-input {
-  border: solid 1px black;
-  border-radius: 5px;
-  margin-left: 0px;
-  max-width: 35%;
-  padding: 5px;
-}
-
-.date-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  display: none;
-  margin: 0px;
-}
-
-.date-input::-webkit-calendar-picker-indicator {
-  opacity: 100;
-  margin-left: -15px;
-}
-
-.material-icons {
-  color: black;
-  vertical-align: middle;
-  font-size: 20px;
-  margin-right: 16px;
-}
-
-.button-boxed {
-  padding-right: 16px;
-
-  .material-icons {
-    color: white;
-    vertical-align: middle;
-    font-size: 20px;
-  }
-
-  &:disabled {
-    color: white;
-    background-color: $mainAccentDisable;
-  }
+  color: $colorError;
 }
 </style>

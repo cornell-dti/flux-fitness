@@ -1,15 +1,11 @@
 <template>
   <v-container class="fill-height" fluid>
-    <v-row class="justify-sm-end">
-      <v-col cols="12" sm="8" md="5">
-        <v-row class="justify-center justify-sm-end">
-          <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
-        </v-row>
-      </v-col>
+    <v-row class="justify-center justify-sm-end">
+      <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
     </v-row>
 
     <v-row>
-      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-3 mx-auto">
+      <v-col cols="12" class="px-8 mx-auto gym-form">
         <h1 class="mb-2">{{ gymName }}</h1>
 
         <span class="d-inline-flex align-center mt-3">
@@ -18,16 +14,18 @@
         </span>
 
         <v-form ref="timeForm" v-model="timeValid">
-          <time-text-field
-            :value="getTime()"
-            :reset-disabled="!timeEditted"
-            :seconds="dateTime.getSeconds()"
-            @input="
-              stopInterval();
-              setTime($event);
-            "
-            @reset="startInterval"
-          />
+          <v-col class="ma-0 pa-0" cols="12" sm="4">
+            <time-text-field
+              :value="getTime()"
+              :reset-disabled="!timeEditted"
+              :seconds="dateTime.getSeconds()"
+              @input="
+                stopInterval();
+                setTime($event);
+              "
+              @reset="startInterval"
+            />
+          </v-col>
         </v-form>
 
         <v-form ref="form" v-model="valid" lazy-validation>
@@ -330,53 +328,59 @@ export default class Home extends Vue {
     this.dialog = true;
   }
 
-roundDate(d: Date) {
-  const date = moment(d);
-  date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
-  date.second(Math.floor(date.second() / 60) * 60);
-  date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
-  return date.format("h:mma");
-}
+  roundDate(d: Date) {
+    const date = moment(d);
+    date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
+    date.second(Math.floor(date.second() / 60) * 60);
+    date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
+    return date.format("h:mma");
+  }
 
   updateHistoricalAverages() {
-    let day = ""
+    let day = "";
     switch (this.dateTime.getDay()) {
       case 0:
         day = "Sunday";
         break;
       case 1:
-        day = "Monday"
+        day = "Monday";
         break;
       case 2:
-        day = "Tuesday"
+        day = "Tuesday";
         break;
       case 3:
-        day = "Wednesday"
+        day = "Wednesday";
         break;
       case 4:
-        day = "Thursday"
+        day = "Thursday";
         break;
       case 5:
-        day = "Friday"
+        day = "Friday";
         break;
       case 6:
-        day = "Saturday"
+        day = "Saturday";
     }
-    const postData =
-    {
+    const postData = {
       time: this.roundDate(this.dateTime),
       cardio: this.cardio,
-      weights: this.weights
-    }
+      weights: this.weights,
+    };
     const options = {
-      headers: {'Content-Type': 'application/json'}
-    }
-    let url = process.env.VUE_APP_UPDATE_GYM_HISTORICAL_AVERAGES_API + '?id=' + this.gymId + '&day=' + day;
-    Axios.post(url, postData, options).then(() => {
-      // SUCCESSFUL POST REQUEST :)
-    }).catch(err => {
-      throw err
-    });
+      headers: { "Content-Type": "application/json" },
+    };
+    let url =
+      process.env.VUE_APP_UPDATE_GYM_HISTORICAL_AVERAGES_API +
+      "?id=" +
+      this.gymId +
+      "&day=" +
+      day;
+    Axios.post(url, postData, options)
+      .then(() => {
+        // SUCCESSFUL POST REQUEST :)
+      })
+      .catch((err) => {
+        throw err;
+      });
   }
 
   /**
@@ -434,7 +438,11 @@ roundDate(d: Date) {
 </script>
 
 <style lang="scss" scoped>
-.h-36px {
-  height: 36px;
+.gym-total {
+  font-weight: normal;
+}
+
+.gym-form {
+  max-width: 600px;
 }
 </style>
