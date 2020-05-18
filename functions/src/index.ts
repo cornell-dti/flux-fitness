@@ -1,8 +1,8 @@
 const serviceAccount = require("../firebase.json");
 const admin = require("firebase-admin");
 const functions = require("firebase-functions");
-const XLSX = require("xlsx");
-const moment = require("moment");
+const Excel = require("exceljs");
+import moment = require("moment");
 require("moment-timezone");
 
 admin.initializeApp({
@@ -43,21 +43,84 @@ async function getData(gymName: string, startStr: string, endStr: string) {
   const docs = allGymDocs.docs;
 
   // dates
-  const dates = []; // list of dates from startDate to endDate
-  while (startDate.diff(endDate) < 0) {
-    dates.push(startDate.clone());
-    startDate.add(1, "days");
-  }
+  const dates = generateDates(startDate, endDate); // list of dates from startDate to endDate
 
   // times
+  const separateDates: any[] = []; // 2d list of data, separated by date
+  let [beginTime, endTime] = cycleDateData(docs, separateDates, dates);
+  const times = generateTimes(beginTime, endTime); // 15min interval
+
+  // populate data
+  const cardioGranularSheet: any[] = [];
+  const weightsGranularSheet: any[] = [];
+  const cardioTotalSheet: any[] = [];
+  const weightsTotalSheet: any[] = [];
+  for (const time of times) {
+    addRow(separateDates, dates, time, [
+      cardioGranularSheet,
+      weightsGranularSheet,
+      cardioTotalSheet,
+      weightsTotalSheet,
+    ]);
+  }
+
+  // add column header
+  const dateHeader = dates.map((d) => d.format("ddd M/D/YY"));
+  cardioGranularSheet.unshift([""].concat(dateHeader));
+  weightsGranularSheet.unshift([""].concat(dateHeader));
+  cardioTotalSheet.unshift([""].concat(dateHeader));
+  weightsTotalSheet.unshift([""].concat(dateHeader));
+
+  // write to spreadsheet
+  const wb = new Excel.Workbook();
+  wb.created = wb.modified = moment();
+  addWS(wb, "Cardio", "3fd2f3", cardioGranularSheet);
+  addWS(wb, "Weights", "b3ebfb", weightsGranularSheet);
+  addWS(wb, "Cardio Total", "3fd2f3", cardioTotalSheet);
+  addWS(wb, "Weights Total", "b3ebfb", weightsTotalSheet);
+
+  // add to storage
+  const storage = admin.storage();
+  const bucket = storage.bucket("campus-density-gym");
+  const fileName = `${gymName}_${startDate.format(
+    "YYYY-MM-DD"
+  )}_${endDate.format("YYYY-MM-DD")}.xlsx`;
+  const buffer = await wb.xlsx.writeBuffer();
+  await bucket.file(fileName).save(buffer);
+  return fileName;
+}
+
+function roundTime(t: number) {
+  const date = moment.utc(moment.duration(t, "minutes").as("milliseconds"));
+  const roundedDate = roundDate(date);
+  return roundedDate.hour() * 60 + roundedDate.minute();
+}
+
+function roundDate(d: moment.Moment) {
+  const date = moment(d);
+  date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
+  date.second(Math.floor(date.second() / 60) * 60);
+  if (round30) {
+    date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
+  } else {
+    date.minute(Math.round(date.minute() / 15) * 15);
+  }
+  return date;
+}
+
+function cycleDateData(
+  docs: any,
+  separateDates: any[],
+  dates: moment.Moment[]
+) {
   let beginTime = 24 * 60;
   let endTime = 0;
-  const separateDates = []; // 2d list of data, separated by date
   for (const d of dates) {
     const dateData = docs.filter((doc: any) => {
       const t = moment(doc.get("time").toDate());
       return d.isSame(t, "day");
     });
+    let data = [];
     if (dateData.length !== 0) {
       const timeData = dateData.map((doc: any) =>
         moment(doc.get("time").toDate())
@@ -68,141 +131,153 @@ async function getData(gymName: string, startStr: string, endStr: string) {
       const latest = moment.max(timeData);
       const latestTime = latest.hour() * 60 + latest.minute();
       endTime = Math.max(endTime, latestTime);
-      separateDates.push(dateData);
-    } else {
-      separateDates.push([]);
+      data = dateData;
     }
+    separateDates.push(data);
   }
+  return [beginTime, endTime];
+}
 
-  // list of times (in intervals of 15min) from the earliest to latest for the entire time frame
+function generateDates(startDate: moment.Moment, endDate: moment.Moment) {
+  const dates = [];
+  const currDate = startDate.clone();
+  while (currDate.diff(endDate) < 0) {
+    dates.push(currDate.clone());
+    currDate.add(1, "days");
+  }
+  return dates;
+}
+
+function generateTimes(begin: number, end: number) {
   const times = [];
-  const currentTime = moment.duration(roundTime(beginTime), "minutes");
-  endTime = moment.duration(roundTime(endTime), "minutes");
+  const currentTime = moment.duration(roundTime(begin), "minutes");
+  let endTime = moment.duration(roundTime(end), "minutes");
   while (currentTime <= endTime) {
     times.push(currentTime.clone());
     currentTime.add(round30 ? 30 : 15, "minutes");
   }
+  return times;
+}
 
-  // populate data
-  const cardioGranularSheet = [];
-  const weightsGranularSheet = [];
-  const cardioTotalSheet = [];
-  const weightsTotalSheet = [];
+function addCell(separateDate: any, time: moment.Duration, rows: string[][]) {
+  const dateData = separateDate.filter((doc: any) => {
+    const t = moment(doc.get("time").toDate());
+    const roundedTime = roundDate(t);
+    const timeInMinutes = roundedTime.hour() * 60 + roundedTime.minute();
+    const timeDuration = moment.duration(timeInMinutes, "minutes");
+    return time.as("minutes") === timeDuration.as("minutes");
+  });
 
-  for (const time of times) {
-    const hm = dates[0].clone().add(time);
-    const timeHeader = hm.format("h:mm A");
+  let cardioGranularData = "";
+  let weightsGranularData = "";
+  let cardioTotalData = "";
+  let weightsTotalData = "";
+  if (dateData.length !== 0) {
+    const doc = dateData[dateData.length - 1]; // latest data entry
+    const cardioDoc = doc.get("cardio");
+    const treadmills = cardioDoc.treadmills;
+    const ellipticals = cardioDoc.ellipticals;
+    const bikes = cardioDoc.bikes;
+    const amts = cardioDoc.amts;
+    cardioGranularData =
+      "Treadmills: " +
+      treadmills +
+      " \nEllipticals: " +
+      ellipticals +
+      " \nBikes: " +
+      bikes +
+      " \nAMTs: " +
+      amts;
+    cardioTotalData = treadmills + ellipticals + bikes + amts;
 
-    const cardioGranularRow = [timeHeader];
-    const weightsGranularRow = [timeHeader];
-    const cardioTotalRow = [timeHeader];
-    const weightsTotalRow = [timeHeader];
-    for (const separateDate of separateDates) {
-      const dateData = separateDate.filter((doc: any) => {
-        const t = moment(doc.get("time").toDate());
-        const roundedTime = roundDate(t);
-        const timeInMinutes = roundedTime.hour() * 60 + roundedTime.minute();
-        const timeDuration = moment.duration(timeInMinutes, "minutes");
-        return time.as("minutes") === timeDuration.as("minutes");
-      });
-      if (dateData.length !== 0) {
-        const doc = dateData[dateData.length - 1]; // latest data entry
-        const cardioDoc = doc.get("cardio");
-        const treadmills = cardioDoc.treadmills;
-        const ellipticals = cardioDoc.ellipticals;
-        const bikes = cardioDoc.bikes;
-        const amts = cardioDoc.amts;
-        const cardioGranularCell = // TODO change to newlines
-          "Treadmills: " +
-          treadmills +
-          " // Ellipticals: " +
-          ellipticals +
-          " // Bikes: " +
-          bikes +
-          " // AMTs: " +
-          amts;
-        const cardioTotalCell = treadmills + ellipticals + bikes + amts;
-        const weightsDoc = doc.get("weights");
-        const powerRacks = weightsDoc.powerRacks;
-        const benchPress = weightsDoc.benchPress;
-        const dumbbells = weightsDoc.dumbbells;
-        const other = weightsDoc.other;
-        const weightsGranularCell = // TODO change to newlines
-          "Power Racks: " +
-          powerRacks +
-          " // Bench Press: " +
-          benchPress +
-          " // Dumbbells: " +
-          dumbbells +
-          " // Other: " +
-          other;
-        const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
-        cardioGranularRow.push(cardioGranularCell);
-        weightsGranularRow.push(weightsGranularCell);
-        cardioTotalRow.push(cardioTotalCell);
-        weightsTotalRow.push(weightsTotalCell);
-      } else {
-        cardioGranularRow.push("");
-        weightsGranularRow.push("");
-        cardioTotalRow.push("");
-        weightsTotalRow.push("");
+    const weightsDoc = doc.get("weights");
+    const powerRacks = weightsDoc.powerRacks;
+    const benchPress = weightsDoc.benchPress;
+    const dumbbells = weightsDoc.dumbbells;
+    const other = weightsDoc.other;
+    weightsGranularData =
+      "Power Racks: " +
+      powerRacks +
+      " \nBench Press: " +
+      benchPress +
+      " \nDumbbells: " +
+      dumbbells +
+      " \nOther: " +
+      other;
+    weightsTotalData = powerRacks + benchPress + dumbbells + other;
+  }
+  rows[0].push(cardioGranularData);
+  rows[1].push(weightsGranularData);
+  rows[2].push(cardioTotalData);
+  rows[3].push(weightsTotalData);
+}
+
+function addRow(
+  separateDates: any,
+  dates: moment.Moment[],
+  time: moment.Duration,
+  sheets: any[][]
+) {
+  const hm = dates[0].clone().add(time);
+  const timeHeader = hm.format("h:mm A");
+
+  const cardioGranularRow = [timeHeader];
+  const weightsGranularRow = [timeHeader];
+  const cardioTotalRow = [timeHeader];
+  const weightsTotalRow = [timeHeader];
+  for (const separateDate of separateDates) {
+    addCell(separateDate, time, [
+      cardioGranularRow,
+      weightsGranularRow,
+      cardioTotalRow,
+      weightsTotalRow,
+    ]);
+  }
+  sheets[0].push(cardioGranularRow);
+  sheets[1].push(weightsGranularRow);
+  sheets[2].push(cardioTotalRow);
+  sheets[3].push(weightsTotalRow);
+}
+
+function addWS(workbook: any, name: string, color: string, rows: string[][]) {
+  workbook.addWorksheet(name, {
+    properties: { tabColor: { argb: color } },
+    views: [{ state: "frozen", xSplit: 1, ySplit: 1 }],
+  });
+  const worksheet = workbook.getWorksheet(name);
+  worksheet.addRows(rows);
+  worksheet.getRow("1").alignment = {
+    vertical: "middle",
+    horizontal: "center",
+  };
+  worksheet.getColumn("A").alignment = {
+    vertical: "middle",
+    horizontal: "left",
+  };
+
+  // fit cells to height and width
+  const colsWithData = new Set();
+  worksheet.eachRow((row: any) => {
+    let maxHeight = 0;
+    row.eachCell((cell: any, colNum: number) => {
+      const value = cell.value;
+      if (value.toString().indexOf("\n") !== -1) {
+        cell.alignment = { wrapText: true };
+        maxHeight = 57.6;
+        colsWithData.add(colNum);
       }
+    });
+    row.height = Math.max(maxHeight, 14.4);
+  });
+  for (let i = 0; i < worksheet.columns.length; i++) {
+    const colNum = i + 1;
+    const col = worksheet.getColumn(colNum);
+    let width = 11.5;
+    if (colNum === 1) {
+      width = 9;
+    } else if (colsWithData.has(colNum)) {
+      width = 13.5;
     }
-    cardioGranularSheet.push(cardioGranularRow);
-    weightsGranularSheet.push(weightsGranularRow);
-    cardioTotalSheet.push(cardioTotalRow);
-    weightsTotalSheet.push(weightsTotalRow);
+    col.width = width;
   }
-
-  // write to spreadsheet
-  const dateHeader = dates.map((d) => d.format("ddd M/D/YY"));
-  const wb = XLSX.utils.book_new();
-
-  cardioGranularSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Cardio");
-  const cardioGranularWS = XLSX.utils.aoa_to_sheet(cardioGranularSheet);
-  wb.Sheets["Cardio"] = cardioGranularWS;
-
-  weightsGranularSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Weights");
-  const weightsGranularWS = XLSX.utils.aoa_to_sheet(weightsGranularSheet);
-  wb.Sheets["Weights"] = weightsGranularWS;
-
-  cardioTotalSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Cardio Total");
-  const cardioTotalWS = XLSX.utils.aoa_to_sheet(cardioTotalSheet);
-  wb.Sheets["Cardio Total"] = cardioTotalWS;
-
-  weightsTotalSheet.unshift([""].concat(dateHeader));
-  wb.SheetNames.push("Weights Total");
-  const weightsTotalWS = XLSX.utils.aoa_to_sheet(weightsTotalSheet);
-  wb.Sheets["Weights Total"] = weightsTotalWS;
-
-  const buffer = XLSX.write(wb, { bookType: "xlsx", type: "buffer" });
-  const storage = admin.storage();
-  const bucket = storage.bucket("campus-density-gym");
-  const fileName = `${gymName}_${startDate.format(
-    "YYYY-MM-DD"
-  )}_${endDate.format("YYYY-MM-DD")}.xlsx`;
-  const file = bucket.file(fileName);
-  await file.save(buffer);
-  return `/campus-density-gym/${fileName}`;
-}
-
-function roundTime(t: number) {
-  const date = moment.utc(moment.duration(t, "minutes").as("milliseconds"));
-  const roundedDate = roundDate(date);
-  return roundedDate.hour() * 60 + roundedDate.minute();
-}
-
-function roundDate(d: Date) {
-  const date = moment(d);
-  date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
-  date.second(Math.floor(date.second() / 60) * 60);
-  if (round30) {
-    date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
-  } else {
-    date.minute(Math.round(date.minute() / 15) * 15);
-  }
-  return date;
 }
