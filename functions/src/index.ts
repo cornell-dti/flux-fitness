@@ -2,7 +2,7 @@ const serviceAccount = require("../firebase.json");
 const admin = require("firebase-admin");
 const functions = require("firebase-functions");
 const Excel = require("exceljs");
-const moment = require("moment");
+import moment = require("moment");
 require("moment-timezone");
 
 admin.initializeApp({
@@ -96,7 +96,7 @@ function roundTime(t: number) {
   return roundedDate.hour() * 60 + roundedDate.minute();
 }
 
-function roundDate(d: Date) {
+function roundDate(d: moment.Moment) {
   const date = moment(d);
   date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
   date.second(Math.floor(date.second() / 60) * 60);
@@ -108,7 +108,11 @@ function roundDate(d: Date) {
   return date;
 }
 
-function cycleDateData(docs: any, separateDates: any[], dates: any) {
+function cycleDateData(
+  docs: any,
+  separateDates: any[],
+  dates: moment.Moment[]
+) {
   let beginTime = 24 * 60;
   let endTime = 0;
   for (const d of dates) {
@@ -134,7 +138,7 @@ function cycleDateData(docs: any, separateDates: any[], dates: any) {
   return [beginTime, endTime];
 }
 
-function generateDates(startDate: any, endDate: any) {
+function generateDates(startDate: moment.Moment, endDate: moment.Moment) {
   const dates = [];
   const currDate = startDate.clone();
   while (currDate.diff(endDate) < 0) {
@@ -144,7 +148,7 @@ function generateDates(startDate: any, endDate: any) {
   return dates;
 }
 
-function generateTimes(begin: any, end: any) {
+function generateTimes(begin: number, end: number) {
   const times = [];
   const currentTime = moment.duration(roundTime(begin), "minutes");
   let endTime = moment.duration(roundTime(end), "minutes");
@@ -155,7 +159,7 @@ function generateTimes(begin: any, end: any) {
   return times;
 }
 
-function addCell(separateDate: any, time: any, rows: string[][]) {
+function addCell(separateDate: any, time: moment.Duration, rows: string[][]) {
   const dateData = separateDate.filter((doc: any) => {
     const t = moment(doc.get("time").toDate());
     const roundedTime = roundDate(t);
@@ -175,7 +179,7 @@ function addCell(separateDate: any, time: any, rows: string[][]) {
     const ellipticals = cardioDoc.ellipticals;
     const bikes = cardioDoc.bikes;
     const amts = cardioDoc.amts;
-    const cardioGranularCell =
+    cardioGranularData =
       "Treadmills: " +
       treadmills +
       " \nEllipticals: " +
@@ -184,16 +188,14 @@ function addCell(separateDate: any, time: any, rows: string[][]) {
       bikes +
       " \nAMTs: " +
       amts;
-    const cardioTotalCell = treadmills + ellipticals + bikes + amts;
-    cardioGranularData = cardioGranularCell;
-    cardioTotalData = cardioTotalCell;
+    cardioTotalData = treadmills + ellipticals + bikes + amts;
 
     const weightsDoc = doc.get("weights");
     const powerRacks = weightsDoc.powerRacks;
     const benchPress = weightsDoc.benchPress;
     const dumbbells = weightsDoc.dumbbells;
     const other = weightsDoc.other;
-    const weightsGranularCell =
+    weightsGranularData =
       "Power Racks: " +
       powerRacks +
       " \nBench Press: " +
@@ -202,9 +204,7 @@ function addCell(separateDate: any, time: any, rows: string[][]) {
       dumbbells +
       " \nOther: " +
       other;
-    const weightsTotalCell = powerRacks + benchPress + dumbbells + other;
-    weightsGranularData = weightsGranularCell;
-    weightsTotalData = weightsTotalCell;
+    weightsTotalData = powerRacks + benchPress + dumbbells + other;
   }
   rows[0].push(cardioGranularData);
   rows[1].push(weightsGranularData);
@@ -212,7 +212,12 @@ function addCell(separateDate: any, time: any, rows: string[][]) {
   rows[3].push(weightsTotalData);
 }
 
-function addRow(separateDates: any, dates: any, time: any, sheets: any[][]) {
+function addRow(
+  separateDates: any,
+  dates: moment.Moment[],
+  time: moment.Duration,
+  sheets: any[][]
+) {
   const hm = dates[0].clone().add(time);
   const timeHeader = hm.format("h:mm A");
 
