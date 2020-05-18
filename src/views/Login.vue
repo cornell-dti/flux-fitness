@@ -1,7 +1,7 @@
 <template>
   <v-container class="fill-height no-overflow" fluid>
     <v-row>
-      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-8 mx-auto">
+      <v-col cols="12" class="px-8 py-8 mx-auto login-form">
         <h1>Flux Fitness</h1>
         <p>
           A simple webapp by the
@@ -55,15 +55,8 @@ import Component from "vue-class-component";
 import * as firebase from "firebase/app";
 import "firebase/auth";
 import Gyms from "@/data/Gyms";
-import AppCard from "@/components/AppCard.vue";
-import ActionButtonGroup from "@/components/ActionButtonGroup.vue";
 
-@Component({
-  components: {
-    ActionButtonGroup,
-    AppCard,
-  },
-})
+@Component
 export default class Login extends Vue {
   email = "";
   password = "";
@@ -105,7 +98,7 @@ export default class Login extends Vue {
       .signInWithEmailAndPassword(this.email, this.password)
       .then(() => {
         // TODO: need a better system for storing ids
-        const gymData = Gyms.find((gym) => gym.name === this.gym)!
+        const gymData = Gyms.find((gym) => gym.name === this.gym)!;
         localStorage.gymId = gymData.id;
         localStorage.gymName = gymData.name;
         this.$router.push({
@@ -119,3 +112,9 @@ export default class Login extends Vue {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.login-form {
+  max-width: 600px;
+}
+</style>

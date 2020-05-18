@@ -1,15 +1,11 @@
 <template>
   <v-container class="fill-height" fluid>
-    <v-row class="justify-sm-end">
-      <v-col cols="12" sm="8" md="5">
-        <v-row class="justify-center justify-sm-end">
-          <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
-        </v-row>
-      </v-col>
+    <v-row class="justify-center justify-sm-end">
+      <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
     </v-row>
 
     <v-row>
-      <v-col cols="12" sm="8" lg="5" xl="3" class="px-8 py-3 mx-auto">
+      <v-col cols="12" class="px-8 mx-auto gym-form">
         <h1 class="mb-2">{{ gymName }}</h1>
 
         <span class="d-inline-flex align-center mt-3">
@@ -17,8 +13,8 @@
           <h4 class="font-weight-regular pl-1">{{ getDate() }}</h4>
         </span>
 
-        <v-form ref="form" v-model="valid" lazy-validation>
-          <v-col class="ma-0 pa-0" cols="12" sm="6">
+        <v-form ref="timeForm" v-model="timeValid">
+          <v-col class="ma-0 pa-0" cols="12" sm="4">
             <time-text-field
               :value="getTime()"
               :reset-disabled="!timeEditted"
@@ -30,27 +26,12 @@
               @reset="startInterval"
             />
           </v-col>
+        </v-form>
+
+        <v-form ref="form" v-model="valid" lazy-validation>
           <p class="pt-3">
             Please enter the number of people using the following equipment.
           </p>
-
-          <v-row>
-            <v-col cols="12" sm="6">
-              <h2>Weights</h2>
-              <p v-if="!!weights">
-                <b>Total:</b>
-                {{ weights }}
-              </p>
-            </v-col>
-            <v-col class="pt-0">
-              <count-text-field
-                v-for="field in weightFields"
-                v-model="field.count"
-                :key="field.key"
-                :field="field"
-              />
-            </v-col>
-          </v-row>
 
           <v-row>
             <v-col cols="12" sm="6">
@@ -70,9 +51,27 @@
             </v-col>
           </v-row>
 
+          <v-row>
+            <v-col cols="12" sm="6">
+              <h2>Weights</h2>
+              <p v-if="!!weights">
+                <b>Total:</b>
+                {{ weights }}
+              </p>
+            </v-col>
+            <v-col class="pt-0">
+              <count-text-field
+                v-for="field in weightFields"
+                v-model="field.count"
+                :key="field.key"
+                :field="field"
+              />
+            </v-col>
+          </v-row>
+
           <v-row v-if="!!gymTotal">
             <v-col>
-              <h2 class="gym-total">
+              <h2 class="font-weight-regular">
                 <b>Gym Total:</b>
                 {{ gymTotal }}
               </h2>
@@ -82,7 +81,12 @@
           <p class="text-right mt-2 red--text">{{ error }}</p>
           <div class="float-right pt-2">
             <v-btn class="mr-2" text @click="clearInputs()">Clear All</v-btn>
-            <v-btn color="blue" outlined :disabled="!valid" @click="validate()">
+            <v-btn
+              color="blue"
+              outlined
+              :disabled="!valid || !timeValid"
+              @click="validate()"
+            >
               Submit
             </v-btn>
           </div>
@@ -90,8 +94,15 @@
 
         <confirm-dialog
           v-model="dialog"
-          :confirm="confirm"
+          :cardio="cardioFields"
+          :weights="weightFields"
+          :cardio-total="cardio"
+          :weights-total="weights"
+          :gym-total="gymTotal"
+          :date-time="dateTime"
+          :gym-name="gymName"
           @submit="submit()"
+          @exit="startInterval()"
         />
       </v-col>
     </v-row>
@@ -107,6 +118,7 @@ import Component from "vue-class-component";
 import moment from "moment";
 // data
 import GymLimits from "@/data/GymLimits";
+import InputFields from "@/data/InputFields";
 // components
 import TopActions from "@/components/Home/TopActions.vue";
 import ConfirmDialog from "@/components/Home/ConfirmDialog.vue";
@@ -123,13 +135,7 @@ import TimeTextField from "@/components/Home/TimeTextField.vue";
   },
 })
 export default class Home extends Vue {
-  weightFields: {
-    [key: string]: {
-      label: string;
-      count: string;
-      help?: { info: string; show: boolean };
-    };
-  } = {
+  weightFields: InputFields = {
     powerRacks: { label: "Power Racks", count: "" },
     benchPress: { label: "Bench Press", count: "" },
     dumbbells: { label: "Dumbbells", count: "" },
@@ -143,13 +149,7 @@ export default class Home extends Vue {
     },
   };
 
-  cardioFields: {
-    [key: string]: {
-      label: string;
-      count: string;
-      help?: { info: string; show: boolean };
-    };
-  } = {
+  cardioFields: InputFields = {
     treadmills: { label: "Treadmills", count: "" },
     ellipticals: { label: "Ellipticals", count: "" },
     bikes: { label: "Bikes", count: "" },
@@ -157,6 +157,7 @@ export default class Home extends Vue {
   };
 
   valid = true;
+  timeValid = true;
 
   dateTime = new Date();
   timeInterval: any = null;
@@ -168,7 +169,6 @@ export default class Home extends Vue {
   readonly limits = GymLimits;
 
   dialog = false;
-  confirm = "";
   error = "";
 
   getDate(): string {
@@ -220,7 +220,11 @@ export default class Home extends Vue {
   }
 
   get form(): any {
-    return this.$refs.form as any;
+    return this.$refs.form;
+  }
+
+  get timeForm(): any {
+    return this.$refs.timeForm;
   }
 
   /**
@@ -244,7 +248,7 @@ export default class Home extends Vue {
   /**
    * Starts time interval that refreshes the time at a given interval
    */
-  startInterval(interval: number) {
+  startInterval(interval: number = 1000) {
     this.timeEditted = false;
     this.timeInterval = setInterval(() => {
       this.dateTime = new Date();
@@ -291,9 +295,15 @@ export default class Home extends Vue {
   validate() {
     // call Vuetify form validation
     this.form.validate();
+    const timeValid = this.timeForm.validate();
 
     // clear error
     this.error = "";
+
+    if (!timeValid) {
+      this.error = "Please check the time input.";
+      return;
+    }
 
     // check if data is empty
     if (!this.weights || !this.cardio) {
@@ -314,66 +324,63 @@ export default class Home extends Vue {
       return;
     }
 
-    // TODO: redesign confirm dialog
-    // create confirmation message
-    this.confirm = `${this.gymName} at ${this.getTime()}: there's ${
-      this.cardio
-    } ${
-      this.cardio === "1" ? " person" : " people"
-    } using cardio machines and ${this.weights} ${
-      this.weights === "1" ? " person" : " people"
-    } using weights.`;
-
+    this.stopInterval();
     this.dialog = true;
   }
 
-roundDate(d: Date) {
-  const date = moment(d);
-  date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
-  date.second(Math.floor(date.second() / 60) * 60);
-  date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
-  return date.format("h:mma");
-}
+  roundDate(d: Date) {
+    const date = moment(d);
+    date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
+    date.second(Math.floor(date.second() / 60) * 60);
+    date.minute(Math.round((date.minute() + 15) / 30) * 30 - 15);
+    return date.format("h:mma");
+  }
 
   updateHistoricalAverages() {
-    let day = ""
+    let day = "";
     switch (this.dateTime.getDay()) {
       case 0:
         day = "Sunday";
         break;
       case 1:
-        day = "Monday"
+        day = "Monday";
         break;
       case 2:
-        day = "Tuesday"
+        day = "Tuesday";
         break;
       case 3:
-        day = "Wednesday"
+        day = "Wednesday";
         break;
       case 4:
-        day = "Thursday"
+        day = "Thursday";
         break;
       case 5:
-        day = "Friday"
+        day = "Friday";
         break;
       case 6:
-        day = "Saturday"
+        day = "Saturday";
     }
-    const postData =
-    {
+    const postData = {
       time: this.roundDate(this.dateTime),
       cardio: this.cardio,
-      weights: this.weights
-    }
+      weights: this.weights,
+    };
     const options = {
-      headers: {'Content-Type': 'application/json'}
-    }
-    let url = process.env.VUE_APP_UPDATE_GYM_HISTORICAL_AVERAGES_API + '?id=' + this.gymId + '&day=' + day;
-    Axios.post(url, postData, options).then(() => {
-      // SUCCESSFUL POST REQUEST :)
-    }).catch(err => {
-      throw err
-    });
+      headers: { "Content-Type": "application/json" },
+    };
+    let url =
+      process.env.VUE_APP_UPDATE_GYM_HISTORICAL_AVERAGES_API +
+      "?id=" +
+      this.gymId +
+      "&day=" +
+      day;
+    Axios.post(url, postData, options)
+      .then(() => {
+        // SUCCESSFUL POST REQUEST :)
+      })
+      .catch((err) => {
+        throw err;
+      });
   }
 
   /**
@@ -404,7 +411,7 @@ roundDate(d: Date) {
         valid: false,
       })
       .then(() => {
-        this.confirm = "";
+        this.dateTime = new Date();
         this.clearInputs();
         // TODO: confirmation message/notification that data was submitted
       })
@@ -435,7 +442,7 @@ roundDate(d: Date) {
   font-weight: normal;
 }
 
-.h-36px {
-  height: 36px;
+.gym-form {
+  max-width: 600px;
 }
 </style>
