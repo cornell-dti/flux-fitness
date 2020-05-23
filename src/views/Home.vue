@@ -1,5 +1,12 @@
 <template>
   <v-container class="fill-height" fluid>
+    <v-snackbar v-model="successBar" top color="success" timeout="7000">
+      Successfully added to database!
+      <v-btn text @click="successBar = false">
+        Close
+      </v-btn>
+    </v-snackbar>
+
     <v-row class="justify-center justify-sm-end">
       <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
     </v-row>
@@ -170,6 +177,7 @@ export default class Home extends Vue {
 
   dialog = false;
   error = "";
+  successBar = false;
 
   getDate(): string {
     const date = moment(this.dateTime);
@@ -328,6 +336,7 @@ export default class Home extends Vue {
     this.dialog = true;
   }
 
+  // TODO: use Moment
   roundDate(d: Date) {
     const date = moment(d);
     date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
@@ -413,7 +422,7 @@ export default class Home extends Vue {
       .then(() => {
         this.dateTime = new Date();
         this.clearInputs();
-        // TODO: confirmation message/notification that data was submitted
+        this.successBar = true;
       })
       .catch(() => {
         this.error = "There was an error in adding the document.";
