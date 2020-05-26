@@ -455,7 +455,7 @@ export default class Home extends Vue {
         this.successBar = true;
       })
       .catch(() => {
-        this.error = "There was an error in adding the document.";
+        this.error = "There was an error adding to the database.";
         return;
       });
     this.updateHistoricalAverages();
