@@ -1,5 +1,12 @@
 <template>
   <v-container class="fill-height" fluid>
+    <v-snackbar v-model="successBar" top color="success" timeout="7000">
+      Successfully added to database!
+      <v-btn text @click="successBar = false">
+        Close
+      </v-btn>
+    </v-snackbar>
+
     <v-row class="justify-center justify-sm-end">
       <top-actions @logout="signOut" @export="goExport" @help="goHelp" />
     </v-row>
@@ -135,6 +142,7 @@ import TimeTextField from "@/components/Home/TimeTextField.vue";
   },
 })
 export default class Home extends Vue {
+  /* classes describing the input fields for the form */
   weightFields: InputFields = {
     powerRacks: { label: "Power Racks", count: "" },
     benchPress: { label: "Bench Press", count: "" },
@@ -156,31 +164,46 @@ export default class Home extends Vue {
     amts: { label: "AMTs", count: "" },
   };
 
+  /* form validation variables */
   valid = true;
   timeValid = true;
 
+  /* date and time-related variables */
   dateTime = new Date();
   timeInterval: any = null;
   timeEditted = false;
   timeHelp = false;
 
+  /* gym information: name, IDs, and limits */
   gymName = "";
   gymId = "";
   readonly limits = GymLimits;
 
+  /* variables describing popup/dynamic display elements */
   dialog = false;
+  successBar = false;
   error = "";
 
+  /**
+   * Gets date as a string in format `ddd MMM D, YYYY`
+   */
   getDate(): string {
     const date = moment(this.dateTime);
     return date.format("ddd MMM D, YYYY");
   }
 
+  /**
+   * Gets time as a string in format `h:mm A`
+   */
   getTime(): string {
     const time = moment(this.dateTime);
     return time.format("h:mm A");
   }
 
+  /**
+   * Sets time by converting string input to date object and storing it
+   * to `this.dateTime`
+   */
   setTime(value: string) {
     const momentTime = moment(
       `${moment().format("YYYY-MM-DD")} ${value}`,
@@ -191,6 +214,9 @@ export default class Home extends Vue {
     this.dateTime = momentTime.toDate();
   }
 
+  /**
+   * Getter for weight total count as a string
+   */
   get weights(): string {
     const wf = this.weightFields;
     const prNum = Number.parseInt(wf.powerRacks.count);
@@ -201,6 +227,9 @@ export default class Home extends Vue {
     return (prNum + bpNum + dbNum + otNum).toString();
   }
 
+  /**
+   * Getter for cardio total count as a string
+   */
   get cardio(): string {
     const cf = this.cardioFields;
     const tmNum = Number.parseInt(cf.treadmills.count);
@@ -211,6 +240,9 @@ export default class Home extends Vue {
     return (tmNum + elNum + bkNum + amNum).toString();
   }
 
+  /**
+   * Getter for gym total count as a string
+   */
   get gymTotal(): string {
     const weightsNum = Number.parseInt(this.weights);
     const cardioNum = Number.parseInt(this.cardio);
@@ -219,10 +251,16 @@ export default class Home extends Vue {
     return (weightsNum + cardioNum).toString();
   }
 
+  /**
+   * Getter for the ref to the main form for gym counts
+   */
   get form(): any {
     return this.$refs.form;
   }
 
+  /**
+   * Getter for the ref to the form that includes the TimeTextField
+   */
   get timeForm(): any {
     return this.$refs.timeForm;
   }
@@ -328,6 +366,7 @@ export default class Home extends Vue {
     this.dialog = true;
   }
 
+  // TODO: use Moment
   roundDate(d: Date) {
     const date = moment(d);
     date.millisecond(Math.floor(date.millisecond() / 1000) * 1000);
@@ -413,10 +452,10 @@ export default class Home extends Vue {
       .then(() => {
         this.dateTime = new Date();
         this.clearInputs();
-        // TODO: confirmation message/notification that data was submitted
+        this.successBar = true;
       })
       .catch(() => {
-        this.error = "There was an error in adding the document.";
+        this.error = "There was an error adding to the database.";
         return;
       });
     this.updateHistoricalAverages();
