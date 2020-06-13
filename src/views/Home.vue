@@ -315,7 +315,7 @@ export default class Home extends Vue {
    */
   goHelp() {
     window.open(
-      "https://docs.google.com/document/d/1nFARd_tRBTzdi7-BhkwmLKih-34G4zsHB-DZk-mx4KA/edit"
+      "https://docs.google.com/document/d/e/2PACX-1vT0-98_ptNLN-PKs7G5iyRD5ZS_IGy2U2LrtOWrPiPYSPajZvEZ3hmOpY8TGGm5AiPazK99rpng2lGy/pub"
     );
   }
 
