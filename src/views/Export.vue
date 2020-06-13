@@ -12,7 +12,7 @@
 
       <v-row>
         <v-col class="pb-0">
-          <h1>Export</h1>
+          <h1>Export from {{ gymName }}</h1>
           <p>
             Please select a date range to export the data.
           </p>
@@ -45,10 +45,20 @@
 
       <v-row>
         <v-col>
-          <p>Click "Download" to export data as an Excel spreadsheet.</p>
-          <v-btn color="primary" @click="download" :loading="downloading">
-            <v-icon left>file_download</v-icon>Download
-          </v-btn>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn
+                color="primary"
+                v-on="on"
+                @click="download"
+                :loading="downloading"
+              >
+                <v-icon left>file_download</v-icon>
+                Download
+              </v-btn>
+            </template>
+            <span>Click to export data as an Excel spreadsheet</span>
+          </v-tooltip>
         </v-col>
       </v-row>
       <div id="error">{{ error }}</div>
@@ -84,6 +94,8 @@ export default class Settings extends Vue {
   error = "";
 
   edited = false;
+
+  gymName = localStorage.gymName;
 
   /**
    * Navigates to home page
