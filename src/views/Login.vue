@@ -65,7 +65,7 @@ export default class Login extends Vue {
 
   valid = true;
   readonly emailRules = [
-    (v: any) => !!v || "Email is required",
+    (v: any) => !!v || "This is required",
     (v: any) => /.+@.+\..+/.test(v) || "Email must be valid",
   ];
   readonly required = [(v: any) => !!v || "This is required"];
