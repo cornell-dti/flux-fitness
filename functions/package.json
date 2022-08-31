@@ -18,7 +18,7 @@
     "firebase-admin": "^8.9.2",
     "firebase-functions": "^3.3.0",
     "moment": "^2.25.1",
-    "moment-timezone": "^0.5.28"
+    "moment-timezone": "^0.5.35"
   },
   "devDependencies": {
     "@types/moment-timezone": "^0.5.13",
